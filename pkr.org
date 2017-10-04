@@ -86,6 +86,8 @@ Card = collections.namedtuple("Card", ['rank', 'suit'])
 - So we can re-use some of the fluent python code, with our new Rank and Suit enums
 
 #+BEGIN_SRC python :session
+from random import shuffle
+
 class FirstDeck:
     def __init__(self):
         self._cards = [Card(rank, suit) for suit in Suit
@@ -94,6 +96,13 @@ class FirstDeck:
         return len(self._cards)
     def __getitem__(self, position):
         return self._cards[position]
+
+    def shuffle(self):
+        cards = shuffle(self._cards)
+
+    def deal(self):
+        card = self._cards.pop(0)
+        return card
 
 #+END_SRC
 - Ah yes, I should probably have finished the card implementation
@@ -104,3 +113,9 @@ Card = collections.namedtuple("Card", ['rank', 'suit'])
 
 - After some dicking around with classes for card, I ended up back with a namedtuple
 - i'll change this, but not now.
+- I need to shuffle the deck
+- Let's steal more code from fluent python! (it was shuffle, see above)
+
+#+BEGIN_SRC python :session
+
+#+END_SRC
