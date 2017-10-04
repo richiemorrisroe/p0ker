@@ -1,0 +1,106 @@
+- In which I write a card deck
+- Plan is to implement poker
+- And then potentially some bots.
+
+- Because I am a lazy, lazy man I'm going to start with the CardDeck from fluent python.
+
+#+BEGIN_SRC python :tangle deck.py
+import collections
+
+Card = collections.namedtuple('Card', ['rank', 'suit'])
+
+class FrenchDeck:
+    ranks = [str(n) for n in range(2, 11)] + list('JQKA')
+    suits = 'spades diamonds clubs hearts'.split()
+
+    def __init__(self):
+        self._cards = [Card(rank, suit) for suit in self.suits
+                       for rank in self.ranks]
+    def __len__(self):
+        return len(self._cards)
+    def __getitem__(self, position):
+        return self._cards[position]
+
+#+END_SRC
+
+- So this creates a deck, and each card is just an element of the deck
+- This isn't really what I want, though there are some good ideas that I can steal from it.
+
+#+BEGIN_SRC python
+from enum import Enum
+import random as random
+import collections as collections
+
+
+
+class Suit(Enum):
+    SPADES = 1
+    CLUBS = 2
+    DIAMONDS = 3
+    HEARTS = 4
+
+
+class Rank(Enum):
+    TWO = 2
+    THREE = 3
+    FOUR = 4
+    FIVE = 5
+    SIX = 6
+    SEVEN = 7
+    EIGHT = 8
+    NINE = 9
+    TEN = 10
+    JACK = 11
+    QUEEN = 12
+    KING = 13
+    ACE = 14
+
+
+def random_choice(upper, lower):
+    x = random.randint(upper, lower)
+    return x
+
+def random_suit(Suit : Suit) -> Suit:
+    choice = Suit(random_choice(1, 4))
+    return choice
+
+def random_rank(Rank: Rank) -> Rank:
+    choice = Rank(random_choice(2, 13))
+    return choice
+
+
+Card = collections.namedtuple("Card", ['rank', 'suit'])
+
+
+#+END_SRC
+
+
+
+- So, here we create two Enums, Rank and Suit
+- A particular combination of these makes up a card
+- However, the deck is probably the right level of abstraction for my purposes
+  - It enforces uniqueness of cards
+  - It provides a convenient target for methods (shuffle, deal)
+
+- I probably need a Hand object, which consists of 1-5 cards
+- So we can re-use some of the fluent python code, with our new Rank and Suit enums
+
+#+BEGIN_SRC python :session
+class FirstDeck:
+    def __init__(self):
+        self._cards = [Card(rank, suit) for suit in Suit
+                       for rank in Rank]
+    def __len__(self):
+        return len(self._cards)
+    def __getitem__(self, position):
+        return self._cards[position]
+
+#+END_SRC
+- Ah yes, I should probably have finished the card implementation
+- TDD anyone?
+#+BEGIN_SRC python :session
+Card = collections.namedtuple("Card", ['rank', 'suit'])
+#+END_SRC
+
+- After some dicking around with classes for card, I ended up back with a namedtuple
+- i'll change this, but not now.
