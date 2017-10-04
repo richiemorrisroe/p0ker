@@ -4,7 +4,7 @@
 
 - Because I am a lazy, lazy man I'm going to start with the CardDeck from fluent python.
 
-#+BEGIN_SRC python :tangle deck.py
+#+BEGIN_SRC python
 import collections
 
 Card = collections.namedtuple('Card', ['rank', 'suit'])
@@ -26,7 +26,7 @@ class FrenchDeck:
 - So this creates a deck, and each card is just an element of the deck
 - This isn't really what I want, though there are some good ideas that I can steal from it.
 
-#+BEGIN_SRC python
+#+BEGIN_SRC python :tangle deck.py
 from enum import Enum, IntEnum
 import random as random
 import collections as collections
@@ -85,7 +85,7 @@ Card = collections.namedtuple("Card", ['rank', 'suit'])
 - I probably need a Hand object, which consists of 1-5 cards
 - So we can re-use some of the fluent python code, with our new Rank and Suit enums
 
-#+BEGIN_SRC python :session
+#+BEGIN_SRC python :session :tangle deck.py
 from random import shuffle
 
 class FirstDeck:
@@ -116,7 +116,7 @@ Card = collections.namedtuple("Card", ['rank', 'suit'])
 - I need to shuffle the deck
 - Let's steal more code from fluent python! (it was shuffle, see above)
 
-#+BEGIN_SRC python :session
+#+BEGIN_SRC python :session :tangle deck.py
 player1 = []
 player2 = []
 player3 = []
@@ -170,11 +170,20 @@ Ace > Deuce
 
 - Official rules can be found [[https://www.pagat.com/poker/rules/ranking.html][here]]
 
-#+BEGIN_SRC python :session
+#+BEGIN_SRC python :session :tangle deck.py
 rankdict = dict.fromkeys(Rank)
 
 for each in ranks:
     print(each.name)
+def split_cards(hand):
+    suits =[]
+    ranks =[]
+    for each in hand:
+        suits.append(each.suit)
+        ranks.append(each.rank)
+    return suits, ranks
+
+
 
 def count(ranks):
     rdict = dict.fromkeys(ranks)
@@ -193,18 +202,41 @@ def anyrep(ranks):
     else:
         return True
 
-def whichrep(ranks):
-    origlen = len(ranks)
-    uniquelen = len(set(ranks))
-    diff = origlen - 2
-
-def getrep(ranks):
+def find_repeated_cards(ranks):
     res = []
     counts = count(ranks)
-    for k,v in counts.items():
-        if v>=2:
+    for k, v in counts.items():
+        if v >= 2:
             res.append((k, v))
     return res
+
+
+def is_straight(ranks):
+    ranks.sort()
+    count = 0
+    for i, rank in enumerate(ranks):
+        if ranks[i+1] - rank == 1:
+            count +=1
+        if count==5:
+            return True
+        else:
+            return False
+
+def is_flush(suits):
+    sc = count(suits)
+    for k, v in sc.items():
+        if v==5:
+            return True
+        else:
+            return False
+
+def make_straight(suit, start):
+    hand = []
+    if not start:
+        start = 7
+    for rank in range(8, 13):
+        hand.append(Card(suit, Rank(rank)))
+    return hand
 #+END_SRC
 
 
