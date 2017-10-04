@@ -27,7 +27,7 @@ class FrenchDeck:
 - This isn't really what I want, though there are some good ideas that I can steal from it.
 
 #+BEGIN_SRC python
-from enum import Enum
+from enum import Enum, IntEnum
 import random as random
 import collections as collections
 
@@ -40,7 +40,7 @@ class Suit(Enum):
     HEARTS = 4
 
 
-class Rank(Enum):
+class Rank(IntEnum):
     TWO = 2
     THREE = 3
     FOUR = 4
@@ -117,5 +117,102 @@ Card = collections.namedtuple("Card", ['rank', 'suit'])
 - Let's steal more code from fluent python! (it was shuffle, see above)
 
 #+BEGIN_SRC python :session
+player1 = []
+player2 = []
+player3 = []
+players = [player1, player2, player3]
+mydeck = FirstDeck()
+mydeck.shuffle()
+for i in range(0, 5):
+    for player in players:
+        card = mydeck.deal()
+        player.append(card)
 
+suits = []
+ranks = []
+for card in player3:
+    suits.append(card.suit)
+    ranks.append(card.rank)
+
+for suit in Suit:
+    print(suits.count(suit))
+
+rcount =[]
+for rank in Rank:
+    rcount.append(ranks.count(rank))
+
+suits_uc = { "♠":1, "♣":2, "♥":4, "♦":8 }
+#+END_SRC
+
+- This is just messing around with the hands
+- I actually need to change my implementation of rank, to use IntEnum
+- this will allow for integer comparisons of the values, which I need
+- IntEnum away
+
+#+BEGIN_SRC python :session
+Ace = Rank(14)
+Deuce = Rank(2)
+Ace < Deuce
+Ace > Deuce
+#+END_SRC
+- So now we have comparisons across ranks
+- As per official rules, we don't need these for suits
+** Scoring Hands
+
+- Reasonably involved.
+- I started [[https://stackoverflow.com/questions/10363927/the-simplest-algorithm-for-poker-hand-evaluation][here]], found an [[https://www.codeproject.com/Articles/569271/A-Poker-hand-analyzer-in-JavaScript-using-bit-math][insane bitmath]] implementation, but my own thoughts were most usefully inspired by [[https://people.eecs.berkeley.edu/~bh/ssch15/poker.html][here]] (i love that its a project building on previous work but completely different)
+- So most of the hands depend on either suits or ranks
+- We have same number suits (two, three four of a kind, two-pair, full house)
+- rank based (straight)
+- suit based (flush)
+- rank and suit based (royal flush)
+- ideally we want a continuous number to optimise against, but we'll leave that alone for now.
+
+- Official rules can be found [[https://www.pagat.com/poker/rules/ranking.html][here]]
+
+#+BEGIN_SRC python :session
+rankdict = dict.fromkeys(Rank)
+
+for each in ranks:
+    print(each.name)
+
+def count(ranks):
+    rdict = dict.fromkeys(ranks)
+    for each in ranks:
+        if rdict[each]:
+            rdict[each] += 1
+        if not rdict[each]:
+            rdict[each] = 1
+    return rdict
+
+def anyrep(ranks):
+    origlen = len(ranks)
+    uniquelen = len(set(ranks))
+    if origlen == uniquelen:
+        return False
+    else:
+        return True
+
+def whichrep(ranks):
+    origlen = len(ranks)
+    uniquelen = len(set(ranks))
+    diff = origlen - 2
+
+def getrep(ranks):
+    reps = []
+    for rank, count in ranks:
+        if count>= 2:
+            reps.append(rank)
+        else:
+            pass
+    return reps
+
+
+rankiter = iter(Rank)
+for each in rankiter:
+    print(each)
+
+rank2iter = iter(ranks)
+for each in rank2iter:
+    print(each)
 #+END_SRC
