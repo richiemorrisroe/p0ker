@@ -60,9 +60,11 @@ def random_choice(upper, lower):
     x = random.randint(upper, lower)
     return x
 
+
 def random_suit(Suit : Suit) -> Suit:
     choice = Suit(random_choice(1, 4))
     return choice
+
 
 def random_rank(Rank: Rank) -> Rank:
     choice = Rank(random_choice(2, 13))
@@ -87,6 +89,7 @@ Card = collections.namedtuple("Card", ['rank', 'suit'])
 
 #+BEGIN_SRC python :session :tangle deck.py
 from random import shuffle
+
 
 class FirstDeck:
     def __init__(self):
@@ -137,11 +140,11 @@ for card in player3:
 for suit in Suit:
     print(suits.count(suit))
 
-rcount =[]
+rcount = []
 for rank in Rank:
     rcount.append(ranks.count(rank))
 
-suits_uc = { "♠":1, "♣":2, "♥":4, "♦":8 }
+suits_uc = { "♠" :1, "♣" : 2, "♥" : 4, "♦" : 8 }
 #+END_SRC
 
 - This is just messing around with the hands
@@ -175,14 +178,15 @@ rankdict = dict.fromkeys(Rank)
 
 for each in ranks:
     print(each.name)
+
+
 def split_cards(hand):
-    suits =[]
-    ranks =[]
+    suits = []
+    ranks = []
     for each in hand:
         suits.append(each.suit)
         ranks.append(each.rank)
     return suits, ranks
-
 
 
 def count(ranks):
@@ -194,6 +198,7 @@ def count(ranks):
             rdict[each] = 1
     return rdict
 
+
 def anyrep(ranks):
     origlen = len(ranks)
     uniquelen = len(set(ranks))
@@ -201,6 +206,7 @@ def anyrep(ranks):
         return False
     else:
         return True
+
 
 def find_repeated_cards(ranks):
     res = []
@@ -211,16 +217,20 @@ def find_repeated_cards(ranks):
     return res
 
 
+for x in range(0, len(straight_ranks)):
+    print(x)
+
 def is_straight(ranks):
     ranks.sort()
     count = 0
-    for i, rank in enumerate(ranks):
-        if ranks[i+1] - rank == 1:
+    for i in range(0, len(ranks)-1):
+        if ranks[i+1] - ranks[i] == 1:
             count +=1
-        if count==5:
-            return True
-        else:
-            return False
+    if count == 4:
+        return True
+    else:
+        return False
+
 
 def is_flush(suits):
     sc = count(suits)
@@ -230,6 +240,7 @@ def is_flush(suits):
         else:
             return False
 
+
 def make_straight(suit, start):
     hand = []
     if not start:
@@ -237,8 +248,20 @@ def make_straight(suit, start):
     for rank in range(8, 13):
         hand.append(Card(suit, Rank(rank)))
     return hand
+
 #+END_SRC
 
 
 - So the key when iterating over dicts is to use the items method (iteritems in Python 2)
 - that may be the source of some of the problems I've been having with them
+
+| prob |hand name
+ |  0.001539% | "straight flush"
+  |    0.024010% | "4 of a kind plain"
+  |    0.144058% | "full house plain"
+  |    0.196540% | "nothing flush"
+  |    0.392465% | "straight plain"
+  |    2.112845% | "3 of a kind plain"
+  |    4.753902% | "2 pairs plain"
+  |   42.256903% | "pair plain"
+  |   50.117739% | "nothing plain"
