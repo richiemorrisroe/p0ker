@@ -287,8 +287,6 @@ def make_straight(suit: Suit, start: int) -> List[Card]:
 - Note that those really small numbers are percentages, which makes things pretty crazy.
 
 #+BEGIN_SRC python :session :tangle deck.py
-from deck import split_cards, is_flush, is_straight, count
-
 
 def get_scores():
     scores = {'NOTHING': 2,
@@ -411,3 +409,49 @@ def replenish_cards(deck, player):
 
 - If nothing FOLD
 - Else Bet
+
+- Seems plausible to create some player objects
+
+#+BEGIN_SRC python :session
+class Player:
+    def __init__(self, hand=[], pot=5000):
+        self.hand = hand
+        self.pot = pot
+    def discard(self, hand):
+        pass
+    def bet(self, amount):
+        pass
+    def call(self, amount):
+        pass
+    def fold(self):
+        pass
+#+END_SRC
+
+
+- I probably also need a Game object to handle the deck, pot and comparison of hands
+
+#+BEGIN_SRC python :session
+class Game:
+    def __init__(self, name="poker", ante=100):
+        self.name = name
+        self.ante = 100
+        self.maxdrop = 3
+        self.deck = FirstDeck()
+
+    def start(self, players):
+        self.deck.shuffle()
+        deck, players = deal_cards(self.deck, players=players)
+        self.deck = deck
+        return deck, players
+
+    def deal(self, deck, player):
+        deck, player = replenish_cards(deck, player)
+        return deck, player
+
+    def compare(self, hands):
+        pass
+
+#+END_SRC
+
+
+So, my API is OK right now.
