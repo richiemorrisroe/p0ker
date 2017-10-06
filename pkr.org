@@ -30,7 +30,7 @@ class FrenchDeck:
 from enum import Enum, IntEnum
 import random as random
 import collections as collections
-
+from random import shuffle
 
 class Suit(Enum):
     SPADES = 1
@@ -86,7 +86,7 @@ Card = collections.namedtuple("Card", ['rank', 'suit'])
 - So we can re-use some of the fluent python code, with our new Rank and Suit enums
 
 #+BEGIN_SRC python :session :tangle deck.py
-from random import shuffle
+
 
 
 class FirstDeck:
@@ -120,7 +120,7 @@ Card = collections.namedtuple("Card", ['rank', 'suit'])
 - Let's steal more code from fluent python! (it was shuffle, see above)
 
 #+BEGIN_SRC python :session :tangle deck.py
-from deck import FirstDeck, Rank, Suit
+
 player1 = []
 player2 = []
 player3 = []
@@ -132,12 +132,11 @@ def deal_cards(deck, players):
     """Takes a list of players (normally empty lists)
     and deals each of them five cards,
     returning the updated lists"""
-    deck.shuffle()
     for i in range(0, 5):
         for player in players:
-            card = mydeck.deal()
+            card = deck.deal()
             player.append(card)
-    return players
+    return deck, players
 
 
 suits = []
@@ -352,16 +351,46 @@ player2 = []
 player3 = []
 players = [player1, player2, player3]
 mydeck = FirstDeck()
-players = deal_cards(mydeck, players)
+mydeck, players = deal_cards(mydeck, players)
 scores = [score_hand(player) for player in players]
 
 
-# def discard_cards(hand):
-#     suits, ranks = split_cards(hand)
-#     counts = find_repeated_cards(ranks)
-#     suit_count = count(suits)
-#     if any(suit.values()) >= 3:
+def discard_cards(hand):
+    suits, ranks = split_cards(hand)
+    score, handname = score_hand(hand)
+    scount = count(suits)
+    rcount = count(ranks)
+    if handname=='NOTHING':
+        ranks.sort(reverse=True)
+        topranks = ranks[0:2]
+        minretained = topranks[1].value
+        cards_remaining = [(r, s) for r, s in hand if r>=minretained]
+    else:
+        keep = {k:v for k, v in rcount.items() if v >= 2}
+        keepvalues = list(keep)[0].value
+        cards_remaining = [(rank, suit) for rank,suit in hand if rank == keepvalues]
 
+    return cards_remaining
+
+players = [discard_cards(x) for x in players]
+
+
+def replenish_cards(deck, player):
+    while len(player) < 5:
+        card = deck.deal()
+        player.append(card)
+        if len(player) == 5:
+            pass
+    return deck, player
+
+# maybe straight and flush logic, leave for now
+# if is_flush(suits, exact=False)>=3:
+#             suitcount = count(suits)
+#             cards_remaining = [(k, v) for k, v in hand.items if v>=3]
+#             return cards_remaining, 'MAYBE-FLUSH'
+#         if is_straight(ranks, exact=False) >= 3:
+#             cards_remaining = hand
+#             return cards_remaining, 'MAYBE-STRAIGHT'
 #+END_SRC
 
 
