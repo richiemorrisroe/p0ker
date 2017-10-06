@@ -135,7 +135,7 @@ def deal_cards(deck, players):
     for i in range(0, 5):
         for player in players:
             card = deck.deal()
-            player.append(card)
+            player.hand.append(card)
     return deck, players
 
 
