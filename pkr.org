@@ -508,3 +508,15 @@ players = [replenish_cards(x) for x in player_discards]
 - Then I just return the players.
 - I can then handling the player logic in the player objects.
 - The only concern I have is duplication of scoring logic (I already have this problem with ==discard_cards==)
+
+
+#+BEGIN_SRC python
+playersnew = [Player(), Player(), Player()]
+game = Game()
+players = game.start(playersnew)
+hands = [x.hand for x in players]
+players = [discard_cards(x) for x in hands]
+players = [replenish_cards(x) for x in players]
+#+END_SRC
+
+- So this is a better API, in that I can create new player objects. I need to implement a hand updater/extractor as I always need this information.
