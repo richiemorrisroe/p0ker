@@ -454,4 +454,22 @@ class Game:
 #+END_SRC
 
 
-So, my API is OK right now.
+
+
+#+BEGIN_SRC python :session
+players = [[], [], []]
+d = FirstDeck()
+d.shuffle()
+d, players = deal_cards(d, players)
+scores = [score_hand(x) for x in players]
+player_discards = [discard_cards(x) for x in players]
+players = [replenish_cards(x) for x in player_discards]
+#+END_SRC
+
+- So, my API is OK right now.
+- This is all OK until ==replenish_cards== is run, but that function returns both the deck and the players
+- this leads to annoying objects.
+- the problem here is that with the Game design above, the deck can be handled there
+- Then I just return the players.
+- I can then handling the player logic in the player objects.
+- The only concern I have is duplication of scoring logic (I already have this problem with ==discard_cards==)
