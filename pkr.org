@@ -417,12 +417,31 @@ class Player:
     def __init__(self, hand=[], pot=5000):
         self.hand = hand
         self.pot = pot
+        self.score = 0
+
+    def score(self, hand):
+        score = score_hand(hand)
+        self.score = score
+        return score
+
     def discard(self, hand):
         pass
+
     def bet(self, amount):
-        pass
+        if score(self.hand)>200:
+            bet = pot * 0.01
+            self.pot = self.pot - bet
+
     def call(self, amount):
-        pass
+        if not self.score:
+            self.score = score_hand(self.hand)
+
+        else:
+            if self.score < 200:
+                return True
+            else:
+                return False
+
     def fold(self):
         pass
 #+END_SRC
@@ -442,11 +461,12 @@ class Game:
         self.deck.shuffle()
         deck, players = deal_cards(self.deck, players=players)
         self.deck = deck
-        return deck, players
+        return players
 
-    def deal(self, deck, player):
+    def deal(self, player):
         deck, player = replenish_cards(deck, player)
-        return deck, player
+        self.deck = deck
+        return player
 
     def compare(self, hands):
         pass
