@@ -447,7 +447,12 @@ class Player:
                 return False
 
     def fold(self):
-        pass
+        if not self.score:
+            self.score = score_hand(self.hand)
+        if self.score < 100:
+            return True
+        else:
+            return False
 #+END_SRC
 
 
