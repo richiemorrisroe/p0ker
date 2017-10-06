@@ -414,23 +414,27 @@ def replenish_cards(deck, player):
 
 #+BEGIN_SRC python :session
 class Player:
-    def __init__(self, hand=[], pot=5000):
+    def __init__(self, hand=[], stash=5000):
         self.hand = hand
-        self.pot = pot
+        self.stash = stash
         self.score = 0
 
-    def score(self, hand):
-        score = score_hand(hand)
-        self.score = score
-        return score
+    def score(self):
+        if len(self.hand)>0:
+            score = score_hand(self.hand)
+            self.score = score
+            return self.score
+        else:
+            return self.score
 
     def discard(self, hand):
         pass
 
     def bet(self, amount):
         if score(self.hand)>200:
-            bet = pot * 0.01
-            self.pot = self.pot - bet
+            bet = stash * 0.01
+            self.stash = self.stash - bet
+            return bet
 
     def call(self, amount):
         if not self.score:
