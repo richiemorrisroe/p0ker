@@ -431,12 +431,13 @@ class Player:
     def discard(self, hand):
         pass
 
-    def bet(self, conf):
+    def bet(self, conf, game):
         if conf < 0 or conf > 1:
             return Exception
         if score_hand(self.hand)[0] > 200:
             bet = (self.stash * 0.01) * conf
             self.stash = self.stash - bet
+            game.pot(bet)
             return bet
         else:
             return self.minbet
@@ -471,6 +472,7 @@ class Game:
         self.ante = 100
         self.maxdrop = 3
         self.deck = FirstDeck()
+        self.pot = 0
 
     def start(self, players):
         self.deck.shuffle()
@@ -486,6 +488,13 @@ class Game:
     def compare(self, hands):
         pass
 
+    def add_to_pot(self, bet):
+        pot += self.pot + bet
+        self.pot = pot
+        return self.pot
+
+    def get_pot_value(self):
+        return self.pot
 #+END_SRC
 
 
