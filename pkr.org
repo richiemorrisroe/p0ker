@@ -169,7 +169,7 @@ Ace > Deuce
 #+END_SRC
 - So now we have comparisons across ranks
 - As per official rules, we don't need these for suits
-** Scoring Hands
+** COMMENT Scoring Hands
 
 - Reasonably involved.
 - I started [[https://stackoverflow.com/questions/10363927/the-simplest-algorithm-for-poker-hand-evaluation][here]], found an [[https://www.codeproject.com/Articles/569271/A-Poker-hand-analyzer-in-JavaScript-using-bit-math][insane bitmath]] implementation, but my own thoughts were most usefully inspired by [[https://people.eecs.berkeley.edu/~bh/ssch15/poker.html][here]] (i love that its a project building on previous work but completely different)
@@ -347,13 +347,14 @@ def score_hand(hand):
 
 
 #+BEGIN_SRC python :session
-player1 = []
-player2 = []
-player3 = []
-players = [player1, player2, player3]
-mydeck = FirstDeck()
-mydeck, players = deal_cards(mydeck, players)
-scores = [score_hand(player) for player in players]
+# old API, doesn't work anymore
+# player1 = []
+# player2 = []
+# player3 = []
+# players = [player1, player2, player3]
+# mydeck = FirstDeck()
+# mydeck, players = deal_cards(mydeck, players)
+# scores = [score_hand(player.hand) for player in players]
 
 
 def discard_cards(hand):
@@ -372,8 +373,6 @@ def discard_cards(hand):
         cards_remaining = [(rank, suit) for rank,suit in hand if rank == keepvalues]
 
     return cards_remaining
-
-players = [discard_cards(x) for x in players]
 
 
 def replenish_cards(deck, player):
