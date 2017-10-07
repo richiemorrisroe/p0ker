@@ -501,9 +501,8 @@ class Game:
         pass
 
     def add_to_pot(self, bet):
-        pot += self.pot + bet
-        self.pot = pot
-        return self.pot
+        print("pot is {} and bet is {}".format(self.pot, bet))
+        self.pot += bet
 
     def get_pot_value(self):
         return self.pot
@@ -513,7 +512,7 @@ class Game:
 
 
 #+BEGIN_SRC python :session
-players = [[], [], []]
+players = [Player(),Player(),Player()]
 d = FirstDeck()
 d.shuffle()
 d, players = deal_cards(d, players)
@@ -541,3 +540,72 @@ players = [replenish_cards(x) for x in players]
 #+END_SRC
 
 - So this is a better API, in that I can create new player objects. I need to implement a hand updater/extractor as I always need this information.
+
+** Order of Play
+- Big blind (100), little blind (50)
+- big blind starts, continuing clockwise
+- Three cards dealt
+- one round of betting
+- discard and take new cards (max 3)
+- second round betting
+- end hand (with call or fold)
+#+BEGIN_SRC python :session :results output
+playersnew = [Player(), Player(), Player()]
+game = Game()
+player1, player2, player3 = playersnew
+blind = player1.bet(100)
+lblind = player2.bet(50)
+game.add_to_pot(blind)
+game.add_to_pot(lblind)
+playersnew = player1, player2, player3
+players = game.start(playersnew)
+hands = [x.hand for x in players]
+scores = [score_hand(x) for x in hands]
+bets = [x.bet() for x in players]
+for b in bets:
+    game.add_to_pot(b)
+players = [discard_cards(x.hand) for x in players]
+players = [replenish_cards(x) for x in players]
+print(hands)
+print(scores)
+print(bets)
+#+END_SRC
+- this isn't bad i am getting the bets into the pots
+- I need logic to handle calls, raises and folds though
+- additionally, I need to be able to end a round and distribute the pot
+
+
+#+RESULTS:
+#+begin_example
+
+
+
+
+
+
+
+
+
+flush is False, and straight is False
+len(pairs) = 0
+flush is False, and straight is False
+len(pairs) = 0
+flush is False, and straight is False
+len(pairs) = 1
+flush is False, and straight is False
+len(pairs) = 0
+flush is False, and straight is False
+len(pairs) = 0
+flush is False, and straight is False
+len(pairs) = 1
+[[Card(rank=<Rank.KING: 13>, suit=<Suit.HEARTS: 4>), Card(rank=<Rank.JACK: 11>, suit=<Suit.DIAMONDS: 3>), Card(rank=<Rank.QUEEN: 12>, suit=<Suit.DIAMONDS: 3>), Card(rank=<Rank.TWO: 2>, suit=<Suit.DIAMONDS: 3>), Card(rank=<Rank.FIVE: 5>, suit=<Suit.SPADES: 1>)], [Card(rank=<Rank.TEN: 10>, suit=<Suit.SPADES: 1>), Card(rank=<Rank.JACK: 11>, suit=<Suit.SPADES: 1>), Card(rank=<Rank.EIGHT: 8>, suit=<Suit.HEARTS: 4>), Card(rank=<Rank.SIX: 6>, suit=<Suit.DIAMONDS: 3>), Card(rank=<Rank.FOUR: 4>, suit=<Suit.HEARTS: 4>)], [Card(rank=<Rank.TEN: 10>, suit=<Suit.CLUBS: 2>), Card(rank=<Rank.TWO: 2>, suit=<Suit.CLUBS: 2>), Card(rank=<Rank.TEN: 10>, suit=<Suit.DIAMONDS: 3>), Card(rank=<Rank.QUEEN: 12>, suit=<Suit.HEARTS: 4>), Card(rank=<Rank.THREE: 3>, suit=<Suit.DIAMONDS: 3>)]]
+[(2, 'NOTHING'), (2, 'NOTHING'), (238, 'PAIR')]
+[10, 10, 0.5]
+
+
+#+end_example
+
+- I had a full house there where the bet was lower than that for nothing
+- clearly my bet logic is f*ked up somewhere
+- need to refactor bet to generate conf from scores or something
+- I probably need to log scores, given how large they are (player3 just went all in on a pair of 5's)
