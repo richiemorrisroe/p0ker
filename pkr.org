@@ -326,6 +326,9 @@ def score_hand(hand):
         if max(vals) == 2 and len(pairs) == 1:
             handscore = scores['PAIR']
             scorename = 'PAIR'
+        if max(vals) == 2 and len(pairs) == 2:
+            handscore = scores['TWO-PAIR']
+            scorename = 'TWO-PAIR'
         if max(vals) == 3 and len(pairs) == 1:
             handscore = scores['THREE-OF-A-KIND']
             scorename = 'THREE-OF-A-KIND'
