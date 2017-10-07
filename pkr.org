@@ -415,12 +415,15 @@ def replenish_cards(deck, player):
 - Seems plausible to create some player objects
 
 #+BEGIN_SRC python :session
+import math as math
+import random as random
 class Player:
     def __init__(self, hand=None, stash=5000):
         self.hand = []
         self.stash = stash
         self.score = 0
         self.minbet = 10
+        self.randnum = random.randint(0, 100)
 
     def score(self):
         if len(self.hand) > 0:
@@ -433,16 +436,23 @@ class Player:
     def discard(self, hand):
         pass
 
-    def bet(self, conf, game):
-        if conf < 0 or conf > 1:
-            return Exception
-        if score_hand(self.hand)[0] > 200:
-            bet = (self.stash * 0.01) * conf
-            self.stash = self.stash - bet
-            game.pot(bet)
+    def bet(self, bet=None):
+        if bet:
             return bet
         else:
-            return self.minbet
+            score, name = score_hand(self.hand)
+            if score > 200:
+                bet = (self.stash * 0.01) * math.log(score)
+                randnumber = random.random()
+                if randnumber < 0.25:
+                    bet += self.randnum
+                if randnumber > 0.75:
+                    bet -= self.randnum
+                self.stash = self.stash - bet
+                return bet
+            else:
+                self.stash -= self.minbet
+                return self.minbet
 
     def call(self, amount):
         if not self.score:
