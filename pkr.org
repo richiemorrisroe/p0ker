@@ -169,7 +169,7 @@ Ace > Deuce
 #+END_SRC
 - So now we have comparisons across ranks
 - As per official rules, we don't need these for suits
-** COMMENT Scoring Hands
+**  Scoring Hands
 
 - Reasonably involved.
 - I started [[https://stackoverflow.com/questions/10363927/the-simplest-algorithm-for-poker-hand-evaluation][here]], found an [[https://www.codeproject.com/Articles/569271/A-Poker-hand-analyzer-in-JavaScript-using-bit-math][insane bitmath]] implementation, but my own thoughts were most usefully inspired by [[https://people.eecs.berkeley.edu/~bh/ssch15/poker.html][here]] (i love that its a project building on previous work but completely different)
@@ -376,10 +376,10 @@ def discard_cards(hand):
 
 
 def replenish_cards(deck, player):
-    while len(player) < 5:
+    while len(player.hand) < 5:
         card = deck.deal()
-        player.append(card)
-        if len(player) == 5:
+        player.hand.append(card)
+        if len(player.hand) == 5:
             pass
     return deck, player
 
@@ -425,7 +425,7 @@ class Player:
         self.minbet = 10
         self.randnum = random.randint(0, 100)
 
-    def score(self):
+    def scores(self):
         if len(self.hand) > 0:
             score = score_hand(self.hand)
             self.score = score
@@ -433,8 +433,8 @@ class Player:
         else:
             return self.score
 
-    def discard(self, hand):
-        pass
+    def discard(self):
+        self.hand = discard_cards(self.hand)
 
     def bet(self, bet=None):
         if bet:
@@ -493,7 +493,7 @@ class Game:
         return players
 
     def deal(self, player):
-        deck, player = replenish_cards(deck, player)
+        deck, player = replenish_cards(self.deck, player)
         self.deck = deck
         return player
 
@@ -560,11 +560,11 @@ game.add_to_pot(lblind)
 playersnew = player1, player2, player3
 players = game.start(playersnew)
 hands = [x.hand for x in players]
-scores = [score_hand(x) for x in hands]
+scores = [x.scores() for x in players]
 bets = [x.bet() for x in players]
 for b in bets:
     game.add_to_pot(b)
-players = [discard_cards(x.hand) for x in players]
+_ = [x.discard() for x in players]
 players = [replenish_cards(x) for x in players]
 print(hands)
 print(scores)
