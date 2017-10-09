@@ -454,9 +454,9 @@ class Player:
                 self.stash -= self.minbet
                 return self.minbet
 
-    def call(self, amount):
+    def call(self):
         if not self.score:
-            self.score = score_hand(self.hand)
+            self.score, _ = score_hand(self.hand)
 
         else:
             if self.score < 200:
