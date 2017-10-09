@@ -546,6 +546,7 @@ players = [replenish_cards(x) for x in players]
 - big blind starts, continuing clockwise
 - Three cards dealt
 - one round of betting
+- calls, raises and folds
 - discard and take new cards (max 3)
 - second round betting
 - end hand (with call or fold)
@@ -565,27 +566,24 @@ bets = [x.bet() for x in players]
 for b in bets:
     game.add_to_pot(b)
 _ = [x.discard() for x in players]
-players = [replenish_cards(x) for x in players]
-print(hands)
-print(scores)
-print(bets)
+##this is a weird transition
+## the discarded cards should be held by the game
+## not sure how to represent the boundary
+players = [game.deal(x) for x in players]
+scores = [x.scores() for x in players]
+##people should fold or call here (potentially following a raise)
+call = [x.call() for x in players]
+bets = [x.bet() for x in players]
+
 #+END_SRC
 - this isn't bad i am getting the bets into the pots
 - I need logic to handle calls, raises and folds though
 - additionally, I need to be able to end a round and distribute the pot
-
+- hmmm, not sure that my cavelier list-comp approach works here
+- for instance, I'm not handling the round where one person bets 238 and the others bet ten. The other two nee to handle this (i.e. by matching or folding)
 
 #+RESULTS:
 #+begin_example
-
-
-
-
-
-
-
-
-
 flush is False, and straight is False
 len(pairs) = 0
 flush is False, and straight is False
@@ -609,3 +607,4 @@ len(pairs) = 1
 - clearly my bet logic is f*ked up somewhere
 - need to refactor bet to generate conf from scores or something
 - I probably need to log scores, given how large they are (player3 just went all in on a pair of 5's)
+- that's all done
