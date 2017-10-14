@@ -1,8 +1,7 @@
-
 from enum import Enum, IntEnum
 import random as random
 import collections as collections
-
+from random import shuffle
 
 class Suit(Enum):
     SPADES = 1
@@ -44,9 +43,6 @@ def random_rank(Rank: Rank) -> Rank:
 
 Card = collections.namedtuple("Card", ['rank', 'suit'])
 
-from random import shuffle
-
-
 class FirstDeck:
     def __init__(self):
         self._cards = [Card(rank, suit) for suit in Suit
@@ -65,44 +61,17 @@ class FirstDeck:
         card = self._cards.pop(0)
         return card
 
-from deck import FirstDeck, Rank, Suit
-player1 = []
-player2 = []
-player3 = []
-players = [player1, player2, player3]
-mydeck = FirstDeck()
-
-
 def deal_cards(deck, players):
     """Takes a list of players (normally empty lists)
     and deals each of them five cards,
     returning the updated lists"""
-    deck.shuffle()
     for i in range(0, 5):
         for player in players:
-            card = mydeck.deal()
-            player.append(card)
-    return players
-
-
-suits = []
-ranks = []
-for card in player3:
-    suits.append(card.suit)
-    ranks.append(card.rank)
-
-for suit in Suit:
-    print(suits.count(suit))
-
-rcount = []
-for rank in Rank:
-    rcount.append(ranks.count(rank))
-
-suits_uc = {"♠": 1, "♣": 2, "♥": 4, "♦": 8}
+            card = deck.deal()
+            player.hand.append(card)
+    return deck, players
 
 from typing import List
-rankdict = dict.fromkeys(Rank)
-
 
 def split_cards(hand):
     """Takes a list of card objects (a hand) and returns two lists,
@@ -182,9 +151,6 @@ def make_straight(suit: Suit, start: int) -> List[Card]:
         hand.append(Card(suit, Rank(rank)))
     return hand
 
-from deck import split_cards, is_flush, is_straight, count
-
-
 def get_scores():
     scores = {'NOTHING': 2,
               'PAIR': 238,
@@ -223,6 +189,9 @@ def score_hand(hand):
         if max(vals) == 2 and len(pairs) == 1:
             handscore = scores['PAIR']
             scorename = 'PAIR'
+        if max(vals) == 2 and len(pairs) == 2:
+            handscore = scores['TWO-PAIR']
+            scorename = 'TWO-PAIR'
         if max(vals) == 3 and len(pairs) == 1:
             handscore = scores['THREE-OF-A-KIND']
             scorename = 'THREE-OF-A-KIND'
@@ -233,3 +202,140 @@ def score_hand(hand):
             handscore = scores['FOUR-OF-A-KIND']
             scorename = 'FOUR-OF-A-KIND'
     return handscore, scorename
+
+def discard_cards(hand):
+    suits, ranks = split_cards(hand)
+    score, handname = score_hand(hand)
+    scount = count(suits)
+    rcount = count(ranks)
+    if handname=='NOTHING':
+        ranks.sort(reverse=True)
+        topranks = ranks[0:2]
+        minretained = topranks[1].value
+        cards_remaining = [(r, s) for r, s in hand if r>=minretained]
+    else:
+        keep = {k:v for k, v in rcount.items() if v >= 2}
+        keepvalues = list(keep)[0].value
+        cards_remaining = [(rank, suit) for rank,suit in hand if rank == keepvalues]
+
+    return cards_remaining
+
+
+def replenish_cards(deck, player):
+    while len(player.hand) < 5:
+        card = deck.deal()
+        player.hand.append(card)
+        if len(player.hand) == 5:
+            pass
+    return deck, player
+
+# maybe straight and flush logic, leave for now
+# if is_flush(suits, exact=False)>=3:
+#             suitcount = count(suits)
+#             cards_remaining = [(k, v) for k, v in hand.items if v>=3]
+#             return cards_remaining, 'MAYBE-FLUSH'
+#         if is_straight(ranks, exact=False) >= 3:
+#             cards_remaining = hand
+#             return cards_remaining, 'MAYBE-STRAIGHT'
+
+import math as math
+import random as random
+class Player:
+    def __init__(self, hand=None, stash=5000):
+        self.hand = []
+        self.stash = stash
+        self.score = 0
+        self.minbet = 10
+        self.randnum = random.randint(0, 100)
+
+    def scores(self):
+        if len(self.hand) > 0:
+            score, sname = score_hand(self.hand)
+            self.score = score
+            return self.score
+        else:
+            return self.score
+
+    def discard(self):
+        self.hand = discard_cards(self.hand)
+
+    def bet(self, bet=None):
+        if bet:
+            return bet
+        else:
+            score, name = score_hand(self.hand)
+            if score > 200:
+                bet = (self.stash * 0.01) * math.log(score)
+                randnumber = random.random()
+                if randnumber < 0.25:
+                    bet += self.randnum
+                if randnumber > 0.75:
+                    bet -= self.randnum
+                self.stash = self.stash - bet
+                return bet
+            else:
+                self.stash -= self.minbet
+                return self.minbet
+
+    def call(self, bet_required=None):
+        if not self.score:
+            self.score, _ = score_hand(self.hand)
+
+        else:
+            if self.score < 200:
+                return False
+            else:
+                return True
+        if bet_required:
+            if self.score < bet:
+                return Falseo
+            else:
+                return True
+
+    def fold(self):
+        if not self.score:
+            self.score = score_hand(self.hand)
+        if self.score < 100:
+            return True
+        else:
+            return False
+    def decide_action(self, game):
+        is_call = self.call()
+        is_fold = self.fold()
+        if fold:
+            return 'FOLD'
+        if not fold and call:
+            return 'CALL'
+        if self.score<200 or self.score>400:
+            return 'CHECK'
+        else:
+            return 'BET'
+
+class Game:
+    def __init__(self, name="poker", ante=100):
+        self.name = name
+        self.ante = 100
+        self.maxdrop = 3
+        self.deck = FirstDeck()
+        self.pot = 0
+
+    def start(self, players):
+        self.deck.shuffle()
+        deck, players = deal_cards(self.deck, players=players)
+        self.deck = deck
+        return players
+
+    def deal(self, player):
+        deck, player = replenish_cards(self.deck, player)
+        self.deck = deck
+        return player
+
+    def compare(self, hands):
+        pass
+
+    def add_to_pot(self, bet):
+        print("pot is {} and bet is {}".format(self.pot, bet))
+        self.pot += bet
+
+    def get_pot_value(self):
+        return self.pot
