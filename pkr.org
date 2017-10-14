@@ -121,13 +121,6 @@ Card = collections.namedtuple("Card", ['rank', 'suit'])
 
 #+BEGIN_SRC python :session :tangle deck.py
 
-player1 = []
-player2 = []
-player3 = []
-players = [player1, player2, player3]
-mydeck = FirstDeck()
-
-
 def deal_cards(deck, players):
     """Takes a list of players (normally empty lists)
     and deals each of them five cards,
@@ -138,7 +131,15 @@ def deal_cards(deck, players):
             player.hand.append(card)
     return deck, players
 
+#+END_SRC
 
+
+#+BEGIN_SRC python :session
+player1 = []
+player2 = []
+player3 = []
+players = [player1, player2, player3]
+mydeck = FirstDeck()
 suits = []
 ranks = []
 for card in player3:
@@ -153,7 +154,6 @@ for rank in Rank:
     rcount.append(ranks.count(rank))
 
 suits_uc = {"♠": 1, "♣": 2, "♥": 4, "♦": 8}
-
 #+END_SRC
 
 - This is just messing around with the hands
@@ -184,8 +184,6 @@ Ace > Deuce
 
 #+BEGIN_SRC python :session :tangle deck.py
 from typing import List
-rankdict = dict.fromkeys(Rank)
-
 
 def split_cards(hand):
     """Takes a list of card objects (a hand) and returns two lists,
@@ -345,16 +343,19 @@ def score_hand(hand):
 - this code handles the scoring
 - I need to test this extensively, as it's key to the overall game.
 
-
-#+BEGIN_SRC python :session
+#+BEGIN_SRC python :session :eval no
 # old API, doesn't work anymore
-# player1 = []
-# player2 = []
-# player3 = []
-# players = [player1, player2, player3]
-# mydeck = FirstDeck()
-# mydeck, players = deal_cards(mydeck, players)
-# scores = [score_hand(player.hand) for player in players]
+player1 = []
+player2 = []
+player3 = []
+players = [player1, player2, player3]
+mydeck = FirstDeck()
+mydeck, players = deal_cards(mydeck, players)
+scores = [score_hand(player.hand) for player in players]
+#+END_SRC
+
+#+BEGIN_SRC python :session :tangle deck.py
+
 
 
 def discard_cards(hand):
@@ -414,7 +415,7 @@ def replenish_cards(deck, player):
 
 - Seems plausible to create some player objects
 
-#+BEGIN_SRC python :session
+#+BEGIN_SRC python :session :tangle deck.py
 import math as math
 import random as random
 class Player:
@@ -427,7 +428,7 @@ class Player:
 
     def scores(self):
         if len(self.hand) > 0:
-            score = score_hand(self.hand)
+            score, sname = score_hand(self.hand)
             self.score = score
             return self.score
         else:
@@ -454,15 +455,20 @@ class Player:
                 self.stash -= self.minbet
                 return self.minbet
 
-    def call(self):
+    def call(self, bet_required=None):
         if not self.score:
             self.score, _ = score_hand(self.hand)
 
         else:
             if self.score < 200:
-                return True
-            else:
                 return False
+            else:
+                return True
+        if bet_required:
+            if self.score < bet:
+                return Falseo
+            else:
+                return True
 
     def fold(self):
         if not self.score:
@@ -471,13 +477,23 @@ class Player:
             return True
         else:
             return False
-
+    def decide_action(self, game):
+        is_call = self.call()
+        is_fold = self.fold()
+        if fold:
+            return 'FOLD'
+        if not fold and call:
+            return 'CALL'
+        if self.score<200 or self.score>400:
+            return 'CHECK'
+        else:
+            return 'BET'
 #+END_SRC
 
 
 - I probably also need a Game object to handle the deck, pot and comparison of hands
 
-#+BEGIN_SRC python :session
+#+BEGIN_SRC python :session :tangle deck.py
 class Game:
     def __init__(self, name="poker", ante=100):
         self.name = name
@@ -608,3 +624,6 @@ len(pairs) = 1
 - need to refactor bet to generate conf from scores or something
 - I probably need to log scores, given how large they are (player3 just went all in on a pair of 5's)
 - that's all done
+- need a function that returns an action, which can then be implemented
+- move all of the logic out of the bet, call and fold functions
+- function decide_action perhaps?
