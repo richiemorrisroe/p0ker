@@ -1,1 +1,645 @@
-pkr.org
+* P0ker
+- In which I write a card deck
+- Plan is to implement poker
+- And then potentially some bots.
+
+- Because I am a lazy, lazy man I'm going to start with the CardDeck from fluent python.
+
+#+BEGIN_SRC python
+import collections
+
+Card = collections.namedtuple('Card', ['rank', 'suit'])
+
+class FrenchDeck:
+    ranks = [str(n) for n in range(2, 11)] + list('JQKA')
+    suits = 'spades diamonds clubs hearts'.split()
+
+    def __init__(self):
+        self._cards = [Card(rank, suit) for suit in self.suits
+                       for rank in self.ranks]
+    def __len__(self):
+        return len(self._cards)
+    def __getitem__(self, position):
+        return self._cards[position]
+
+#+END_SRC
+
+- So this creates a deck, and each card is just an element of the deck
+- This isn't really what I want, though there are some good ideas that I can steal from it.
+
+#+BEGIN_SRC python :tangle deck.py
+from enum import Enum, IntEnum
+import random as random
+import collections as collections
+from random import shuffle
+
+
+class Suit(Enum):
+    SPADES = 1
+    CLUBS = 2
+    DIAMONDS = 3
+    HEARTS = 4
+
+
+class Rank(IntEnum):
+    TWO = 2
+    THREE = 3
+    FOUR = 4
+    FIVE = 5
+    SIX = 6
+    SEVEN = 7
+    EIGHT = 8
+    NINE = 9
+    TEN = 10
+    JACK = 11
+    QUEEN = 12
+    KING = 13
+    ACE = 14
+
+
+def random_choice(upper, lower):
+    x = random.randint(upper, lower)
+    return x
+
+
+def random_suit(Suit: Suit) -> Suit:
+    choice = Suit(random_choice(1, 4))
+    return choice
+
+
+def random_rank(Rank: Rank) -> Rank:
+    choice = Rank(random_choice(2, 13))
+    return choice
+
+
+Card = collections.namedtuple("Card", ['rank', 'suit'])
+
+
+#+END_SRC
+
+#+RESULTS:
+
+
+
+- So, here we create two Enums, Rank and Suit
+- A particular combination of these makes up a card
+- However, the deck is probably the right level of abstraction for my purposes
+  - It enforces uniqueness of cards
+  - It provides a convenient target for methods (shuffle, deal)
+
+- I probably need a Hand object, which consists of 1-5 cards
+- So we can re-use some of the fluent python code, with our new Rank and Suit enums
+
+#+BEGIN_SRC python :session :tangle deck.py
+
+
+
+class FirstDeck:
+    def __init__(self):
+        self._cards = [Card(rank, suit) for suit in Suit
+                       for rank in Rank]
+
+    def __len__(self):
+        return len(self._cards)
+
+    def __getitem__(self, position):
+        return self._cards[position]
+
+    def shuffle(self):
+        self._cards = shuffle(self._cards)
+
+    def deal(self):
+        card = self._cards.pop(0)
+        return card
+
+
+#+END_SRC
+- Ah yes, I should probably have finished the card implementation
+- TDD anyone?
+#+BEGIN_SRC python :session
+Card = collections.namedtuple("Card", ['rank', 'suit'])
+#+END_SRC
+
+- After some dicking around with classes for card, I ended up back with a namedtuple
+- i'll change this, but not now.
+- I need to shuffle the deck
+- Let's steal more code from fluent python! (it was shuffle, see above)
+
+#+BEGIN_SRC python :session :tangle deck.py
+
+def deal_cards(deck, players):
+    """Takes a list of players (normally empty lists)
+    and deals each of them five cards,
+    returning the updated lists"""
+    for i in range(0, 5):
+        for player in players:
+            card = deck.deal()
+            player.hand.append(card)
+    return deck, players
+
+#+END_SRC
+
+
+#+BEGIN_SRC python :session
+player1 = []
+player2 = []
+player3 = []
+players = [player1, player2, player3]
+mydeck = FirstDeck()
+suits = []
+ranks = []
+for card in player3:
+    suits.append(card.suit)
+    ranks.append(card.rank)
+
+for suit in Suit:
+    print(suits.count(suit))
+
+rcount = []
+for rank in Rank:
+    rcount.append(ranks.count(rank))
+
+suits_uc = {"♠": 1, "♣": 2, "♥": 4, "♦": 8}
+#+END_SRC
+
+- This is just messing around with the hands
+- I actually need to change my implementation of rank, to use IntEnum
+- this will allow for integer comparisons of the values, which I need
+- IntEnum away
+
+#+BEGIN_SRC python :session
+Ace = Rank(14)
+Deuce = Rank(2)
+Ace < Deuce
+Ace > Deuce
+#+END_SRC
+- So now we have comparisons across ranks
+- As per official rules, we don't need these for suits
+**  Scoring Hands
+
+- Reasonably involved.
+- I started [[https://stackoverflow.com/questions/10363927/the-simplest-algorithm-for-poker-hand-evaluation][here]], found an [[https://www.codeproject.com/Articles/569271/A-Poker-hand-analyzer-in-JavaScript-using-bit-math][insane bitmath]] implementation, but my own thoughts were most usefully inspired by [[https://people.eecs.berkeley.edu/~bh/ssch15/poker.html][here]] (i love that its a project building on previous work but completely different)
+- So most of the hands depend on either suits or ranks
+- We have same number suits (two, three four of a kind, two-pair, full house)
+- rank based (straight)
+- suit based (flush)
+- rank and suit based (straight flush)
+- ideally we want a continuous number to optimise against, but we'll leave that alone for now.
+
+- Official rules can be found [[https://www.pagat.com/poker/rules/ranking.html][here]]
+
+#+BEGIN_SRC python :session :tangle deck.py
+from typing import List
+
+
+def split_cards(hand):
+    """Takes a list of card objects (a hand) and returns two lists,
+    one of the
+    suits, and the other of the ranks of the hand.
+    Mostly useful for further functions """
+    suits = []
+    ranks = []
+    for each in hand:
+        suits.append(each.suit)
+        ranks.append(each.rank)
+    return suits, ranks
+
+
+def count(ranks):
+    """Take either a list of suits or ranks and returns
+a dict with the counts of each. Used as input to checking functions"""
+    rdict = dict.fromkeys(ranks)
+    for each in ranks:
+        if rdict[each]:
+            rdict[each] += 1
+        if not rdict[each]:
+            rdict[each] = 1
+    return rdict
+
+
+def anyrep(ranks):
+    origlen = len(ranks)
+    uniquelen = len(set(ranks))
+    if origlen == uniquelen:
+        return False
+    else:
+        return True
+
+
+def find_repeated_cards(ranks):
+    res = {}
+    counts = count(ranks)
+    for k, v in counts.items():
+        if v >= 2:
+            res[k] = v
+    return res
+
+
+def is_straight(ranks, exact=True):
+    ranks.sort()
+    count = 0
+    for i in range(0, len(ranks) - 1):
+        if ranks[i + 1] - ranks[i] == 1:
+            count += 1
+    if not exact:
+        return count
+
+    if count == 4:
+        return True
+    else:
+        return False
+
+
+def is_flush(suits, exact=True):
+    sc = count(suits)
+    maxval = max(sc.values())
+    if not exact:
+        return maxval
+    if maxval == 5:
+        return True
+    else:
+        return False
+
+
+def make_straight(suit: Suit, start: int) -> List[Card]:
+    """This actually makes a straight flush, of suit Suit and starting at Rank start"""
+    hand = []
+    if not start:
+        start = 7
+    for rank in range(start, start + 5):
+        hand.append(Card(suit, Rank(rank)))
+    return hand
+
+#+END_SRC
+
+
+- So the key when iterating over dicts is to use the items method (iteritems in Python 2)
+- that may be the source of some of the problems I've been having with them
+
+|       prob | hand name           | prob_num |      |
+|  0.001539% | "straight flush"    |      1e6 |
+|  0.024010% | "4 of a kind plain" |   0.0002 |      |
+|  0.144058% | "full house plain"  |   0.0014 |      |
+|  0.196540% | "nothing flush"     |   0.0019 |      |
+|  0.392465% | "straight plain"    |   0.0039 |      |
+|  2.112845% | "3 of a kind plain" |  0.02109 |      |
+|  4.753902% | "2 pairs plain"     |   0.0475 |      |
+| 42.256903% | "pair plain"        |     0.42 |      |
+| 50.117739% | "nothing plain"     |    .5012 |      |
+#+TBLFM: $4=1/1e6
+
+- So I can use 1/prob as a measure of how much to bet.
+- Note that those really small numbers are percentages, which makes things pretty crazy.
+
+#+BEGIN_SRC python :session :tangle deck.py
+
+
+def get_scores():
+    scores = {'NOTHING': 2,
+              'PAIR': 238,
+              'TWO-PAIR': 2105,
+              'THREE-OF-A-KIND': 4741,
+              'STRAIGHT': 25641,
+              'FLUSH': 52631,
+              'FULL-HOUSE': 71428,
+              '4-OF-A-KIND': 500000,
+              'STRAIGHT-FLUSH': 100000000}
+    return scores
+
+
+def score_hand(hand):
+    scores = get_scores()
+    suits, ranks = split_cards(hand)
+    flush = is_flush(suits)
+    straight = is_straight(ranks)
+    print("flush is {}, and straight is {}".format(flush, straight))
+    pairs = find_repeated_cards(ranks)
+    print("len(pairs) = {}".format(len(pairs)))
+    if straight:
+        handscore = scores['STRAIGHT']
+        scorename = 'STRAIGHT'
+    if flush:
+        handscore = scores['FLUSH']
+        scorename = 'FLUSH'
+    if straight and flush:
+        handscore = scores['STRAIGHT-FLUSH']
+        scorename = 'STRAIGHT-FLUSH'
+    if len(pairs) == 0:
+        handscore = scores['NOTHING']
+        scorename = 'NOTHING'
+    if len(pairs) >= 1:
+        vals = pairs.values()
+        if max(vals) == 2 and len(pairs) == 1:
+            handscore = scores['PAIR']
+            scorename = 'PAIR'
+        if max(vals) == 2 and len(pairs) == 2:
+            handscore = scores['TWO-PAIR']
+            scorename = 'TWO-PAIR'
+        if max(vals) == 3 and len(pairs) == 1:
+            handscore = scores['THREE-OF-A-KIND']
+            scorename = 'THREE-OF-A-KIND'
+        if max(vals) == 3 and len(pairs) == 2:
+            handscore = scores['FULL-HOUSE']
+            scorename = 'FULL-HOUSE'
+        if max(vals) == 4:
+            handscore = scores['FOUR-OF-A-KIND']
+            scorename = 'FOUR-OF-A-KIND'
+    return handscore, scorename
+
+
+#+END_SRC
+
+- this code handles the scoring
+- I need to test this extensively, as it's key to the overall game.
+
+#+BEGIN_SRC python :session :eval no
+# old API, doesn't work anymore
+player1 = []
+player2 = []
+player3 = []
+players = [player1, player2, player3]
+mydeck = FirstDeck()
+mydeck, players = deal_cards(mydeck, players)
+scores = [score_hand(player.hand) for player in players]
+#+END_SRC
+
+#+BEGIN_SRC python :session :tangle deck.py
+
+
+def discard_cards(hand):
+    suits, ranks = split_cards(hand)
+    score, handname = score_hand(hand)
+    scount = count(suits)
+    rcount = count(ranks)
+    if handname == 'NOTHING':
+        ranks.sort(reverse=True)
+        topranks = ranks[0:2]
+        minretained = topranks[1].value
+        cards_remaining = [(r, s) for r, s in hand if r >= minretained]
+    else:
+        keep = {k: v for k, v in rcount.items() if v >= 2}
+        keepvalues = list(keep)[0].value
+        cards_remaining = [(rank, suit) for rank, suit
+                           in hand if rank == keepvalues]
+
+    return cards_remaining
+
+
+def replenish_cards(deck, player):
+    while len(player.hand) < 5:
+        card = deck.deal()
+        player.hand.append(card)
+        if len(player.hand) == 5:
+            pass
+    return deck, player
+
+# maybe straight and flush logic, leave for now
+# if is_flush(suits, exact=False)>=3:
+#             suitcount = count(suits)
+#             cards_remaining = [(k, v) for k, v in hand.items if v>=3]
+#             return cards_remaining, 'MAYBE-FLUSH'
+#         if is_straight(ranks, exact=False) >= 3:
+#             cards_remaining = hand
+#             return cards_remaining, 'MAYBE-STRAIGHT'
+#+END_SRC
+
+
+- Next, I need to figure out what actions the players can take:
+- Actions:
+  - BET : bet(amount)
+  - CALL : call(amount)
+  - RAISE : raise(amount)
+  - FOLD : fold()
+
+- How to decide on actions:
+  - If handscore greater than some threshold
+  - Bet according to that threshold
+  - Bet if Prob(Win) > potential loss
+  - CALL if uncertain
+  - Need to handle pots and conditional logic based on size of pot vs size of other players pots
+
+
+- If nothing FOLD
+- Else Bet
+
+- Seems plausible to create some player objects
+
+#+BEGIN_SRC python :session :tangle deck.py
+import math as math
+import random as random
+
+
+class Player:
+    def __init__(self, hand=None, stash=5000):
+        self.hand = []
+        self.stash = stash
+        self.score = 0
+        self.minbet = 10
+        self.randnum = random.randint(0, 100)
+
+    def scores(self):
+        if len(self.hand) > 0:
+            score, sname = score_hand(self.hand)
+            self.score = score
+            return self.score
+        else:
+            return self.score
+
+    def discard(self):
+        self.hand = discard_cards(self.hand)
+
+    def bet(self, bet=None):
+        if bet:
+            return bet
+        else:
+            score, name = score_hand(self.hand)
+            if score > 200:
+                bet = (self.stash * 0.01) * math.log(score)
+                randnumber = random.random()
+                if randnumber < 0.25:
+                    bet += self.randnum
+                if randnumber > 0.75:
+                    bet -= self.randnum
+                self.stash = self.stash - bet
+                return bet
+            else:
+                self.stash -= self.minbet
+                return self.minbet
+
+    def call(self, bet_required=None):
+        if not self.score:
+            self.score, _ = score_hand(self.hand)
+
+        else:
+            if self.score < 200:
+                return False
+            else:
+                return True
+        if bet_required:
+            if self.score < bet_required:
+                return False
+            else:
+                return True
+
+    def fold(self):
+        if not self.score:
+            self.score = score_hand(self.hand)
+        if self.score < 100:
+            return True
+        else:
+            return False
+
+    def decide_action(self, game):
+        is_call = self.call()
+        is_fold = self.fold()
+        if is_fold:
+            return 'FOLD'
+        if not is_fold and is_call:
+            return 'CALL'
+        if self.score < 200 or self.score > 400:
+            return 'CHECK'
+        else:
+            return 'BET'
+#+END_SRC
+
+
+- I probably also need a Game object to handle the deck, pot and comparison of hands
+
+#+BEGIN_SRC python :session :tangle deck.py
+class Game:
+    def __init__(self, name="poker", ante=100):
+        self.name = name
+        self.ante = 100
+        self.maxdrop = 3
+        self.deck = FirstDeck()
+        self.pot = 0
+
+    def start(self, players):
+        self.deck.shuffle()
+        deck, players = deal_cards(self.deck, players=players)
+        self.deck = deck
+        return players
+
+    def deal(self, player):
+        deck, player = replenish_cards(self.deck, player)
+        self.deck = deck
+        return player
+
+    def compare(self, hands):
+        pass
+
+    def add_to_pot(self, bet):
+        print("pot is {} and bet is {}".format(self.pot, bet))
+        self.pot += bet
+
+    def get_pot_value(self):
+        return self.pot
+#+END_SRC
+
+
+
+
+#+BEGIN_SRC python :session
+players = [Player(),Player(),Player()]
+d = FirstDeck()
+d.shuffle()
+d, players = deal_cards(d, players)
+scores = [score_hand(x) for x in players]
+player_discards = [discard_cards(x) for x in players]
+players = [replenish_cards(x) for x in player_discards]
+#+END_SRC
+
+- So, my API is OK right now.
+- This is all OK until ==replenish_cards== is run, but that function returns both the deck and the players
+- this leads to annoying objects.
+- the problem here is that with the Game design above, the deck can be handled there
+- Then I just return the players.
+- I can then handling the player logic in the player objects.
+- The only concern I have is duplication of scoring logic (I already have this problem with ==discard_cards==)
+
+
+#+BEGIN_SRC python
+playersnew = [Player(), Player(), Player()]
+game = Game()
+players = game.start(playersnew)
+hands = [x.hand for x in players]
+players = [discard_cards(x) for x in hands]
+players = [replenish_cards(x) for x in players]
+#+END_SRC
+
+- So this is a better API, in that I can create new player objects. I need to implement a hand updater/extractor as I always need this information.
+
+** Order of Play
+- Big blind (100), little blind (50)
+- big blind starts, continuing clockwise
+- Three cards dealt
+- one round of betting
+- calls, raises and folds
+- discard and take new cards (max 3)
+- second round betting
+- end hand (with call or fold)
+#+BEGIN_SRC python :session :results output
+playersnew = [Player(), Player(), Player()]
+game = Game()
+player1, player2, player3 = playersnew
+blind = player1.bet(100)
+lblind = player2.bet(50)
+game.add_to_pot(blind)
+game.add_to_pot(lblind)
+playersnew = player1, player2, player3
+players = game.start(playersnew)
+hands = [x.hand for x in players]
+scores = [x.scores() for x in players]
+bets = [x.bet() for x in players]
+for b in bets:
+    game.add_to_pot(b)
+_ = [x.discard() for x in players]
+##this is a weird transition
+## the discarded cards should be held by the game
+## not sure how to represent the boundary
+players = [game.deal(x) for x in players]
+scores = [x.scores() for x in players]
+##people should fold or call here (potentially following a raise)
+call = [x.call() for x in players]
+bets = [x.bet() for x in players]
+
+#+END_SRC
+- this isn't bad i am getting the bets into the pots
+- I need logic to handle calls, raises and folds though
+- additionally, I need to be able to end a round and distribute the pot
+- hmmm, not sure that my cavelier list-comp approach works here
+- for instance, I'm not handling the round where one person bets 238 and the others bet ten. The other two nee to handle this (i.e. by matching or folding)
+
+#+RESULTS:
+#+begin_example
+flush is False, and straight is False
+len(pairs) = 0
+flush is False, and straight is False
+len(pairs) = 0
+flush is False, and straight is False
+len(pairs) = 1
+flush is False, and straight is False
+len(pairs) = 0
+flush is False, and straight is False
+len(pairs) = 0
+flush is False, and straight is False
+len(pairs) = 1
+[[Card(rank=<Rank.KING: 13>, suit=<Suit.HEARTS: 4>), Card(rank=<Rank.JACK: 11>, suit=<Suit.DIAMONDS: 3>), Card(rank=<Rank.QUEEN: 12>, suit=<Suit.DIAMONDS: 3>), Card(rank=<Rank.TWO: 2>, suit=<Suit.DIAMONDS: 3>), Card(rank=<Rank.FIVE: 5>, suit=<Suit.SPADES: 1>)], [Card(rank=<Rank.TEN: 10>, suit=<Suit.SPADES: 1>), Card(rank=<Rank.JACK: 11>, suit=<Suit.SPADES: 1>), Card(rank=<Rank.EIGHT: 8>, suit=<Suit.HEARTS: 4>), Card(rank=<Rank.SIX: 6>, suit=<Suit.DIAMONDS: 3>), Card(rank=<Rank.FOUR: 4>, suit=<Suit.HEARTS: 4>)], [Card(rank=<Rank.TEN: 10>, suit=<Suit.CLUBS: 2>), Card(rank=<Rank.TWO: 2>, suit=<Suit.CLUBS: 2>), Card(rank=<Rank.TEN: 10>, suit=<Suit.DIAMONDS: 3>), Card(rank=<Rank.QUEEN: 12>, suit=<Suit.HEARTS: 4>), Card(rank=<Rank.THREE: 3>, suit=<Suit.DIAMONDS: 3>)]]
+[(2, 'NOTHING'), (2, 'NOTHING'), (238, 'PAIR')]
+[10, 10, 0.5]
+
+
+#+end_example
+
+- I had a full house there where the bet was lower than that for nothing
+- clearly my bet logic is f*ked up somewhere
+- need to refactor bet to generate conf from scores or something
+- I probably need to log scores, given how large they are (player3 just went all in on a pair of 5's)
+- that's all done
+- need a function that returns an action, which can then be implemented
+- move all of the logic out of the bet, call and fold functions
+- function decide_action perhaps?
+*** Child 1
+*** Child 2
+
+*

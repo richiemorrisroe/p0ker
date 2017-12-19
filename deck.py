@@ -1,7 +1,9 @@
+
 from enum import Enum, IntEnum
 import random as random
 import collections as collections
 from random import shuffle
+
 
 class Suit(Enum):
     SPADES = 1
@@ -55,7 +57,7 @@ class FirstDeck:
         return self._cards[position]
 
     def shuffle(self):
-        cards = shuffle(self._cards)
+        self._cards = shuffle(self._cards)
 
     def deal(self):
         card = self._cards.pop(0)
@@ -72,6 +74,7 @@ def deal_cards(deck, players):
     return deck, players
 
 from typing import List
+
 
 def split_cards(hand):
     """Takes a list of card objects (a hand) and returns two lists,
@@ -208,15 +211,16 @@ def discard_cards(hand):
     score, handname = score_hand(hand)
     scount = count(suits)
     rcount = count(ranks)
-    if handname=='NOTHING':
+    if handname == 'NOTHING':
         ranks.sort(reverse=True)
         topranks = ranks[0:2]
         minretained = topranks[1].value
-        cards_remaining = [(r, s) for r, s in hand if r>=minretained]
+        cards_remaining = [(r, s) for r, s in hand if r >= minretained]
     else:
-        keep = {k:v for k, v in rcount.items() if v >= 2}
+        keep = {k: v for k, v in rcount.items() if v >= 2}
         keepvalues = list(keep)[0].value
-        cards_remaining = [(rank, suit) for rank,suit in hand if rank == keepvalues]
+        cards_remaining = [(rank, suit) for rank, suit
+                           in hand if rank == keepvalues]
 
     return cards_remaining
 
@@ -240,6 +244,8 @@ def replenish_cards(deck, player):
 
 import math as math
 import random as random
+
+
 class Player:
     def __init__(self, hand=None, stash=5000):
         self.hand = []
@@ -247,6 +253,12 @@ class Player:
         self.score = 0
         self.minbet = 10
         self.randnum = random.randint(0, 100)
+
+    def __repr__(self):
+        fstring = "fPlayer(stash = {stash}, score={score}, hand = {hand})"
+        return fstring.format(stash=self.stash,
+                              score=self.score,
+                              hand=self.hand)
 
     def scores(self):
         if len(self.hand) > 0:
@@ -287,8 +299,8 @@ class Player:
             else:
                 return True
         if bet_required:
-            if self.score < bet:
-                return Falseo
+            if self.score < bet_required:
+                return False
             else:
                 return True
 
@@ -299,14 +311,15 @@ class Player:
             return True
         else:
             return False
+
     def decide_action(self, game):
         is_call = self.call()
         is_fold = self.fold()
-        if fold:
+        if is_fold:
             return 'FOLD'
-        if not fold and call:
+        if not is_fold and is_call:
             return 'CALL'
-        if self.score<200 or self.score>400:
+        if self.score < 200 or self.score > 400:
             return 'CHECK'
         else:
             return 'BET'
@@ -318,8 +331,14 @@ class Game:
         self.maxdrop = 3
         self.deck = FirstDeck()
         self.pot = 0
+    def __repr__(self):
+        fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
+        return fstring.format(name=self.name,
+                              ante=self.ante,
+                              maxdrop=self.maxdrop,
+                              pot=self.pot)
 
-    def start(self, players):
+    def start_round(self, players):
         self.deck.shuffle()
         deck, players = deal_cards(self.deck, players=players)
         self.deck = deck
@@ -330,8 +349,15 @@ class Game:
         self.deck = deck
         return player
 
-    def compare(self, hands):
-        pass
+    def compare(self, players):
+        scores = {}
+        for player in players:
+            score, sname = score_hand(players.hand)
+            scores[player] = score
+        maxscore = max(scores.items)
+        return maxscore
+
+
 
     def add_to_pot(self, bet):
         print("pot is {} and bet is {}".format(self.pot, bet))

@@ -1,3 +1,4 @@
+* P0ker
 - In which I write a card deck
 - Plan is to implement poker
 - And then potentially some bots.
@@ -26,11 +27,12 @@ class FrenchDeck:
 - So this creates a deck, and each card is just an element of the deck
 - This isn't really what I want, though there are some good ideas that I can steal from it.
 
-#+BEGIN_SRC python :tangle deck.py
+#+BEGIN_SRC python :tangle deck.py :session
 from enum import Enum, IntEnum
 import random as random
 import collections as collections
 from random import shuffle
+
 
 class Suit(Enum):
     SPADES = 1
@@ -72,7 +74,11 @@ def random_rank(Rank: Rank) -> Rank:
 
 Card = collections.namedtuple("Card", ['rank', 'suit'])
 
+
 #+END_SRC
+
+#+RESULTS:
+| __class__ | __delattr__ | __dict__ | __dir__ | __doc__ | __eq__ | __format__ | __ge__ | __getattribute__ | __gt__ | __hash__ | __init__ | __init_subclass__ | __le__ | __lt__ | __module__ | __ne__ | __new__ | __reduce__ | __reduce_ex__ | __repr__ | __setattr__ | __sizeof__ | __str__ | __subclasshook__ | __weakref__ | bet | call | decide_action | discard | fold | hand | minbet | randnum | score | scores | stash |
 
 
 
@@ -101,11 +107,12 @@ class FirstDeck:
         return self._cards[position]
 
     def shuffle(self):
-        cards = shuffle(self._cards)
+        self._cards = shuffle(self._cards)
 
     def deal(self):
         card = self._cards.pop(0)
         return card
+
 
 #+END_SRC
 - Ah yes, I should probably have finished the card implementation
@@ -177,13 +184,14 @@ Ace > Deuce
 - We have same number suits (two, three four of a kind, two-pair, full house)
 - rank based (straight)
 - suit based (flush)
-- rank and suit based (royal flush)
+- rank and suit based (straight flush)
 - ideally we want a continuous number to optimise against, but we'll leave that alone for now.
 
 - Official rules can be found [[https://www.pagat.com/poker/rules/ranking.html][here]]
 
 #+BEGIN_SRC python :session :tangle deck.py
 from typing import List
+
 
 def split_cards(hand):
     """Takes a list of card objects (a hand) and returns two lists,
@@ -286,6 +294,7 @@ def make_straight(suit: Suit, start: int) -> List[Card]:
 
 #+BEGIN_SRC python :session :tangle deck.py
 
+
 def get_scores():
     scores = {'NOTHING': 2,
               'PAIR': 238,
@@ -338,6 +347,7 @@ def score_hand(hand):
             scorename = 'FOUR-OF-A-KIND'
     return handscore, scorename
 
+
 #+END_SRC
 
 - this code handles the scoring
@@ -357,21 +367,21 @@ scores = [score_hand(player.hand) for player in players]
 #+BEGIN_SRC python :session :tangle deck.py
 
 
-
 def discard_cards(hand):
     suits, ranks = split_cards(hand)
     score, handname = score_hand(hand)
     scount = count(suits)
     rcount = count(ranks)
-    if handname=='NOTHING':
+    if handname == 'NOTHING':
         ranks.sort(reverse=True)
         topranks = ranks[0:2]
         minretained = topranks[1].value
-        cards_remaining = [(r, s) for r, s in hand if r>=minretained]
+        cards_remaining = [(r, s) for r, s in hand if r >= minretained]
     else:
-        keep = {k:v for k, v in rcount.items() if v >= 2}
+        keep = {k: v for k, v in rcount.items() if v >= 2}
         keepvalues = list(keep)[0].value
-        cards_remaining = [(rank, suit) for rank,suit in hand if rank == keepvalues]
+        cards_remaining = [(rank, suit) for rank, suit
+                           in hand if rank == keepvalues]
 
     return cards_remaining
 
@@ -418,6 +428,8 @@ def replenish_cards(deck, player):
 #+BEGIN_SRC python :session :tangle deck.py
 import math as math
 import random as random
+
+
 class Player:
     def __init__(self, hand=None, stash=5000):
         self.hand = []
@@ -425,6 +437,12 @@ class Player:
         self.score = 0
         self.minbet = 10
         self.randnum = random.randint(0, 100)
+
+    def __repr__(self):
+        fstring = "fPlayer(stash = {stash}, score={score}, hand = {hand})"
+        return fstring.format(stash=self.stash,
+                              score=self.score,
+                              hand=self.hand)
 
     def scores(self):
         if len(self.hand) > 0:
@@ -465,8 +483,8 @@ class Player:
             else:
                 return True
         if bet_required:
-            if self.score < bet:
-                return Falseo
+            if self.score < bet_required:
+                return False
             else:
                 return True
 
@@ -477,14 +495,15 @@ class Player:
             return True
         else:
             return False
+
     def decide_action(self, game):
         is_call = self.call()
         is_fold = self.fold()
-        if fold:
+        if is_fold:
             return 'FOLD'
-        if not fold and call:
+        if not is_fold and is_call:
             return 'CALL'
-        if self.score<200 or self.score>400:
+        if self.score < 200 or self.score > 400:
             return 'CHECK'
         else:
             return 'BET'
@@ -501,8 +520,14 @@ class Game:
         self.maxdrop = 3
         self.deck = FirstDeck()
         self.pot = 0
+    def __repr__(self):
+        fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
+        return fstring.format(name=self.name,
+                              ante=self.ante,
+                              maxdrop=self.maxdrop,
+                              pot=self.pot)
 
-    def start(self, players):
+    def start_round(self, players):
         self.deck.shuffle()
         deck, players = deal_cards(self.deck, players=players)
         self.deck = deck
@@ -513,8 +538,15 @@ class Game:
         self.deck = deck
         return player
 
-    def compare(self, hands):
-        pass
+    def compare(self, players):
+        scores = {}
+        for player in players:
+            score, sname = score_hand(players.hand)
+            scores[player] = score
+        maxscore = max(scores.items)
+        return maxscore
+
+
 
     def add_to_pot(self, bet):
         print("pot is {} and bet is {}".format(self.pot, bet))
@@ -596,7 +628,7 @@ bets = [x.bet() for x in players]
 - I need logic to handle calls, raises and folds though
 - additionally, I need to be able to end a round and distribute the pot
 - hmmm, not sure that my cavelier list-comp approach works here
-- for instance, I'm not handling the round where one person bets 238 and the others bet ten. The other two nee to handle this (i.e. by matching or folding)
+- for instance, I'm not handling the round where one person bets 238 and the others bet ten. The other two need to handle this (i.e. by matching or folding)
 
 #+RESULTS:
 #+begin_example
@@ -627,3 +659,7 @@ len(pairs) = 1
 - need a function that returns an action, which can then be implemented
 - move all of the logic out of the bet, call and fold functions
 - function decide_action perhaps?
+*** Child 1
+*** Child 2
+
+*
