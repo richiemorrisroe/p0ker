@@ -73,8 +73,8 @@ def random_rank() -> Rank:
 
 
 def random_card() -> Card:
-    suit = random_suit(Suit)
-    rank = random_rank(Rank)
+    suit = random_suit()
+    rank = random_rank()
     card = Card(rank, suit)
     return card
 
