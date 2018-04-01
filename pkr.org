@@ -98,6 +98,9 @@ class Card:
     def __init__(self, rank, suit):
         self.rank = rank
         self.suit = suit
+    def __repr__(self):
+        pstring = "{rank} of {suit}"
+        return pstring.format(rank=self.rank, suit=self.suit)
 
 
 class Hand:
@@ -437,8 +440,7 @@ def replenish_cards(deck, player):
 #             cards_remaining = hand
 #             return cards_remaining, 'MAYBE-STRAIGHT'
 #+END_SRC
-
-
+*** Player Actions
 - Next, I need to figure out what actions the players can take:
 - Actions:
   - BET : bet(amount)
@@ -473,7 +475,7 @@ class Player:
         self.randnum = random.randint(0, 100)
 
     def __repr__(self):
-        fstring = "fPlayer(stash = {stash}, score={score}, hand = {hand})"
+        fstring = "Player(stash = {stash}, score={score}, hand = {hand})"
         return fstring.format(stash=self.stash,
                               score=self.score,
                               hand=self.hand)
@@ -542,6 +544,9 @@ class Player:
         else:
             return 'BET'
 #+END_SRC
+
+#+RESULTS:
+: <__main__.Player object at 0x7fc0c48d6f28>
 
 
 - I probably also need a Game object to handle the deck, pot and comparison of hands
