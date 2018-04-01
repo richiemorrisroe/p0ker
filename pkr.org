@@ -78,13 +78,19 @@ def random_card() -> Card:
     card = Card(rank, suit)
     return card
 
+def random_hand():
+    cards = []
+    for _ in range(0, 5):
+        cards.append(random_card())
+    return cards
+
 # Card = collections.namedtuple("Card", ['rank', 'suit'])
 
 
 #+END_SRC
 
 #+RESULTS:
-: Rank.JACK
+| <__main__.Card | object | at | 0x7fc0c4944160> | <__main__.Card | object | at | 0x7fc0c49442b0> | <__main__.Card | object | at | 0x7fc0c48c9c50> | <__main__.Card | object | at | 0x7fc0c48c9a58> |
 
 #+BEGIN_SRC python :session :tangle deck.py
 class Card:
@@ -92,6 +98,7 @@ class Card:
     def __init__(self, rank, suit):
         self.rank = rank
         self.suit = suit
+
 
 class Hand:
     """A hand holds 5 cards from a particular deck"""
