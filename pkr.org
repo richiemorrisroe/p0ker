@@ -273,6 +273,7 @@ a dict with the counts of each. Used as input to checking functions"""
 
 
 def anyrep(ranks):
+"""Check if there are any repeated elements in either a selection of suits or ranks.Return True if there are, False otherwise. """
     origlen = len(ranks)
     uniquelen = len(set(ranks))
     if origlen == uniquelen:
@@ -282,6 +283,7 @@ def anyrep(ranks):
 
 
 def find_repeated_cards(ranks):
+    """Check if there are any repeated cards in a list of suits or ranks. Return the elements which are repeated if so, an empty dictionary otherwise"""
     res = {}
     counts = count(ranks)
     for k, v in counts.items():
@@ -291,6 +293,7 @@ def find_repeated_cards(ranks):
 
 
 def is_straight(ranks, exact=True):
+    """Check if the hand contains a straight.Returns True if so, False otherwise. If exact=False, then returns the number of cards which form part of a straight"""
     ranks.sort()
     count = 0
     for i in range(0, len(ranks) - 1):
@@ -306,6 +309,7 @@ def is_straight(ranks, exact=True):
 
 
 def is_flush(suits, exact=True):
+    """Check if a set of suits contains a flush (all suits are the same). Returns True if so, False otherwise. If exact=False, returns the highest count of same suits present. """
     sc = count(suits)
     maxval = max(sc.values())
     if not exact:
