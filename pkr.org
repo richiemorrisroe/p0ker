@@ -62,12 +62,12 @@ def random_choice(upper, lower):
     return x
 
 
-def random_suit(Suit: Suit) -> Suit:
+def random_suit() -> Suit:
     choice = Suit(random_choice(1, 4))
     return choice
 
 
-def random_rank(Rank: Rank) -> Rank:
+def random_rank() -> Rank:
     choice = Rank(random_choice(2, 13))
     return choice
 
@@ -84,7 +84,7 @@ def random_card() -> Card:
 #+END_SRC
 
 #+RESULTS:
-: <__main__.Card object at 0x7fc0c48f5a90>
+: Rank.JACK
 
 #+BEGIN_SRC python :session :tangle deck.py
 class Card:
