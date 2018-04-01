@@ -33,17 +33,47 @@ def random_choice(upper, lower):
     return x
 
 
-def random_suit(Suit: Suit) -> Suit:
+def random_suit() -> Suit:
     choice = Suit(random_choice(1, 4))
     return choice
 
 
-def random_rank(Rank: Rank) -> Rank:
+def random_rank() -> Rank:
     choice = Rank(random_choice(2, 13))
     return choice
 
 
-Card = collections.namedtuple("Card", ['rank', 'suit'])
+def random_card() -> Card:
+    suit = random_suit()
+    rank = random_rank()
+    card = Card(rank, suit)
+    return card
+
+def random_hand():
+    cards = []
+    for _ in range(0, 5):
+        cards.append(random_card())
+    return cards
+
+# Card = collections.namedtuple("Card", ['rank', 'suit'])
+
+class Card:
+    """A playing card in the space (2,13) rank and one of four suits"""
+    def __init__(self, rank, suit):
+        self.rank = rank
+        self.suit = suit
+    def __repr__(self):
+        pstring = "{rank} of {suit}"
+        return pstring.format(rank=self.rank, suit=self.suit)
+
+
+class Hand:
+    """A hand holds 5 cards from a particular deck"""
+    def __init__(self, cards):
+        if len(cards)!= 5:
+            print("there should be five cards in a hand")
+        else:
+            self.cards = cards
 
 class FirstDeck:
     def __init__(self):
@@ -255,7 +285,7 @@ class Player:
         self.randnum = random.randint(0, 100)
 
     def __repr__(self):
-        fstring = "fPlayer(stash = {stash}, score={score}, hand = {hand})"
+        fstring = "Player(stash = {stash}, score={score}, hand = {hand})"
         return fstring.format(stash=self.stash,
                               score=self.score,
                               hand=self.hand)
