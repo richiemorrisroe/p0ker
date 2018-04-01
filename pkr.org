@@ -72,13 +72,40 @@ def random_rank(Rank: Rank) -> Rank:
     return choice
 
 
-Card = collections.namedtuple("Card", ['rank', 'suit'])
+def random_card() -> Card:
+    suit = random_suit(Suit)
+    rank = random_rank(Rank)
+    card = Card(rank, suit)
+    return card
+
+# Card = collections.namedtuple("Card", ['rank', 'suit'])
 
 
 #+END_SRC
 
 #+RESULTS:
-| __class__ | __delattr__ | __dict__ | __dir__ | __doc__ | __eq__ | __format__ | __ge__ | __getattribute__ | __gt__ | __hash__ | __init__ | __init_subclass__ | __le__ | __lt__ | __module__ | __ne__ | __new__ | __reduce__ | __reduce_ex__ | __repr__ | __setattr__ | __sizeof__ | __str__ | __subclasshook__ | __weakref__ | bet | call | decide_action | discard | fold | hand | minbet | randnum | score | scores | stash |
+: <__main__.Card object at 0x7fc0c48f5a90>
+
+#+BEGIN_SRC python :session :tangle deck.py
+class Card:
+    """A playing card in the space (2,13) rank and one of four suits"""
+    def __init__(self, rank, suit):
+        self.rank = rank
+        self.suit = suit
+
+class Hand:
+    """A hand holds 5 cards from a particular deck"""
+    def __init__(self, cards):
+        if len(cards)!= 5:
+            print("there should be five cards in a hand")
+        else:
+            self.cards = cards
+
+
+
+#+END_SRC
+
+#+RESULTS:
 
 
 
