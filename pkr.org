@@ -59,6 +59,33 @@ class Rank(IntEnum):
     ACE = 14
 
 
+class Card:
+    """A playing card in the space (2,13) rank and one of four suits"""
+    def __init__(self, suit, rank):
+        self.rank = rank
+        self.suit = suit
+    def __repr__(self):
+        pstring = "{rank} of {suit}"
+        return pstring.format(rank=self.rank, suit=self.suit)
+
+
+class Hand:
+    """A hand holds 5 cards from a particular deck"""
+    def __init__(self, cards):
+        self.cards = cards
+        self.pos = 0
+    def __iter__(self):
+        self.pos = 0
+        return self
+
+    def __next__(self):
+        self.pos +=1
+        if self.pos >= len(self.cards):
+            raise StopIteration
+        else:
+            return self.cards[self.pos-1]
+
+
 def random_choice(upper, lower):
     """Choose an int between upper and lower, uniformly at random"""
     x = random.randint(upper, lower)
@@ -81,7 +108,7 @@ def random_card() -> Card:
     """Choose a Suit and Rank uniformly at random, return the combination as a Card object"""
     suit = random_suit()
     rank = random_rank()
-    card = Card(rank, suit)
+    card = Card(suit, rank)
     return card
 
 def random_hand():
@@ -100,25 +127,6 @@ def random_hand():
 | <__main__.Card | object | at | 0x7fc0c4944160> | <__main__.Card | object | at | 0x7fc0c49442b0> | <__main__.Card | object | at | 0x7fc0c48c9c50> | <__main__.Card | object | at | 0x7fc0c48c9a58> |
 
 #+BEGIN_SRC python :session :tangle deck.py
-class Card:
-    """A playing card in the space (2,13) rank and one of four suits"""
-    def __init__(self, rank, suit):
-        self.rank = rank
-        self.suit = suit
-    def __repr__(self):
-        pstring = "{rank} of {suit}"
-        return pstring.format(rank=self.rank, suit=self.suit)
-
-
-class Hand:
-    """A hand holds 5 cards from a particular deck"""
-    def __init__(self, cards):
-        if len(cards)!= 5:
-            print("there should be five cards in a hand")
-        else:
-            self.cards = cards
-
-
 
 #+END_SRC
 
@@ -140,6 +148,7 @@ class Hand:
 
 
 class FirstDeck:
+    """An object representing a deck of playing cards"""
     def __init__(self):
         self._cards = [Card(rank, suit) for suit in Suit
                        for rank in Rank]
@@ -149,6 +158,9 @@ class FirstDeck:
 
     def __getitem__(self, position):
         return self._cards[position]
+    def __repr__(self):
+        fstring = "Cards remaining: {left}, top_card={tcard}"
+        return fstring.format(left=len(self._cards), tcard=self._cards[0])
 
     def shuffle(self):
         self._cards = shuffle(self._cards)
@@ -164,12 +176,12 @@ class FirstDeck:
 #+BEGIN_SRC python :session
 Card = collections.namedtuple("Card", ['rank', 'suit'])
 #+END_SRC
-
+- Above is my original implementation
 - After some dicking around with classes for card, I ended up back with a namedtuple
 - i'll change this, but not now.
 - I need to shuffle the deck
 - Let's steal more code from fluent python! (it was shuffle, see above)
-
+- I fixed this, this code is not used anymore (but potentially stuff further on relies upon it)
 #+BEGIN_SRC python :session :tangle deck.py
 
 def deal_cards(deck, players):
@@ -185,7 +197,7 @@ def deal_cards(deck, players):
 #+END_SRC
 
 
-#+BEGIN_SRC python :session
+#+BEGIN_SRC python :session :eval no
 player1 = []
 player2 = []
 player3 = []
@@ -237,21 +249,21 @@ Ace > Deuce
 from typing import List
 
 
-def split_cards(hand):
+def split_cards(Hand):
     """Takes a list of card objects (a hand) and returns two lists,
     one of the
     suits, and the other of the ranks of the hand.
     Mostly useful for further functions """
     suits = []
     ranks = []
-    for each in hand:
+    for each in Hand:
         suits.append(each.suit)
         ranks.append(each.rank)
     return suits, ranks
 
 
 def count(ranks):
-    """Take either a list of suits or ranks and returns
+    """Take either a list of suits of ranks and returns
 a dict with the counts of each. Used as input to checking functions"""
     rdict = dict.fromkeys(ranks)
     for each in ranks:

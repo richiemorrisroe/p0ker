@@ -6,6 +6,7 @@ from random import shuffle
 
 
 class Suit(Enum):
+    """An enum defining the suits in a deck of playing cards"""
     SPADES = 1
     CLUBS = 2
     DIAMONDS = 3
@@ -13,6 +14,7 @@ class Suit(Enum):
 
 
 class Rank(IntEnum):
+    """An IntEnum defining the rank of playing cards"""
     TWO = 2
     THREE = 3
     FOUR = 4
@@ -27,35 +29,6 @@ class Rank(IntEnum):
     KING = 13
     ACE = 14
 
-
-def random_choice(upper, lower):
-    x = random.randint(upper, lower)
-    return x
-
-
-def random_suit() -> Suit:
-    choice = Suit(random_choice(1, 4))
-    return choice
-
-
-def random_rank() -> Rank:
-    choice = Rank(random_choice(2, 13))
-    return choice
-
-
-def random_card() -> Card:
-    suit = random_suit()
-    rank = random_rank()
-    card = Card(rank, suit)
-    return card
-
-def random_hand():
-    cards = []
-    for _ in range(0, 5):
-        cards.append(random_card())
-    return cards
-
-# Card = collections.namedtuple("Card", ['rank', 'suit'])
 
 class Card:
     """A playing card in the space (2,13) rank and one of four suits"""
@@ -74,6 +47,44 @@ class Hand:
             print("there should be five cards in a hand")
         else:
             self.cards = cards
+
+
+
+
+def random_choice(upper, lower):
+    """Choose an int between upper and lower, uniformly at random"""
+    x = random.randint(upper, lower)
+    return x
+
+
+def random_suit() -> Suit:
+    """Choose a Suit uniformly at random. Return a Suit Enum"""
+    choice = Suit(random_choice(1, 4))
+    return choice
+
+
+def random_rank() -> Rank:
+    """Choose a rank uniformly at random. Return a Rank Enum"""
+    choice = Rank(random_choice(2, 13))
+    return choice
+
+
+def random_card() -> Card:
+    """Choose a Suit and Rank uniformly at random, return the combination as a Card object"""
+    suit = random_suit()
+    rank = random_rank()
+    card = Card(rank, suit)
+    return card
+
+def random_hand():
+    """Choose five cards using random_card. Note that this function does not handle the possibility of two cards having the same rank & suit. Returns a list of Card objects"""
+
+    cards = []
+    for _ in range(0, 5):
+        cards.append(random_card())
+    return cards
+
+
 
 class FirstDeck:
     def __init__(self):
