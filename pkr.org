@@ -27,7 +27,7 @@ class FrenchDeck:
 - So this creates a deck, and each card is just an element of the deck
 - This isn't really what I want, though there are some good ideas that I can steal from it.
 
-#+BEGIN_SRC python :tangle deck.py :session
+#+BEGIN_SRC python :tangle deck.py :session :results none
 from enum import Enum, IntEnum
 import random as random
 import collections as collections
@@ -76,11 +76,11 @@ class Hand:
         self.pos = 0
     def __iter__(self):
         self.pos = 0
-        return self
+        return iter(self.cards)
 
     def __next__(self):
         self.pos +=1
-        if self.pos >= len(self.cards):
+        if self.pos > len(self.cards):
             raise StopIteration
         else:
             return self.cards[self.pos-1]
@@ -113,7 +113,6 @@ def random_card() -> Card:
 
 def random_hand():
     """Choose five cards using random_card. Note that this function does not handle the possibility of two cards having the same rank & suit. Returns a list of Card objects"""
-
     cards = []
     for _ in range(0, 5):
         cards.append(random_card())
@@ -123,8 +122,7 @@ def random_hand():
 
 #+END_SRC
 
-#+RESULTS:
-| <__main__.Card | object | at | 0x7fc0c4944160> | <__main__.Card | object | at | 0x7fc0c49442b0> | <__main__.Card | object | at | 0x7fc0c48c9c50> | <__main__.Card | object | at | 0x7fc0c48c9a58> |
+
 
 #+BEGIN_SRC python :session :tangle deck.py
 
@@ -159,8 +157,8 @@ class FirstDeck:
     def __getitem__(self, position):
         return self._cards[position]
     def __repr__(self):
-        fstring = "Cards remaining: {left}, top_card={tcard}"
-        return fstring.format(left=len(self._cards), tcard=self._cards[0])
+        fstring = "Cards remaining: {left}"
+        return fstring.format(left=len(self._cards))
 
     def shuffle(self):
         self._cards = shuffle(self._cards)
