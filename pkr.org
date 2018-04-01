@@ -428,6 +428,7 @@ scores = [score_hand(player.hand) for player in players]
 
 
 def discard_cards(hand):
+    """Discard cards that do not add to the value of the hand. Ignores the possibility of straights or flushes. Keeps any pairs etc, otherwise keeps the highest numeric cards and discards the rest. In any case, will discard no more than three cards. """
     suits, ranks = split_cards(hand)
     score, handname = score_hand(hand)
     scount = count(suits)
@@ -447,21 +448,13 @@ def discard_cards(hand):
 
 
 def replenish_cards(deck, player):
+    """Takes a deck and player as argument. Deals cards to the player, until they have five cards again."""
     while len(player.hand) < 5:
         card = deck.deal()
         player.hand.append(card)
         if len(player.hand) == 5:
             pass
     return deck, player
-
-# maybe straight and flush logic, leave for now
-# if is_flush(suits, exact=False)>=3:
-#             suitcount = count(suits)
-#             cards_remaining = [(k, v) for k, v in hand.items if v>=3]
-#             return cards_remaining, 'MAYBE-FLUSH'
-#         if is_straight(ranks, exact=False) >= 3:
-#             cards_remaining = hand
-#             return cards_remaining, 'MAYBE-STRAIGHT'
 #+END_SRC
 *** Player Actions
 - Next, I need to figure out what actions the players can take:
