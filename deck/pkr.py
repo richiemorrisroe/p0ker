@@ -56,10 +56,10 @@ class Hand:
         else:
             self.cards = cards
             self.pos = 0
+        
+    def __len__(self):
+        return len(cards)
 
-
-
-            print('each Hand takes a list of Cards')
 
     def __iter__(self):
         self.pos = 0
