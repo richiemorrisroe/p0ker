@@ -66,6 +66,7 @@ class Card:
     def __init__(self, suit, rank):
         self.rank = rank
         self.suit = suit
+
     def __repr__(self):
         pstring = "{rank} of {suit}"
         return pstring.format(rank=self.rank, suit=self.suit)
@@ -76,16 +77,17 @@ class Hand:
     def __init__(self, cards):
         self.cards = cards
         self.pos = 0
+
     def __iter__(self):
         self.pos = 0
         return iter(self.cards)
 
     def __next__(self):
-        self.pos +=1
+        self.pos += 1
         if self.pos > len(self.cards):
             raise StopIteration
         else:
-            return self.cards[self.pos-1]
+            return self.cards[self.pos - 1]
 
 
 def random_choice(upper, lower):
@@ -113,16 +115,15 @@ def random_card() -> Card:
     card = Card(suit, rank)
     return card
 
+
 def random_hand():
     """Choose five cards using random_card. Note that this function does not handle the possibility of two cards having the same rank & suit. Returns a list of Card objects"""
     cards = []
     for _ in range(0, 5):
         cards.append(random_card())
     return cards
-
-
-
 #+END_SRC
+
 
 
 
@@ -235,7 +236,9 @@ Ace > Deuce
 **  Scoring Hands
 
 - Reasonably involved.
-- I started [[https://stackoverflow.com/questions/10363927/the-simplest-algorithm-for-poker-hand-evaluation][here]], found an [[https://www.codeproject.com/Articles/569271/A-Poker-hand-analyzer-in-JavaScript-using-bit-math][insane bitmath]] implementation, but my own thoughts were most usefully inspired by [[https://people.eecs.berkeley.edu/~bh/ssch15/poker.html][here]] (i love that its a project building on previous work but completely different)
+- I started [[https://stackoverflow.com/questions/10363927/the-simplest-algorithm-for-poker-hand-evaluation][here]], found an [[https://www.codeproject.com/Articles/569271/A-Poker-hand-analyzer-in-JavaScript-using-bit-math][insane bitmath]] implementation, but my own
+  thoughts were most usefully inspired by [[https://people.eecs.berkeley.edu/~bh/ssch15/poker.html][here]] (i love that its a
+  project building on previous work but completely different)
 - So most of the hands depend on either suits or ranks
 - We have same number suits (two, three four of a kind, two-pair, full house)
 - rank based (straight)
@@ -356,7 +359,8 @@ def make_straight(suit: Suit, start: int) -> List[Card]:
 
 
 def get_scores():
-    """Returns a dictionary with potential hands and the scores associated with them. Normally only called from within other functions """
+    """Returns a dictionary with potential hands and the scores associated
+    with them. Normally only called from within other functions"""
     scores = {'NOTHING': 2,
               'PAIR': 238,
               'TWO-PAIR': 2105,
@@ -370,7 +374,8 @@ def get_scores():
 
 
 def score_hand(hand):
-    """Return the score of a particular hand. Returns a tuple with the name of the hand and the score associated with this hand"""
+    """Return the score of a particular hand. Returns a tuple with the
+    name of the hand and the score associated with this hand"""
     scores = get_scores()
     suits, ranks = split_cards(hand)
     flush = is_flush(suits)
@@ -430,7 +435,10 @@ scores = [score_hand(player.hand) for player in players]
 
 
 def discard_cards(hand):
-    """Discard cards that do not add to the value of the hand. Ignores the possibility of straights or flushes. Keeps any pairs etc, otherwise keeps the highest numeric cards and discards the rest. In any case, will discard no more than three cards. """
+    """Discard cards that do not add to the value of the hand. Ignores the
+    possibility of straights or flushes. Keeps any pairs etc, otherwise
+    keeps the highest numeric cards and discards the rest. In any case,
+    will discard no more than three cards."""
     suits, ranks = split_cards(hand)
     score, handname = score_hand(hand)
     scount = count(suits)
@@ -450,7 +458,8 @@ def discard_cards(hand):
 
 
 def replenish_cards(deck, player):
-    """Takes a deck and player as argument. Deals cards to the player, until they have five cards again."""
+    """Takes a deck and player as argument. Deals cards to the player,
+    until they have five cards again."""
     while len(player.hand) < 5:
         card = deck.deal()
         player.hand.append(card)
@@ -482,7 +491,7 @@ def replenish_cards(deck, player):
 #+BEGIN_SRC python :session :tangle deck.py
 import math as math
 import random as random
-
+from typing import List, Set, Dict, Tuple, Optional
 
 class Player:
     def __init__(self, hand=None, stash=5000):
@@ -527,7 +536,7 @@ class Player:
                 self.stash -= self.minbet
                 return self.minbet
 
-    def call(self, bet_required=None):
+    def call(self, bet_required=None) -> bool:
         if not self.score:
             self.score, _ = score_hand(self.hand)
 
@@ -542,7 +551,7 @@ class Player:
             else:
                 return True
 
-    def fold(self):
+    def fold(self) -> bool:
         if not self.score:
             self.score = score_hand(self.hand)
         if self.score < 100:
@@ -565,8 +574,12 @@ class Player:
 
 #+RESULTS:
 
+- the actions should be enums
+- take bet calculation logic out of bet function
 
-- I probably also need a Game object to handle the deck, pot and comparison of hands
+
+- I probably also need a Game object to handle the deck, pot and
+  comparison of hands
 
 #+BEGIN_SRC python :session :tangle deck.py
 class Game:
@@ -619,13 +632,14 @@ class Game:
 
 
 #+BEGIN_SRC python :session
-players = [Player(),Player(),Player()]
-d = FirstDeck()
+import deck
+players = [deck.Player(),deck.Player(),deck.Player()]
+d = deck.FirstDeck()
 d.shuffle()
-d, players = deal_cards(d, players)
-scores = [score_hand(x) for x in players]
-player_discards = [discard_cards(x) for x in players]
-players = [replenish_cards(x) for x in player_discards]
+d, players = deck.deal_cards(d, players)
+scores = [deck.score_hand(x) for x in players]
+player_discards = [deck.discard_cards(x) for x in players]
+players = [deck.replenish_cards(x) for x in player_discards]
 #+END_SRC
 
 - So, my API is OK right now.
@@ -634,19 +648,22 @@ players = [replenish_cards(x) for x in player_discards]
 - the problem here is that with the Game design above, the deck can be handled there
 - Then I just return the players.
 - I can then handling the player logic in the player objects.
-- The only concern I have is duplication of scoring logic (I already have this problem with ==discard_cards==)
+- The only concern I have is duplication of scoring logic (I already
+  have this problem with ==discard_cards==)
 
 
 #+BEGIN_SRC python
-playersnew = [Player(), Player(), Player()]
-game = Game()
-players = game.start(playersnew)
+playersnew = [deck.Player(), deck.Player(), deck.Player()]
+game = deck.Game()
+players = game.start_round(playersnew)
 hands = [x.hand for x in players]
 players = [discard_cards(x) for x in hands]
 players = [replenish_cards(x) for x in players]
 #+END_SRC
 
-- So this is a better API, in that I can create new player objects. I need to implement a hand updater/extractor as I always need this information.
+- So this is a better API, in that I can create new player objects. I
+  need to implement a hand updater/extractor as I always need this
+  information.
 
 ** Order of Play
 - Big blind (100), little blind (50)
@@ -658,8 +675,9 @@ players = [replenish_cards(x) for x in players]
 - second round betting
 - end hand (with call or fold)
 #+BEGIN_SRC python :session :results output
-playersnew = [Player(), Player(), Player()]
-game = Game()
+import deck
+playersnew = [deck.Player(), deck.Player(), deck.Player()]
+game = deck.Game()
 player1, player2, player3 = playersnew
 blind = player1.bet(100)
 lblind = player2.bet(50)
@@ -685,9 +703,12 @@ bets = [x.bet() for x in players]
 #+END_SRC
 - this isn't bad i am getting the bets into the pots
 - I need logic to handle calls, raises and folds though
-- additionally, I need to be able to end a round and distribute the pot
+- additionally, I need to be able to end a round and distribute the
+  pot
 - hmmm, not sure that my cavelier list-comp approach works here
-- for instance, I'm not handling the round where one person bets 238 and the others bet ten. The other two need to handle this (i.e. by matching or folding)
+- for instance, I'm not handling the round where one person bets 238
+  and the others bet ten. The other two need to handle this (i.e. by
+  matching or folding)
 
 #+RESULTS:
 #+begin_example
@@ -713,7 +734,8 @@ len(pairs) = 1
 - I had a full house there where the bet was lower than that for nothing
 - clearly my bet logic is f*ked up somewhere
 - need to refactor bet to generate conf from scores or something
-- I probably need to log scores, given how large they are (player3 just went all in on a pair of 5's)
+- I probably need to log scores, given how large they are (player3
+  just went all in on a pair of 5's)
 - that's all done
 - need a function that returns an action, which can then be implemented
 - move all of the logic out of the bet, call and fold functions
@@ -767,3 +789,4 @@ this paper presents an approach towards solving this problem
 - they claim that this is analogous to heuristic search approaches for perfect information games
 
 - DeepStack uses "continual re-solving" (hopefully this will make more sense when I have details)
+
