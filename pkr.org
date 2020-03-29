@@ -855,8 +855,16 @@ class Card:
 class Hand:
     """A hand holds 5 cards from a particular deck"""
     def __init__(self, cards):
-        self.cards = cards
-        self.pos = 0
+        all_cards = [x for x in cards if isinstance(x, Card)]
+        if len(all_cards) != len(cards):
+            raise ValueError('all cards must be of class Card')
+        else:
+            self.cards = cards
+            self.pos = 0
+
+
+
+            print('each Hand takes a list of Cards')
 
     def __iter__(self):
         self.pos = 0
@@ -1300,6 +1308,7 @@ pytest --help #for far too much information
 #+END_SRC
 
 #+BEGIN_SRC python :tangle deck/tests/test_hand.py
+import pytest
 from deck import Card, Suit, Rank, Hand
 ace_spades =Card(Suit(1), Rank(14))
 king_clubs = Card(Suit(2), Rank(13))
@@ -1309,4 +1318,9 @@ hand_wrong = Hand(fake_hand)
 def test_hand():
     all_cards = [x for x in hand if x is Card]
     assert len(all_cards)==len(hand)
+
+
+def test_fake_hand():
+    with pytest.raises(ValueError):
+        h = Hand(fake_hand)
 #+END_SRC

@@ -50,8 +50,16 @@ class Card:
 class Hand:
     """A hand holds 5 cards from a particular deck"""
     def __init__(self, cards):
-        self.cards = cards
-        self.pos = 0
+        all_cards = [x for x in cards if isinstance(x, Card)]
+        if len(all_cards) != len(cards):
+            raise ValueError('all cards must be of class Card')
+        else:
+            self.cards = cards
+            self.pos = 0
+
+
+
+            print('each Hand takes a list of Cards')
 
     def __iter__(self):
         self.pos = 0
