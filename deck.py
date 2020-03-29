@@ -1,4 +1,3 @@
-
 from enum import Enum, IntEnum
 import random as random
 import collections as collections
@@ -32,9 +31,10 @@ class Rank(IntEnum):
 
 class Card:
     """A playing card in the space (2,13) rank and one of four suits"""
-    def __init__(self, rank, suit):
+    def __init__(self, suit, rank):
         self.rank = rank
         self.suit = suit
+
     def __repr__(self):
         pstring = "{rank} of {suit}"
         return pstring.format(rank=self.rank, suit=self.suit)
@@ -43,12 +43,19 @@ class Card:
 class Hand:
     """A hand holds 5 cards from a particular deck"""
     def __init__(self, cards):
-        if len(cards)!= 5:
-            print("there should be five cards in a hand")
+        self.cards = cards
+        self.pos = 0
+
+    def __iter__(self):
+        self.pos = 0
+        return iter(self.cards)
+
+    def __next__(self):
+        self.pos += 1
+        if self.pos > len(self.cards):
+            raise StopIteration
         else:
-            self.cards = cards
-
-
+            return self.cards[self.pos - 1]
 
 
 def random_choice(upper, lower):
@@ -73,12 +80,12 @@ def random_card() -> Card:
     """Choose a Suit and Rank uniformly at random, return the combination as a Card object"""
     suit = random_suit()
     rank = random_rank()
-    card = Card(rank, suit)
+    card = Card(suit, rank)
     return card
+
 
 def random_hand():
     """Choose five cards using random_card. Note that this function does not handle the possibility of two cards having the same rank & suit. Returns a list of Card objects"""
-
     cards = []
     for _ in range(0, 5):
         cards.append(random_card())
@@ -87,6 +94,7 @@ def random_hand():
 
 
 class FirstDeck:
+    """An object representing a deck of playing cards"""
     def __init__(self):
         self._cards = [Card(rank, suit) for suit in Suit
                        for rank in Rank]
@@ -96,6 +104,9 @@ class FirstDeck:
 
     def __getitem__(self, position):
         return self._cards[position]
+    def __repr__(self):
+        fstring = "Cards remaining: {left}"
+        return fstring.format(left=len(self._cards))
 
     def shuffle(self):
         self._cards = shuffle(self._cards)
@@ -117,21 +128,21 @@ def deal_cards(deck, players):
 from typing import List
 
 
-def split_cards(hand):
+def split_cards(Hand):
     """Takes a list of card objects (a hand) and returns two lists,
     one of the
     suits, and the other of the ranks of the hand.
     Mostly useful for further functions """
     suits = []
     ranks = []
-    for each in hand:
+    for each in Hand:
         suits.append(each.suit)
         ranks.append(each.rank)
     return suits, ranks
 
 
 def count(ranks):
-    """Take either a list of suits or ranks and returns
+    """Take either a list of suits of ranks and returns
 a dict with the counts of each. Used as input to checking functions"""
     rdict = dict.fromkeys(ranks)
     for each in ranks:
@@ -143,6 +154,7 @@ a dict with the counts of each. Used as input to checking functions"""
 
 
 def anyrep(ranks):
+"""Check if there are any repeated elements in either a selection of suits or ranks.Return True if there are, False otherwise. """
     origlen = len(ranks)
     uniquelen = len(set(ranks))
     if origlen == uniquelen:
@@ -152,6 +164,7 @@ def anyrep(ranks):
 
 
 def find_repeated_cards(ranks):
+    """Check if there are any repeated cards in a list of suits or ranks. Return the elements which are repeated if so, an empty dictionary otherwise"""
     res = {}
     counts = count(ranks)
     for k, v in counts.items():
@@ -161,6 +174,7 @@ def find_repeated_cards(ranks):
 
 
 def is_straight(ranks, exact=True):
+    """Check if the hand contains a straight.Returns True if so, False otherwise. If exact=False, then returns the number of cards which form part of a straight"""
     ranks.sort()
     count = 0
     for i in range(0, len(ranks) - 1):
@@ -176,6 +190,7 @@ def is_straight(ranks, exact=True):
 
 
 def is_flush(suits, exact=True):
+    """Check if a set of suits contains a flush (all suits are the same). Returns True if so, False otherwise. If exact=False, returns the highest count of same suits present. """
     sc = count(suits)
     maxval = max(sc.values())
     if not exact:
@@ -196,6 +211,8 @@ def make_straight(suit: Suit, start: int) -> List[Card]:
     return hand
 
 def get_scores():
+    """Returns a dictionary with potential hands and the scores associated
+    with them. Normally only called from within other functions"""
     scores = {'NOTHING': 2,
               'PAIR': 238,
               'TWO-PAIR': 2105,
@@ -209,6 +226,8 @@ def get_scores():
 
 
 def score_hand(hand):
+    """Return the score of a particular hand. Returns a tuple with the
+    name of the hand and the score associated with this hand"""
     scores = get_scores()
     suits, ranks = split_cards(hand)
     flush = is_flush(suits)
@@ -248,6 +267,10 @@ def score_hand(hand):
     return handscore, scorename
 
 def discard_cards(hand):
+    """Discard cards that do not add to the value of the hand. Ignores the
+    possibility of straights or flushes. Keeps any pairs etc, otherwise
+    keeps the highest numeric cards and discards the rest. In any case,
+    will discard no more than three cards."""
     suits, ranks = split_cards(hand)
     score, handname = score_hand(hand)
     scount = count(suits)
@@ -267,6 +290,8 @@ def discard_cards(hand):
 
 
 def replenish_cards(deck, player):
+    """Takes a deck and player as argument. Deals cards to the player,
+    until they have five cards again."""
     while len(player.hand) < 5:
         card = deck.deal()
         player.hand.append(card)
@@ -274,18 +299,9 @@ def replenish_cards(deck, player):
             pass
     return deck, player
 
-# maybe straight and flush logic, leave for now
-# if is_flush(suits, exact=False)>=3:
-#             suitcount = count(suits)
-#             cards_remaining = [(k, v) for k, v in hand.items if v>=3]
-#             return cards_remaining, 'MAYBE-FLUSH'
-#         if is_straight(ranks, exact=False) >= 3:
-#             cards_remaining = hand
-#             return cards_remaining, 'MAYBE-STRAIGHT'
-
 import math as math
 import random as random
-
+from typing import List, Set, Dict, Tuple, Optional
 
 class Player:
     def __init__(self, hand=None, stash=5000):
@@ -330,7 +346,7 @@ class Player:
                 self.stash -= self.minbet
                 return self.minbet
 
-    def call(self, bet_required=None):
+    def call(self, bet_required=None) -> bool:
         if not self.score:
             self.score, _ = score_hand(self.hand)
 
@@ -345,7 +361,7 @@ class Player:
             else:
                 return True
 
-    def fold(self):
+    def fold(self) -> bool:
         if not self.score:
             self.score = score_hand(self.hand)
         if self.score < 100:

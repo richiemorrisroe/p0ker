@@ -1,14 +1,13 @@
 import pytest
-import deck
 
 
 def generate_rank(num):
-    rank = deck.Rank(num)
+    rank = Rank(num)
     return rank
 
 
 def generate_suit(num):
-    s = deck.Suit(num)
+    s = Suit(num)
     return s
 
 def test_suit_min():
