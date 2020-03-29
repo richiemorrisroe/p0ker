@@ -974,7 +974,8 @@ a dict with the counts of each. Used as input to checking functions"""
 
 
 def anyrep(ranks):
-"""Check if there are any repeated elements in either a selection of suits or ranks.Return True if there are, False otherwise. """
+    """Check if there are any repeated elements in either a selection of suits or ranks.Return True if there are, False otherwise. 
+"""
     origlen = len(ranks)
     uniquelen = len(set(ranks))
     if origlen == uniquelen:
@@ -1249,7 +1250,7 @@ class Game:
 
 #+BEGIN_SRC python :tangle deck/tests/test_cards.py
 import pytest
-import deck
+from pkr import Rank, Suit
 
 
 def generate_rank(num):
@@ -1309,7 +1310,7 @@ pytest --help #for far too much information
 
 #+BEGIN_SRC python :tangle deck/tests/test_hand.py
 import pytest
-from deck import Card, Suit, Rank, Hand
+from pkr import Card, Suit, Rank, Hand
 ace_spades =Card(Suit(1), Rank(14))
 king_clubs = Card(Suit(2), Rank(13))
 hand = Hand([ace_spades, king_clubs])

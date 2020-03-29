@@ -169,7 +169,8 @@ a dict with the counts of each. Used as input to checking functions"""
 
 
 def anyrep(ranks):
-"""Check if there are any repeated elements in either a selection of suits or ranks.Return True if there are, False otherwise. """
+    """Check if there are any repeated elements in either a selection of suits or ranks.Return True if there are, False otherwise. 
+"""
     origlen = len(ranks)
     uniquelen = len(set(ranks))
     if origlen == uniquelen:
