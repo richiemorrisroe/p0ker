@@ -1,3 +1,5 @@
+#+PROPERTY: header-args:R  :session *R*
+#+PROPERTY: header-args:python    :exports code
 * P0ker
 - In which I write a card deck
 - Plan is to implement poker
@@ -27,7 +29,7 @@ class FrenchDeck:
 - So this creates a deck, and each card is just an element of the deck
 - This isn't really what I want, though there are some good ideas that I can steal from it.
 
-#+BEGIN_SRC python :tangle deck.py :session :results none
+#+BEGIN_SRC python :tangle deck.py :session :results none :exports code
 from enum import Enum, IntEnum
 import random as random
 import collections as collections
@@ -466,14 +468,14 @@ def replenish_cards(deck, player):
 
 - How to decide on actions:
   - If handscore greater than some threshold
-  - Bet according to that threshold
-  - Bet if Prob(Win) > potential loss
+  - BET according to that threshold
+  - BET if Prob(Win) > potential loss
   - CALL if uncertain
   - Need to handle pots and conditional logic based on size of pot vs size of other players pots
 
 
 - If nothing FOLD
-- Else Bet
+- Else BET
 
 - Seems plausible to create some player objects
 
@@ -562,7 +564,6 @@ class Player:
 #+END_SRC
 
 #+RESULTS:
-: <__main__.Player object at 0x7fc0c48d6f28>
 
 
 - I probably also need a Game object to handle the deck, pot and comparison of hands
@@ -610,6 +611,9 @@ class Game:
     def get_pot_value(self):
         return self.pot
 #+END_SRC
+
+#+RESULTS:
+: False
 
 
 
@@ -662,7 +666,7 @@ lblind = player2.bet(50)
 game.add_to_pot(blind)
 game.add_to_pot(lblind)
 playersnew = player1, player2, player3
-players = game.start(playersnew)
+players = game.start_round(playersnew)
 hands = [x.hand for x in players]
 scores = [x.scores() for x in players]
 bets = [x.bet() for x in players]
@@ -714,7 +718,52 @@ len(pairs) = 1
 - need a function that returns an action, which can then be implemented
 - move all of the logic out of the bet, call and fold functions
 - function decide_action perhaps?
-*** Child 1
-*** Child 2
+* DeepStack
 
-*
+- So, we have a fancy ass paper in [[https://www.deepstack.ai/][Science]] which apparently solves Texas Hold'Em.
+- They also supply an implementation of a [[https://github.com/lifrordi/DeepStack-Leduc][much simpler version]] (Leduc HoldEm)
+
+- In response to a Github issue, they note that there are [[https://github.com/lifrordi/DeepStack-Leduc/issues/3][ethical concerns]] around releasing a better version.
+
+- Their code is written in Torch (the lua version)
+- It would seem to make sense to attempt to reimplement said code in PyTorch (as a numerical and interesting project to learn more python). 
+
+- First step, read the paper!
+
+** Deep Stack Paper (2015)
+
+there has been success with perfect information games recently
+poker is a similarly complicated imperfect information (i.e. hidden state) game
+this paper presents an approach towards solving this problem
+- game used is Heads Up No Limit HoldEm
+- heads up means two players
+- no limit any bet size up to pot is allowed
+- 2 hidden, 3 +1 + 1 flop
+- supplement has full details of game and rules
+
+- correct decision depends on prob distribution over opponents hidden state
+- Counter-factual regret minimisation is one competitive approach
+- normally uses a whole-game approach
+- compare actual strategy to perfect strategy, update strategy probabilities based on this
+- DeepStack is different
+  - uses CFR, but does not compute a strategy prior to play
+  - instead constructs lookahead trees from current state
+  - substitutes approximate estimate beyond a certain depth
+
+- generalised algorithm for sequential imperfect information games
+- in poker, both public and private state
+  - public state is the cards on table
+  - private state is the cards of each player
+  - posiible sequences of states form a public tree with associated subtree
+- player strategy defines a prob dist over valid actions for each decision point
+- decision point is the union of public state and player private state
+- DeepStack aims for a low-exploitability strategy (i.e. trends towards a Nash equilibrium)
+
+- algorithm has three components
+  - sound local strategy computation for current public state
+  - depth-limited lookahead using a learned value function
+  - a restricted set of lookahead options
+
+- they claim that this is analogous to heuristic search approaches for perfect information games
+
+- DeepStack uses "continual re-solving" (hopefully this will make more sense when I have details)
