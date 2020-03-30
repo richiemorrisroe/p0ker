@@ -41,14 +41,14 @@ class Card:
     def __str__(self):
         pstring = "{rank} of {suit}"
         return pstring.format(rank=self.rank.name, suit=self.suit.name)
-    
+
     def __repr__(self):
         pstring = "Card({rank}, {suit})"
         return pstring.format(rank=self.rank, suit=self.suit)
 
 
 class Hand:
-    """A hand holds 5 cards from a particular deck"""
+    """A hand holds cards from a particular deck"""
     def __init__(self, cards):
         all_cards = [x for x in cards if isinstance(x, Card)]
         if len(all_cards) != len(cards):
@@ -56,10 +56,9 @@ class Hand:
         else:
             self.cards = cards
             self.pos = 0
-        
-    def __len__(self):
-        return len(cards)
 
+    def __len__(self):
+        return len(self.cards)
 
     def __iter__(self):
         self.pos = 0
@@ -73,7 +72,7 @@ class Hand:
             return self.cards[self.pos - 1]
 
 
-def random_choice(upper, lower):
+def random_choice(upper: int, lower: int) -> int:
     """Choose an int between upper and lower, uniformly at random"""
     x = random.randint(upper, lower)
     return x
@@ -92,33 +91,36 @@ def random_rank() -> Rank:
 
 
 def random_card() -> Card:
-    """Choose a Suit and Rank uniformly at random, return the combination as a Card object"""
+    """Choose a Suit and Rank uniformly at random,
+    return the combination as a Card object"""
     suit = random_suit()
     rank = random_rank()
     card = Card(suit, rank)
     return card
 
 
-def random_hand():
-    """Choose five cards using random_card. Note that this function does not handle the possibility of two cards having the same rank & suit. Returns a list of Card objects"""
+def random_hand() -> Hand:
+    """Choose five cards using random_card.
+    Note that this function does not handle the possibility of
+    two cards having the same rank & suit.
+    Returns a list of Card objects"""
     cards = []
     for _ in range(0, 5):
         cards.append(random_card())
-    return cards
+    return Hand(cards=cards)
 
 
-
-class FirstDeck:
+class Deck:
     """An object representing a deck of playing cards"""
     def __init__(self):
-        self._cards = [Card(rank, suit) for suit in Suit
-                       for rank in Rank]
+        self._cards = [Card(rank, suit) for suit in Suit for rank in Rank]
 
     def __len__(self):
         return len(self._cards)
 
     def __getitem__(self, position):
         return self._cards[position]
+
     def __repr__(self):
         fstring = "Cards remaining: {left}"
         return fstring.format(left=len(self._cards))
@@ -130,6 +132,7 @@ class FirstDeck:
         card = self._cards.pop(0)
         return card
 
+
 def deal_cards(deck, players):
     """Takes a list of players (normally empty lists)
     and deals each of them five cards,
@@ -139,8 +142,6 @@ def deal_cards(deck, players):
             card = deck.deal()
             player.hand.append(card)
     return deck, players
-
-
 
 
 def split_cards(Hand):
@@ -169,7 +170,7 @@ a dict with the counts of each. Used as input to checking functions"""
 
 
 def anyrep(ranks):
-    """Check if there are any repeated elements in either a selection of suits or ranks.Return True if there are, False otherwise. 
+    """Check if there are any repeated elements in either a selection of suits or ranks.Return True if there are, False otherwise.
 """
     origlen = len(ranks)
     uniquelen = len(set(ranks))
@@ -226,18 +227,21 @@ def make_straight(suit: Suit, start: int) -> List[Card]:
         hand.append(Card(suit, Rank(rank)))
     return hand
 
+
 def get_scores():
     """Returns a dictionary with potential hands and the scores associated
     with them. Normally only called from within other functions"""
-    scores = {'NOTHING': 2,
-              'PAIR': 238,
-              'TWO-PAIR': 2105,
-              'THREE-OF-A-KIND': 4741,
-              'STRAIGHT': 25641,
-              'FLUSH': 52631,
-              'FULL-HOUSE': 71428,
-              '4-OF-A-KIND': 500000,
-              'STRAIGHT-FLUSH': 100000000}
+    scores = {
+        'NOTHING': 2,
+        'PAIR': 238,
+        'TWO-PAIR': 2105,
+        'THREE-OF-A-KIND': 4741,
+        'STRAIGHT': 25641,
+        'FLUSH': 52631,
+        'FULL-HOUSE': 71428,
+        '4-OF-A-KIND': 500000,
+        'STRAIGHT-FLUSH': 100000000
+    }
     return scores
 
 
@@ -282,6 +286,7 @@ def score_hand(hand):
             scorename = 'FOUR-OF-A-KIND'
     return handscore, scorename
 
+
 def discard_cards(hand):
     """Discard cards that do not add to the value of the hand. Ignores the
     possibility of straights or flushes. Keeps any pairs etc, otherwise
@@ -299,8 +304,8 @@ def discard_cards(hand):
     else:
         keep = {k: v for k, v in rcount.items() if v >= 2}
         keepvalues = list(keep)[0].value
-        cards_remaining = [(rank, suit) for rank, suit
-                           in hand if rank == keepvalues]
+        cards_remaining = [(rank, suit) for rank, suit in hand
+                           if rank == keepvalues]
 
     return cards_remaining
 
@@ -314,7 +319,6 @@ def replenish_cards(deck, player):
         if len(player.hand) == 5:
             pass
     return deck, player
-
 
 
 class Player:
@@ -364,11 +368,10 @@ class Player:
         if not self.score:
             self.score, _ = score_hand(self.hand)
 
+        if self.score < 200:
+            return False
         else:
-            if self.score < 200:
-                return False
-            else:
-                return True
+            return True
         if bet_required:
             if self.score < bet_required:
                 return False
@@ -395,13 +398,15 @@ class Player:
         else:
             return 'BET'
 
+
 class Game:
     def __init__(self, name="poker", ante=100):
         self.name = name
-        self.ante = 100
+        self.ante = ante
         self.maxdrop = 3
         self.deck = FirstDeck()
         self.pot = 0
+
     def __repr__(self):
         fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
         return fstring.format(name=self.name,
@@ -427,8 +432,6 @@ class Game:
             scores[player] = score
         maxscore = max(scores.items)
         return maxscore
-
-
 
     def add_to_pot(self, bet):
         print("pot is {} and bet is {}".format(self.pot, bet))

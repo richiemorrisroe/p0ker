@@ -2,12 +2,12 @@ import pytest
 from pkr import Rank, Suit
 
 
-def generate_rank(num):
+def generate_rank(num) -> Rank:
     rank = Rank(num)
     return rank
 
 
-def generate_suit(num):
+def generate_suit(num) -> Suit:
     s = Suit(num)
     return s
 
@@ -36,12 +36,12 @@ def test_rank_max():
 Ace = Rank(14)
 Deuce = Rank(2)
 
-def test_rank_ordering():
+def test_rank_ordering() -> bool:
     assert Ace > Deuce
 
-def test_wrong_rank_ordering():
+def test_wrong_rank_ordering() -> bool:
     with pytest.raises(AssertionError):
         assert Deuce > Ace
 
-def test_court_cards():
+def test_court_cards() -> bool:
     assert Rank(13) > Rank(12) > Rank(11)
