@@ -34,6 +34,6 @@ def test_random_card() -> bool:
 def test_random_hand() -> bool:
     assert isinstance(random_hand(), Hand)
 #flaky test
-def test_hand_uniqueness -> bool:
-    random_hand = random_hand()
-    assert len(set(random_hand.cards)) == len(random_hand.cards)
+def test_hand_uniqueness() -> bool:
+    randhand = random_hand()
+    assert len(set(randhand.cards)) == len(randhand.cards)
