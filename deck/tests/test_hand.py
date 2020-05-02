@@ -10,7 +10,7 @@ fake_hand = [1, 2, 3]
 def test_fake_hand():
     with pytest.raises(ValueError):
         hand_wrong = Hand(fake_hand)
-
+        
 
 def test_iter_hand() -> bool:
     res = []
@@ -33,7 +33,3 @@ def test_random_card() -> bool:
 
 def test_random_hand() -> bool:
     assert isinstance(random_hand(), Hand)
-#flaky test
-def test_hand_uniqueness() -> bool:
-    randhand = random_hand()
-    assert len(set(randhand.cards)) == len(randhand.cards)

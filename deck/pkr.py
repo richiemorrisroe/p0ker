@@ -3,6 +3,8 @@ import random as random
 import collections as collections
 from random import shuffle
 import math as math
+import random as random
+from typing import List, Set, Dict, Tuple, Optional
 
 
 class Suit(Enum):
@@ -208,6 +210,7 @@ class Player:
             return 'BET'
 
 
+
 def deal_cards(deck, players):
     """Takes a list of players (normally empty lists)
       and deals each of them five cards,
@@ -393,7 +396,7 @@ def discard_cards(hand):
     return cards_remaining
 
 
-def replenish_cards(deck: Deck, player: Player):
+def replenish_cards(deck, player):
     """Takes a deck and player as argument. Deals cards to the player,
       until they have five cards again."""
     while len(player.hand) < 5:
@@ -402,6 +405,84 @@ def replenish_cards(deck: Deck, player: Player):
         if len(player.hand) == 5:
             pass
     return deck, player
+
+
+class Player:
+    def __init__(self, hand=None, stash=5000):
+        self.hand = []
+        self.stash = stash
+        self.score = 0
+        self.minbet = 10
+        self.randnum = random.randint(0, 100)
+
+    def __repr__(self):
+        fstring = "Player(stash = {stash}, score={score}, hand = {hand})"
+        return fstring.format(stash=self.stash,
+                              score=self.score,
+                              hand=self.hand)
+
+    def scores(self):
+        if len(self.hand) > 0:
+            score, sname = score_hand(self.hand)
+            self.score = score
+            return self.score
+        else:
+            return self.score
+
+    def discard(self):
+        self.hand = discard_cards(self.hand)
+
+    def bet(self, bet=None):
+        if bet:
+            return bet
+        else:
+            score, name = score_hand(self.hand)
+            if score > 200:
+                bet = (self.stash * 0.01) * math.log(score)
+                randnumber = random.random()
+                if randnumber < 0.25:
+                    bet += self.randnum
+                if randnumber > 0.75:
+                    bet -= self.randnum
+                self.stash = self.stash - bet
+                return bet
+            else:
+                self.stash -= self.minbet
+                return self.minbet
+
+    def call(self, bet_required=None) -> bool:
+        if not self.score:
+            self.score, _ = score_hand(self.hand)
+
+        if self.score < 200:
+            return False
+        else:
+            return True
+        if bet_required:
+            if self.score < bet_required:
+                return False
+            else:
+                return True
+
+    def fold(self) -> bool:
+        if not self.score:
+            self.score = score_hand(self.hand)
+        if self.score < 100:
+            return True
+        else:
+            return False
+
+    def decide_action(self, game):
+        is_call = self.call()
+        is_fold = self.fold()
+        if is_fold:
+            return 'FOLD'
+        if not is_fold and is_call:
+            return 'CALL'
+        if self.score < 200 or self.score > 400:
+            return 'CHECK'
+        else:
+            return 'BET'
 
 
 class Game:

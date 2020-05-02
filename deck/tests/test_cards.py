@@ -29,7 +29,10 @@ def test_rank_max():
         rank = generate_rank(15)
 
 
-
+# ace_of_spades = Card(Suit(1), Rank(14))
+# def test_suit_and_rank():
+#     assert (ace_of_spades == Card(Suit(1), Rank(14)))
+    
 Ace = Rank(14)
 Deuce = Rank(2)
 
