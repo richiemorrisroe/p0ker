@@ -6,68 +6,68 @@ import math as math
 
 
 class Suit(Enum):
-    """An enum defining the suits in a deck of playing cards"""
-    SPADES = 1
-    CLUBS = 2
-    DIAMONDS = 3
-    HEARTS = 4
+      """An enum defining the suits in a deck of playing cards"""
+      SPADES = 1
+      CLUBS = 2
+      DIAMONDS = 3
+      HEARTS = 4
 
 
 class Rank(IntEnum):
-    """An IntEnum defining the rank of playing cards"""
-    TWO = 2
-    THREE = 3
-    FOUR = 4
-    FIVE = 5
-    SIX = 6
-    SEVEN = 7
-    EIGHT = 8
-    NINE = 9
-    TEN = 10
-    JACK = 11
-    QUEEN = 12
-    KING = 13
-    ACE = 14
+      """An IntEnum defining the rank of playing cards"""
+      TWO = 2
+      THREE = 3
+      FOUR = 4
+      FIVE = 5
+      SIX = 6
+      SEVEN = 7
+      EIGHT = 8
+      NINE = 9
+      TEN = 10
+      JACK = 11
+      QUEEN = 12
+      KING = 13
+      ACE = 14
 
 
 class Card:
-    """A playing card in the space (2,14) rank and one of four suits"""
-    def __init__(self, suit, rank):
-        self.rank = rank
-        self.suit = suit
+      """A playing card in the space (2,14) rank and one of four suits"""
+      def __init__(self, suit, rank):
+          self.rank = rank
+          self.suit = suit
 
-    def __str__(self):
-        pstring = "{rank} of {suit}"
-        return pstring.format(rank=self.rank.name, suit=self.suit.name)
+      def __str__(self):
+          pstring = "{rank} of {suit}"
+          return pstring.format(rank=self.rank.name, suit=self.suit.name)
 
-    def __repr__(self):
-        pstring = "Card({rank}, {suit})"
-        return pstring.format(rank=self.rank, suit=self.suit)
+      def __repr__(self):
+          pstring = "Card({rank}, {suit})"
+          return pstring.format(rank=self.rank, suit=self.suit)
 
 
 class Hand:
-    """A hand holds cards from a particular deck"""
-    def __init__(self, cards):
-        all_cards = [x for x in cards if isinstance(x, Card)]
-        if len(all_cards) != len(cards):
-            raise ValueError('all cards must be of class Card')
-        else:
-            self.cards = cards
-            self.pos = 0
+      """A hand holds cards from a particular deck"""
+      def __init__(self, cards):
+          all_cards = [x for x in cards if isinstance(x, Card)]
+          if len(all_cards) != len(cards):
+              raise ValueError('all cards must be of class Card')
+          else:
+              self.cards = cards
+              self.pos = 0
 
-    def __len__(self):
-        return len(self.cards)
+      def __len__(self):
+          return len(self.cards)
 
-    def __iter__(self):
-        self.pos = 0
-        return iter(self.cards)
+      def __iter__(self):
+          self.pos = 0
+          return iter(self.cards)
 
-    def __next__(self):
-        self.pos += 1
-        if self.pos > len(self.cards):
-            raise StopIteration
-        else:
-            return self.cards[self.pos - 1]
+      def __next__(self):
+          self.pos += 1
+          if self.pos > len(self.cards):
+              raise StopIteration
+          else:
+              return self.cards[self.pos - 1]
 
 
 def random_choice(upper: int, lower: int) -> int:
@@ -90,18 +90,17 @@ def random_rank() -> Rank:
 
 def random_card() -> Card:
     """Choose a Suit and Rank uniformly at random,
-    return the combination as a Card object"""
+      return the combination as a Card object"""
     suit = random_suit()
     rank = random_rank()
     card = Card(suit, rank)
     return card
 
-
 def random_hand() -> Hand:
     """Choose five cards using random_card.
-    Note that this function does not handle the possibility of
-    two cards having the same rank & suit.
-    Returns a list of Card objects"""
+      Note that this function does not handle the possibility of
+      two cards having the same rank & suit.
+      Returns a list of Card objects"""
     cards = []
     for _ in range(0, 5):
         cards.append(random_card())
@@ -109,7 +108,7 @@ def random_hand() -> Hand:
 
 
 class Deck:
-    """An object representing a deck of playing cards"""
+      """An object representing a deck of playing cards"""
     def __init__(self):
         self._cards = [Card(rank, suit) for suit in Suit for rank in Rank]
 
@@ -168,7 +167,7 @@ class Player:
                     bet += self.randnum
                 if randnumber > 0.75:
                     bet -= self.randnum
-                self.stash = self.stash - bet
+                    self.stash = self.stash - bet
                 return bet
             else:
                 self.stash -= self.minbet
@@ -211,8 +210,8 @@ class Player:
 
 def deal_cards(deck, players):
     """Takes a list of players (normally empty lists)
-    and deals each of them five cards,
-    returning the updated lists"""
+      and deals each of them five cards,
+      returning the updated lists"""
     for i in range(0, 5):
         for player in players:
             card = deck.deal()
@@ -222,9 +221,9 @@ def deal_cards(deck, players):
 
 def split_cards(Hand):
     """Takes a list of card objects (a hand) and returns two lists,
-    one of the
-    suits, and the other of the ranks of the hand.
-    Mostly useful for further functions """
+      one of the
+      suits, and the other of the ranks of the hand.
+      Mostly useful for further functions """
     suits = []
     ranks = []
     for each in Hand:
@@ -235,7 +234,8 @@ def split_cards(Hand):
 
 def count(ranks):
     """Take either a list of suits of ranks and returns
-a dict with the counts of each. Used as input to checking functions"""
+      a dict with the counts of each. 
+      Used as input to checking functions"""
     rdict = dict.fromkeys(ranks)
     for each in ranks:
         if rdict[each]:
@@ -246,8 +246,10 @@ a dict with the counts of each. Used as input to checking functions"""
 
 
 def anyrep(ranks):
-    """Check if there are any repeated elements in either a selection of suits or ranks.Return True if there are, False otherwise.
-"""
+    """
+      Check if there are any repeated elements in either a selection of suits or ranks.
+      Return True if there are, False otherwise.
+      """
     origlen = len(ranks)
     uniquelen = len(set(ranks))
     if origlen == uniquelen:
@@ -257,7 +259,8 @@ def anyrep(ranks):
 
 
 def find_repeated_cards(ranks):
-    """Check if there are any repeated cards in a list of suits or ranks. Return the elements which are repeated if so, an empty dictionary otherwise"""
+    """Check if there are any repeated cards in a list of suits or ranks. 
+    Return the elements which are repeated if so, an empty dictionary otherwise"""
     res = {}
     counts = count(ranks)
     for k, v in counts.items():
@@ -267,23 +270,26 @@ def find_repeated_cards(ranks):
 
 
 def is_straight(ranks, exact=True):
-    """Check if the hand contains a straight.Returns True if so, False otherwise. If exact=False, then returns the number of cards which form part of a straight"""
-    ranks.sort()
-    count = 0
-    for i in range(0, len(ranks) - 1):
-        if ranks[i + 1] - ranks[i] == 1:
-            count += 1
-    if not exact:
-        return count
+      """Check if the hand contains a straight.Returns True if so, False otherwise. 
+      If exact=False, then returns the number of cards which form part of a straight"""
+      ranks.sort()
+      count = 0
+      for i in range(0, len(ranks) - 1):
+          if ranks[i + 1] - ranks[i] == 1:
+              count += 1
+      if not exact:
+          return count
 
-    if count == 4:
-        return True
-    else:
-        return False
+      if count == 4:
+          return True
+      else:
+          return False
 
 
 def is_flush(suits, exact=True):
-    """Check if a set of suits contains a flush (all suits are the same). Returns True if so, False otherwise. If exact=False, returns the highest count of same suits present. """
+    """Check if a set of suits contains a flush (all suits are the same). 
+    Returns True if so, False otherwise. 
+    If exact=False, returns the highest count of same suits present. """
     sc = count(suits)
     maxval = max(sc.values())
     if not exact:
@@ -306,7 +312,7 @@ def make_straight(suit: Suit, start: int) -> List[Card]:
 
 def get_scores():
     """Returns a dictionary with potential hands and the scores associated
-    with them. Normally only called from within other functions"""
+      with them. Normally only called from within other functions"""
     scores = {
         'NOTHING': 2,
         'PAIR': 238,
@@ -323,7 +329,7 @@ def get_scores():
 
 def score_hand(hand):
     """Return the score of a particular hand. Returns a tuple with the
-    name of the hand and the score associated with this hand"""
+      name of the hand and the score associated with this hand"""
     scores = get_scores()
     suits, ranks = split_cards(hand)
     flush = is_flush(suits)
@@ -365,10 +371,10 @@ def score_hand(hand):
 
 def discard_cards(hand):
     """Discard cards that do not add to the value of the hand. Ignores the
-    possibility of straights or flushes. 
-    Keeps any pairs etc, otherwise
-    keeps the highest numeric cards and discards the rest. 
-    In any case, will discard no more than three cards."""
+      possibility of straights or flushes. 
+      Keeps any pairs etc, otherwise
+      keeps the highest numeric cards and discards the rest. 
+      In any case, will discard no more than three cards."""
     suits, ranks = split_cards(hand)
     score, handname = score_hand(hand)
     scount = count(suits)
@@ -387,18 +393,15 @@ def discard_cards(hand):
     return cards_remaining
 
 
-def replenish_cards(deck:Deck, player:Player):
+def replenish_cards(deck: Deck, player: Player):
     """Takes a deck and player as argument. Deals cards to the player,
-    until they have five cards again."""
+      until they have five cards again."""
     while len(player.hand) < 5:
         card = deck.deal()
         player.hand.append(card)
         if len(player.hand) == 5:
             pass
     return deck, player
-
-
-
 
 
 class Game:
@@ -432,7 +435,7 @@ class Game:
         for player in players:
             score, sname = score_hand(players.hand)
             scores[player] = score
-        maxscore = max(scores.items)
+            maxscore = max(scores.items)
         return maxscore
 
     def add_to_pot(self, bet):
