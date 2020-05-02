@@ -6,7 +6,6 @@ import math as math
 
 
 class Suit(Enum):
-
       """An enum defining the suits in a deck of playing cards"""
       SPADES = 1
       CLUBS = 2
@@ -34,41 +33,41 @@ class Rank(IntEnum):
 class Card:
       """A playing card in the space (2,14) rank and one of four suits"""
       def __init__(self, suit, rank):
-            self.rank = rank
-            self.suit = suit
+          self.rank = rank
+          self.suit = suit
 
       def __str__(self):
-            pstring = "{rank} of {suit}"
-            return pstring.format(rank=self.rank.name, suit=self.suit.name)
+          pstring = "{rank} of {suit}"
+          return pstring.format(rank=self.rank.name, suit=self.suit.name)
 
       def __repr__(self):
-            pstring = "Card({rank}, {suit})"
-            return pstring.format(rank=self.rank, suit=self.suit)
+          pstring = "Card({rank}, {suit})"
+          return pstring.format(rank=self.rank, suit=self.suit)
 
 
 class Hand:
       """A hand holds cards from a particular deck"""
       def __init__(self, cards):
-            all_cards = [x for x in cards if isinstance(x, Card)]
-            if len(all_cards) != len(cards):
-                  raise ValueError('all cards must be of class Card')
-            else:
-                  self.cards = cards
-                  self.pos = 0
+          all_cards = [x for x in cards if isinstance(x, Card)]
+          if len(all_cards) != len(cards):
+              raise ValueError('all cards must be of class Card')
+          else:
+              self.cards = cards
+              self.pos = 0
 
       def __len__(self):
-            return len(self.cards)
+          return len(self.cards)
 
       def __iter__(self):
-            self.pos = 0
-            return iter(self.cards)
+          self.pos = 0
+          return iter(self.cards)
 
       def __next__(self):
-            self.pos += 1
-            if self.pos > len(self.cards):
-                  raise StopIteration
-            else:
-                  return self.cards[self.pos - 1]
+          self.pos += 1
+          if self.pos > len(self.cards):
+              raise StopIteration
+          else:
+              return self.cards[self.pos - 1]
 
 
 def random_choice(upper: int, lower: int) -> int:
