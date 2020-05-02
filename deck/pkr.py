@@ -110,26 +110,26 @@ def random_hand() -> Hand:
 
 
 class Deck:
-      """An object representing a deck of playing cards"""
+"""An object representing a deck of playing cards"""
     def __init__(self):
-        self._cards = [Card(rank, suit) for suit in Suit for rank in Rank]
+          self._cards = [Card(rank, suit) for suit in Suit for rank in Rank]
 
     def __len__(self):
-        return len(self._cards)
+          return len(self._cards)
 
     def __getitem__(self, position):
-        return self._cards[position]
+          return self._cards[position]
 
     def __repr__(self):
-        fstring = "Cards remaining: {left}"
-        return fstring.format(left=len(self._cards))
+          fstring = "Cards remaining: {left}"
+          return fstring.format(left=len(self._cards))
 
     def shuffle(self):
-        self._cards = shuffle(self._cards)
+          self._cards = shuffle(self._cards)
 
     def deal(self):
-        card = self._cards.pop(0)
-        return card
+          card = self._cards.pop(0)
+          return card
 
 
 class Player:
