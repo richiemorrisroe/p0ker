@@ -217,11 +217,11 @@ def deal_cards(deck, players):
       """Takes a list of players (normally empty lists)
       and deals each of them five cards,
       returning the updated lists"""
-    for i in range(0, 5):
-        for player in players:
-              card = deck.deal()
-              player.hand.append(card)
-    return deck, players
+      for i in range(0, 5):
+            for player in players:
+                  card = deck.deal()
+                  player.hand.append(card)
+      return deck, players
 
 
 def split_cards(Hand):
@@ -231,10 +231,10 @@ def split_cards(Hand):
       Mostly useful for further functions """
       suits = []
       ranks = []
-    for each in Hand:
-          suits.append(each.suit)
-          ranks.append(each.rank)
-    return suits, ranks
+      for each in Hand:
+            suits.append(each.suit)
+            ranks.append(each.rank)
+      return suits, ranks
 
 
 def count(ranks):
@@ -242,12 +242,12 @@ def count(ranks):
       a dict with the counts of each. 
       Used as input to checking functions"""
       rdict = dict.fromkeys(ranks)
-    for each in ranks:
-        if rdict[each]:
-              rdict[each] += 1
-        if not rdict[each]:
-              rdict[each] = 1
-    return rdict
+      for each in ranks:
+            if rdict[each]:
+                  rdict[each] += 1
+            if not rdict[each]:
+                  rdict[each] = 1
+      return rdict
 
 
 def anyrep(ranks):
@@ -257,10 +257,10 @@ def anyrep(ranks):
       """
       origlen = len(ranks)
       uniquelen = len(set(ranks))
-    if origlen == uniquelen:
-        return False
-    else:
-        return True
+      if origlen == uniquelen:
+            return False
+      else:
+            return True
 
 
 def find_repeated_cards(ranks):
@@ -268,15 +268,17 @@ def find_repeated_cards(ranks):
     Return the elements which are repeated if so, an empty dictionary otherwise"""
       res = {}
       counts = count(ranks)
-    for k, v in counts.items():
-        if v >= 2:
-              res[k] = v
-    return res
+      for k, v in counts.items():
+            if v >= 2:
+                  res[k] = v
+      return res
 
 
 def is_straight(ranks, exact=True):
-      """Check if the hand contains a straight.Returns True if so, False otherwise. 
-      If exact=False, then returns the number of cards which form part of a straight"""
+      """Check if the hand contains a straight.
+      Returns True if so, False otherwise. 
+      If exact=False, then returns the number of cards which 
+      form part of a straight"""
       ranks.sort()
       count = 0
       for i in range(0, len(ranks) - 1):
@@ -297,22 +299,22 @@ def is_flush(suits, exact=True):
     If exact=False, returns the highest count of same suits present. """
       sc = count(suits)
       maxval = max(sc.values())
-    if not exact:
-        return maxval
-    if maxval == 5:
-        return True
-    else:
-        return False
+      if not exact:
+            return maxval
+      if maxval == 5:
+            return True
+      else:
+            return False
 
 
 def make_straight(suit: Suit, start: int) -> List[Card]:
       """This actually makes a straight flush, of suit Suit and starting at Rank start"""
       hand = []
-    if not start:
-          start = 7
-    for rank in range(start, start + 5):
-          hand.append(Card(suit, Rank(rank)))
-    return hand
+      if not start:
+            start = 7
+      for rank in range(start, start + 5):
+            hand.append(Card(suit, Rank(rank)))
+      return hand
 
 
 def get_scores():
@@ -329,7 +331,7 @@ def get_scores():
             '4-OF-A-KIND': 500000,
             'STRAIGHT-FLUSH': 100000000
       }
-    return scores
+      return scores
 
 
 def score_hand(hand):
@@ -342,36 +344,36 @@ def score_hand(hand):
       print("flush is {}, and straight is {}".format(flush, straight))
       pairs = find_repeated_cards(ranks)
       print("len(pairs) = {}".format(len(pairs)))
-    if straight:
-          handscore = scores['STRAIGHT']
-          scorename = 'STRAIGHT'
-    if flush:
-          handscore = scores['FLUSH']
-          scorename = 'FLUSH'
-    if straight and flush:
-          handscore = scores['STRAIGHT-FLUSH']
-          scorename = 'STRAIGHT-FLUSH'
-    if len(pairs) == 0:
-          handscore = scores['NOTHING']
-          scorename = 'NOTHING'
-    if len(pairs) >= 1:
-          vals = pairs.values()
-        if max(vals) == 2 and len(pairs) == 1:
-              handscore = scores['PAIR']
-              scorename = 'PAIR'
-        if max(vals) == 2 and len(pairs) == 2:
-              handscore = scores['TWO-PAIR']
-              scorename = 'TWO-PAIR'
-        if max(vals) == 3 and len(pairs) == 1:
-              handscore = scores['THREE-OF-A-KIND']
-              scorename = 'THREE-OF-A-KIND'
-        if max(vals) == 3 and len(pairs) == 2:
-              handscore = scores['FULL-HOUSE']
-              scorename = 'FULL-HOUSE'
-        if max(vals) == 4:
-              handscore = scores['FOUR-OF-A-KIND']
-              scorename = 'FOUR-OF-A-KIND'
-    return handscore, scorename
+      if straight:
+            handscore = scores['STRAIGHT']
+            scorename = 'STRAIGHT'
+      if flush:
+            handscore = scores['FLUSH']
+            scorename = 'FLUSH'
+      if straight and flush:
+            handscore = scores['STRAIGHT-FLUSH']
+            scorename = 'STRAIGHT-FLUSH'
+      if len(pairs) == 0:
+            handscore = scores['NOTHING']
+            scorename = 'NOTHING'
+      if len(pairs) >= 1:
+            vals = pairs.values()
+            if max(vals) == 2 and len(pairs) == 1:
+                  handscore = scores['PAIR']
+                  scorename = 'PAIR'
+            if max(vals) == 2 and len(pairs) == 2:
+                  handscore = scores['TWO-PAIR']
+                  scorename = 'TWO-PAIR'
+            if max(vals) == 3 and len(pairs) == 1:
+                  handscore = scores['THREE-OF-A-KIND']
+                  scorename = 'THREE-OF-A-KIND'
+            if max(vals) == 3 and len(pairs) == 2:
+                  handscore = scores['FULL-HOUSE']
+                  scorename = 'FULL-HOUSE'
+            if max(vals) == 4:
+                  handscore = scores['FOUR-OF-A-KIND']
+                  scorename = 'FOUR-OF-A-KIND'
+      return handscore, scorename
 
 
 def discard_cards(hand):
@@ -384,146 +386,146 @@ def discard_cards(hand):
       score, handname = score_hand(hand)
       scount = count(suits)
       rcount = count(ranks)
-    if handname == 'NOTHING':
-          ranks.sort(reverse=True)
-          topranks = ranks[0:2]
-          minretained = topranks[1].value
-          cards_remaining = [(r, s) for r, s in hand if r >= minretained]
-    else:
-          keep = {k: v for k, v in rcount.items() if v >= 2}
-          keepvalues = list(keep)[0].value
-          cards_remaining = [(rank, suit) for rank, suit in hand
+      if handname == 'NOTHING':
+            ranks.sort(reverse=True)
+            topranks = ranks[0:2]
+            minretained = topranks[1].value
+            cards_remaining = [(r, s) for r, s in hand if r >= minretained]
+      else:
+            keep = {k: v for k, v in rcount.items() if v >= 2}
+            keepvalues = list(keep)[0].value
+            cards_remaining = [(rank, suit) for rank, suit in hand
                            if rank == keepvalues]
 
-    return cards_remaining
+      return cards_remaining
 
 
 def replenish_cards(deck, player):
       """Takes a deck and player as argument. Deals cards to the player,
       until they have five cards again."""
-    while len(player.hand) < 5:
-          card = deck.deal()
-          player.hand.append(card)
-        if len(player.hand) == 5:
-            pass
-    return deck, player
+      while len(player.hand) < 5:
+            card = deck.deal()
+            player.hand.append(card)
+            if len(player.hand) == 5:
+                  pass
+      return deck, player
 
 
 class Player:
-    def __init__(self, hand=None, stash=5000):
-          self.hand = []
-          self.stash = stash
-          self.score = 0
-          self.minbet = 10
-          self.randnum = random.randint(0, 100)
+      def __init__(self, hand=None, stash=5000):
+            self.hand = []
+            self.stash = stash
+            self.score = 0
+            self.minbet = 10
+            self.randnum = random.randint(0, 100)
 
-    def __repr__(self):
-          fstring = "Player(stash = {stash}, score={score}, hand = {hand})"
-        return fstring.format(stash=self.stash,
+      def __repr__(self):
+            fstring = "Player(stash = {stash}, score={score}, hand = {hand})"
+            return fstring.format(stash=self.stash,
                               score=self.score,
                               hand=self.hand)
 
-    def scores(self):
-        if len(self.hand) > 0:
-              score, sname = score_hand(self.hand)
-              self.score = score
-            return self.score
-        else:
-            return self.score
+      def scores(self):
+            if len(self.hand) > 0:
+                  score, sname = score_hand(self.hand)
+                  self.score = score
+                  return self.score
+            else:
+                  return self.score
 
-    def discard(self):
-          self.hand = discard_cards(self.hand)
+      def discard(self):
+            self.hand = discard_cards(self.hand)
 
-    def bet(self, bet=None):
-        if bet:
-            return bet
-        else:
-              score, name = score_hand(self.hand)
-            if score > 200:
+      def bet(self, bet=None):
+            if bet:
+                  return bet
+            else:
+                  score, name = score_hand(self.hand)
+                  if score > 200:
                   bet = (self.stash * 0.01) * math.log(score)
                   randnumber = random.random()
-                if randnumber < 0.25:
+                  if randnumber < 0.25:
                       bet += self.randnum
-                if randnumber > 0.75:
+                  if randnumber > 0.75:
                       bet -= self.randnum
                       self.stash = self.stash - bet
-                return bet
+                  return bet
             else:
                   self.stash -= self.minbet
-                return self.minbet
+                  return self.minbet
 
-    def call(self, bet_required=None) -> bool:
-        if not self.score:
-              self.score, _ = score_hand(self.hand)
+      def call(self, bet_required=None) -> bool:
+            if not self.score:
+                  self.score, _ = score_hand(self.hand)
 
-        if self.score < 200:
-            return False
-        else:
-            return True
-        if bet_required:
-            if self.score < bet_required:
-                return False
+            if self.score < 200:
+                  return False
             else:
-                return True
+                  return True
+            if bet_required:
+                  if self.score < bet_required:
+                        return False
+            else:
+                  return True
 
-    def fold(self) -> bool:
-        if not self.score:
-              self.score = score_hand(self.hand)
-        if self.score < 100:
-            return True
-        else:
-            return False
+      def fold(self) -> bool:
+            if not self.score:
+                  self.score = score_hand(self.hand)
+            if self.score < 100:
+                  return True
+            else:
+                  return False
 
-    def decide_action(self, game):
-          is_call = self.call()
-          is_fold = self.fold()
-        if is_fold:
-            return 'FOLD'
-        if not is_fold and is_call:
-            return 'CALL'
-        if self.score < 200 or self.score > 400:
-            return 'CHECK'
-        else:
-            return 'BET'
+      def decide_action(self, game):
+            is_call = self.call()
+            is_fold = self.fold()
+            if is_fold:
+                  return 'FOLD'
+            if not is_fold and is_call:
+                  return 'CALL'
+            if self.score < 200 or self.score > 400:
+                  return 'CHECK'
+            else:
+                  return 'BET'
 
 
 class Game:
-    def __init__(self, name="poker", ante=100):
-          self.name = name
-          self.ante = ante
-          self.maxdrop = 3
-          self.deck = FirstDeck()
-          self.pot = 0
+      def __init__(self, name="poker", ante=100):
+            self.name = name
+            self.ante = ante
+            self.maxdrop = 3
+            self.deck = FirstDeck()
+            self.pot = 0
 
-    def __repr__(self):
-          fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
-        return fstring.format(name=self.name,
-                              ante=self.ante,
-                              maxdrop=self.maxdrop,
-                              pot=self.pot)
+      def __repr__(self):
+            fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
+            return fstring.format(name=self.name,
+                                  ante=self.ante,
+                                  maxdrop=self.maxdrop,
+                                  pot=self.pot)
 
-    def start_round(self, players):
-          self.deck.shuffle()
-          deck, players = deal_cards(self.deck, players=players)
-          self.deck = deck
-        return players
+      def start_round(self, players):
+            self.deck.shuffle()
+            deck, players = deal_cards(self.deck, players=players)
+            self.deck = deck
+            return players
 
-    def deal(self, player):
-          deck, player = replenish_cards(self.deck, player)
-          self.deck = deck
-        return player
+      def deal(self, player):
+            deck, player = replenish_cards(self.deck, player)
+            self.deck = deck
+            return player
 
-    def compare(self, players):
-          scores = {}
-        for player in players:
-              score, sname = score_hand(players.hand)
-              scores[player] = score
-              maxscore = max(scores.items)
-        return maxscore
+      def compare(self, players):
+            scores = {}
+            for player in players:
+                  score, sname = score_hand(players.hand)
+                  scores[player] = score
+                  maxscore = max(scores.items)
+            return maxscore
 
-    def add_to_pot(self, bet):
-          print("pot is {} and bet is {}".format(self.pot, bet))
-          self.pot += bet
+      def add_to_pot(self, bet):
+            print("pot is {} and bet is {}".format(self.pot, bet))
+            self.pot += bet
 
-    def get_pot_value(self):
-        return self.pot
+      def get_pot_value(self):
+            return self.pot
