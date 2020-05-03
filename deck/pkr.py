@@ -442,17 +442,15 @@ class Player:
             else:
                   score, name = score_hand(self.hand)
                   if score > 200:
-                  bet = (self.stash * 0.01) * math.log(score)
-                  randnumber = random.random()
+                        bet = (self.stash * 0.01) * math.log(score)
+                        randnumber = random.random()
                   if randnumber < 0.25:
                       bet += self.randnum
                   if randnumber > 0.75:
                       bet -= self.randnum
                       self.stash = self.stash - bet
                   return bet
-            else:
-                  self.stash -= self.minbet
-                  return self.minbet
+            
 
       def call(self, bet_required=None) -> bool:
             if not self.score:
