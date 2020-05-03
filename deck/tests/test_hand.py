@@ -10,7 +10,7 @@ fake_hand = [1, 2, 3]
 def test_fake_hand():
     with pytest.raises(ValueError):
         hand_wrong = Hand(fake_hand)
-        
+
 
 def test_iter_hand() -> bool:
     res = []
