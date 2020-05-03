@@ -858,11 +858,11 @@ class Hand:
       """A hand holds cards from a particular deck"""
       def __init__(self, cards):
             all_cards = [x for x in cards if isinstance(x, Card)]
-          if len(all_cards) != len(cards):
-              raise ValueError('all cards must be of class Card')
-          else:
-                self.cards = cards
-                self.pos = 0
+            if len(all_cards) != len(cards):
+                  raise ValueError('all cards must be of class Card')
+            else:
+                  self.cards = cards
+                  self.pos = 0
 
       def __len__(self):
             
