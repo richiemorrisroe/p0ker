@@ -1443,7 +1443,7 @@ def test_random_hand() -> bool:
 #+BEGIN_SRC python :tangle deck/tests/test_deck.py
 import pytest
 
-from pkr import Card, Deck, Player
+from pkr import Card, Deck, Player, random_hand
 
 
 def test_deck_length() -> int:

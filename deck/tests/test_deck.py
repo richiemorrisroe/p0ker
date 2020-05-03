@@ -1,6 +1,6 @@
 import pytest
 
-from pkr import Card, Deck, Player
+from pkr import Card, Deck, Player, random_hand
 
 
 def test_deck_length() -> int:
