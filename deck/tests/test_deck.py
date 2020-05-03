@@ -24,7 +24,8 @@ def test_deck_getitem() -> bool:
     assert isinstance(first_card, Card)
 
 def test_deck_deal_hand() -> bool:
-    hand = Deck.deal(5)
+    d = Deck()
+    hand = d.deal(num_cards=5)
     assert isinstance(hand, Hand)
 def test_hand_uniqueness() -> bool:
     rhand = random_hand()
