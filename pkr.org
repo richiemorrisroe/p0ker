@@ -1371,7 +1371,7 @@ def test_random_hand() -> bool:
 #+BEGIN_SRC python :tangle deck/tests/test_deck.py
 import pytest
 
-from pkr import Card, Deck, Player, random_hand
+from pkr import Card, Deck, Player, random_hand, Hand
 
 
 def test_deck_length() -> bool:
@@ -1397,7 +1397,7 @@ def test_deck_getitem() -> bool:
 def test_deck_deal_hand() -> bool:
     d = Deck()
     hand = d.deal(num_cards=5)
-    assert isinstance(hand, Hand)
+    assert len(hand)==5
 def test_hand_uniqueness() -> bool:
     rhand = random_hand()
     assert len(set(rhand.cards)) == len(rhand.cards)
