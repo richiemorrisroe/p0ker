@@ -870,32 +870,32 @@ class Hand:
 
       def __iter__(self):
             self.pos = 0
-          return iter(self.cards)
+            return iter(self.cards)
 
       def __next__(self):
             self.pos += 1
-          if self.pos > len(self.cards):
-              raise StopIteration
-          else:
-              return self.cards[self.pos - 1]
+            if self.pos > len(self.cards):
+                  raise StopIteration
+            else:
+                  return self.cards[self.pos - 1]
 
 
 def random_choice(upper: int, lower: int) -> int:
       """Choose an int between upper and lower, uniformly at random"""
       x = random.randint(upper, lower)
-    return x
+      return x
 
 
 def random_suit() -> Suit:
       """Choose a Suit uniformly at random. Return a Suit Enum"""
       choice = Suit(random_choice(1, 4))
-    return choice
+      return choice
 
 
 def random_rank() -> Rank:
       """Choose a rank uniformly at random. Return a Rank Enum"""
       choice = Rank(random_choice(2, 13))
-    return choice
+      return choice
 
 
 def random_card() -> Card:
@@ -904,7 +904,7 @@ def random_card() -> Card:
       suit = random_suit()
       rank = random_rank()
       card = Card(suit, rank)
-    return card
+      return card
 
 def random_hand() -> Hand:
       """Choose five cards using random_card.
@@ -912,9 +912,9 @@ def random_hand() -> Hand:
       two cards having the same rank & suit.
       Returns a list of Card objects"""
       cards = []
-    for _ in range(0, 5):
-          cards.append(random_card())
-    return Hand(cards=cards)
+      for _ in range(0, 5):
+            cards.append(random_card())
+      return Hand(cards=cards)
 
 
 class Deck:
