@@ -1469,7 +1469,7 @@ def test_deck_getitem() -> bool:
 def test_deck_deal_hand() -> bool:
     assert isinstance(Deck.deal(), Card)
     
-def test_hand_uniqueness -> bool:
+def test_hand_uniqueness() -> bool:
     random_hand = random_hand()
     assert len(set(random_hand.cards)) == len(random_hand.cards)
 
