@@ -3,7 +3,7 @@ import pytest
 from pkr import Card, Deck, Player, random_hand
 
 
-def test_deck_length() -> int:
+def test_deck_length() -> bool:
     deck = Deck()
     assert len(deck) == 52
 
@@ -24,8 +24,8 @@ def test_deck_getitem() -> bool:
     assert isinstance(first_card, Card)
 
 def test_deck_deal_hand() -> bool:
-    assert isinstance(Deck.deal(), Card)
-    
+    hand = Deck.deal(5)
+    assert isinstance(hand, Hand)
 def test_hand_uniqueness() -> bool:
-    random_hand = random_hand()
-    assert len(set(random_hand.cards)) == len(random_hand.cards)
+    rhand = random_hand()
+    assert len(set(rhand.cards)) == len(rhand.cards)
