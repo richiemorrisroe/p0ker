@@ -1009,14 +1009,14 @@ class Player:
     def decide_action(self, game):
           is_call = self.call()
           is_fold = self.fold()
-        if is_fold:
-            return 'FOLD'
-        if not is_fold and is_call:
-            return 'CALL'
-        if self.score < 200 or self.score > 400:
-            return 'CHECK'
-        else:
-            return 'BET'
+          if is_fold:
+                return 'FOLD'
+          if not is_fold and is_call:
+                return 'CALL'
+          if self.score < 200 or self.score > 400:
+                return 'CHECK'
+          else:
+                return 'BET'
 
 
 
