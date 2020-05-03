@@ -1436,6 +1436,8 @@ def test_random_hand() -> bool:
     assert isinstance(random_hand(), Hand)
 #+END_SRC
 
+
+
 #+BEGIN_SRC python :tangle deck/tests/test_deck.py
 import pytest
 
@@ -1463,7 +1465,8 @@ def test_deck_getitem() -> bool:
     assert isinstance(first_card, Card)
 
 def test_deck_deal_hand() -> bool:
-    asssert isinstance(Deck.deal(), Card)
+    assert isinstance(Deck.deal(), Card)
+    
 def test_hand_uniqueness -> bool:
     random_hand = random_hand()
     assert len(set(random_hand.cards)) == len(random_hand.cards)
