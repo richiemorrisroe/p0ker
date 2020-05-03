@@ -131,7 +131,7 @@ class Deck:
 
     def deal(self, num_cards):
         cards = self._cards[0:num_cards]
-        return card
+        return cards
 
 
 class Player:
