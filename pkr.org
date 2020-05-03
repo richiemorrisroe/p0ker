@@ -920,24 +920,24 @@ def random_hand() -> Hand:
 class Deck:
       """An object representing a deck of playing cards"""
     def __init__(self):
-            self._cards = [Card(rank, suit) for suit in Suit for rank in Rank]
+          self._cards = [Card(rank, suit) for suit in Suit for rank in Rank]
 
     def __len__(self):
-        return len(self._cards)
+          return len(self._cards)
 
     def __getitem__(self, position):
-        return self._cards[position]
+          return self._cards[position]
 
     def __repr__(self):
           fstring = "Cards remaining: {left}"
-        return fstring.format(left=len(self._cards))
+          return fstring.format(left=len(self._cards))
 
     def shuffle(self):
           self._cards = shuffle(self._cards)
 
     def deal(self):
           card = self._cards.pop(0)
-        return card
+          return card
 
 
 class Player:
@@ -950,7 +950,7 @@ class Player:
 
     def __repr__(self):
           fstring = "Player(stash = {stash}, score={score}, hand = {hand})"
-        return fstring.format(stash=self.stash,
+          return fstring.format(stash=self.stash,
                               score=self.score,
                               hand=self.hand)
 
@@ -958,30 +958,30 @@ class Player:
         if len(self.hand) > 0:
               score, sname = score_hand(self.hand)
               self.score = score
-            return self.score
+              return self.score
         else:
-            return self.score
+              return self.score
 
     def discard(self):
           self.hand = discard_cards(self.hand)
 
     def bet(self, bet=None) -> float:
         if bet:
-            return bet
+              return bet
         else:
               score, name = score_hand(self.hand)
-            if score > 200:
-                  bet = (self.stash * 0.01) * math.log(score)
-                  randnumber = random.random()
-                if randnumber < 0.25:
-                      bet += self.randnum
-                if randnumber > 0.75:
-                      bet -= self.randnum
-                      self.stash = self.stash - bet
-                return bet
+              if score > 200:
+                    bet = (self.stash * 0.01) * math.log(score)
+                    randnumber = random.random()
+                  if randnumber < 0.25:
+                          bet += self.randnum
+                  if randnumber > 0.75:
+                        bet -= self.randnum
+                        self.stash = self.stash - bet
+                        return bet
             else:
                   self.stash -= self.minbet
-                return self.minbet
+                  return self.minbet
 
     def call(self, bet_required=None) -> bool:
         if not self.score:
@@ -991,6 +991,7 @@ class Player:
             return False
         else:
             return True
+      
         if bet_required:
             if self.score < bet_required:
                 return False
