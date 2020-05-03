@@ -918,7 +918,7 @@ def random_hand() -> Hand:
 
 
 class Deck:
-      """An object representing a deck of playing cards"""
+    """An object representing a deck of playing cards"""
     def __init__(self):
           self._cards = [Card(rank, suit) for suit in Suit for rank in Rank]
 
