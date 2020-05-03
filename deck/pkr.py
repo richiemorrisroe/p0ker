@@ -40,11 +40,11 @@ class Card:
 
       def __str__(self):
             pstring = "{rank} of {suit}"
-          return pstring.format(rank=self.rank.name, suit=self.suit.name)
+            return pstring.format(rank=self.rank.name, suit=self.suit.name)
 
       def __repr__(self):
             pstring = "Card({rank}, {suit})"
-          return pstring.format(rank=self.rank, suit=self.suit)
+            return pstring.format(rank=self.rank, suit=self.suit)
 
 
 class Hand:
@@ -58,7 +58,8 @@ class Hand:
                 self.pos = 0
 
       def __len__(self):
-          return len(self.cards)
+            
+            return len(self.cards)
 
       def __iter__(self):
             self.pos = 0
