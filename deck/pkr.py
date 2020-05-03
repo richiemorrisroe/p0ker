@@ -58,7 +58,6 @@ class Hand:
             self.pos = 0
 
     def __len__(self):
-
         return len(self.cards)
 
     def __iter__(self):
