@@ -1347,26 +1347,26 @@ def test_fake_hand():
         hand_wrong = Hand(fake_hand)
 
 
-def test_iter_hand() -> bool:
+def test_iter_hand() -> None:
     res = []
     for card in hand:
         res.append(card)
     assert len(res) == len(hand)
 
 
-def test_random_suit() -> bool:
+def test_random_suit() -> None:
     assert isinstance(random_suit(), Suit)
 
 
-def test_random_rank() -> bool:
+def test_random_rank() -> None:
     assert isinstance(random_rank(), Rank)
 
 
-def test_random_card() -> bool:
+def test_random_card() -> None:
     assert isinstance(random_card(), Card)
 
 
-def test_random_hand() -> bool:
+def test_random_hand() -> None:
     assert isinstance(random_hand(), Hand)
 #+END_SRC
 
@@ -1378,29 +1378,31 @@ import pytest
 from pkr import Card, Deck, Player, random_hand, Hand
 
 
-def test_deck_length() -> bool:
+def test_deck_length() -> None:
     deck = Deck()
     assert len(deck) == 52
 
-def test_deck_deal() -> bool:
+def test_deck_deal() -> None:
     deck = Deck()
     card = deck.deal(num_cards = 1)
     assert isinstance(card, Card)
 
 
-def test_deck_getitem() -> bool:
+def test_deck_getitem() -> None:
     first_card = Deck()[0]
     assert isinstance(first_card, Card)
 
-def test_deck_deal_hand() -> bool:
+def test_deck_deal_hand() -> None:
     d = Deck()
     hand = d.deal(num_cards=5)
     assert len(hand)==5
-def test_hand_uniqueness() -> bool:
+
+
+def test_hand_uniqueness() -> None:
     rhand = random_hand()
     assert len(set(rhand.cards)) == len(rhand.cards)
 
-def test_deck_length_after_dealing() -> bool:
+def test_deck_length_after_dealing() -> None:
     d = Deck()
     cards = d.deal(num_cards=2)
     assert len(d) + len(cards) == 52

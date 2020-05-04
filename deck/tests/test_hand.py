@@ -12,24 +12,24 @@ def test_fake_hand():
         hand_wrong = Hand(fake_hand)
 
 
-def test_iter_hand() -> bool:
+def test_iter_hand() -> None:
     res = []
     for card in hand:
         res.append(card)
     assert len(res) == len(hand)
 
 
-def test_random_suit() -> bool:
+def test_random_suit() -> None:
     assert isinstance(random_suit(), Suit)
 
 
-def test_random_rank() -> bool:
+def test_random_rank() -> None:
     assert isinstance(random_rank(), Rank)
 
 
-def test_random_card() -> bool:
+def test_random_card() -> None:
     assert isinstance(random_card(), Card)
 
 
-def test_random_hand() -> bool:
+def test_random_hand() -> None:
     assert isinstance(random_hand(), Hand)
