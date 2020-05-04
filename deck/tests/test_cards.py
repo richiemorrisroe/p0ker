@@ -36,12 +36,12 @@ def test_rank_max():
 Ace = Rank(14)
 Deuce = Rank(2)
 
-def test_rank_ordering() -> bool:
+def test_rank_ordering() -> None:
     assert Ace > Deuce
 
-def test_wrong_rank_ordering() -> bool:
+def test_wrong_rank_ordering() -> None:
     with pytest.raises(AssertionError):
         assert Deuce > Ace
 
-def test_court_cards() -> bool:
+def test_court_cards() -> None:
     assert Rank(13) > Rank(12) > Rank(11)
