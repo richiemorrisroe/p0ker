@@ -1378,7 +1378,7 @@ def test_random_hand() -> None:
 #+BEGIN_SRC python :tangle deck/tests/test_deck.py
 import pytest
 
-from pkr import Card, Deck, Player, random_hand, Hand, deal_cards
+from pkr import Card, Deck, Player, random_hand, Hand, deal_cards, split_cards
 
 
 def test_deck_length() -> None:
@@ -1414,6 +1414,12 @@ def test_negative_number_deal() -> None:
     d = Deck()
     with pytest.raises(ValueError):
         d.deal(-1)
+
+#+END_SRC
+
+
+#+BEGIN_SRC python :tangle deck/tests/test_card_functions.py
+from pkr import Player, Deck, deal_cards, random_hand, split_cards
 def test_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
@@ -1428,11 +1434,12 @@ def test_split_cards() -> None:
     rhand = random_hand()
     ranks, suits = split_cards(rhand)
     assert len(ranks) and len(suits) == 5
+
+def test_count() -> None:
+    rhand = random_hand()
+    ranks, suits = split_cards(rhand)
+    assert len(count(ranks))==8
 #+END_SRC
-# Local Variables:
-# org-src-preserve-indentation: t
-# org-edit-src-content-indentation: 4
-# End:
 
 ** Design Thoughts
 
@@ -1470,3 +1477,7 @@ The resulting graph seems useful.
 I should figure out how to do this for R and other languages. 
 
 
+# Local Variables:
+# org-src-preserve-indentation: t
+# org-edit-src-content-indentation: 4
+# End:
