@@ -225,7 +225,7 @@ def deal_cards(deck, players):
       returning the updated lists"""
     for i in range(0, 5):
         for player in players:
-            card = deck.deal()
+            card = deck.deal(num_cards=1)
             player.hand.append(card)
     return deck, players
 
