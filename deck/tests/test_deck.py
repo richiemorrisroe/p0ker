@@ -44,4 +44,4 @@ def test_deal_cards() -> None:
     cards_in_hand = 5
     d, p = deal_cards(d, list_players)
     p1, p2 = p
-    assert len(p.hand)==5
+    assert len(p1.hand)==5
