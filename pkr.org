@@ -1423,6 +1423,11 @@ def test_deal_cards() -> None:
     d, p = deal_cards(d, list_players)
     p1, p2 = p
     assert len(p1.hand)==5
+
+def test_split_cards() -> None:
+    rhand = random_hand()
+    ranks, suits = split_cards(rhand)
+    assert len(ranks) and len(suits) == 5
 #+END_SRC
 # Local Variables:
 # org-src-preserve-indentation: t
@@ -1445,3 +1450,23 @@ def test_deal_cards() -> None:
 - need to account for this logic somewhere
 - seems like blinds, cards and betting should be handled by my hypotethical dealer object
 - but first I need test coverage for what exists now
+*** Visualising Code graph
+
+Found a useful article, with the following instructions
+
+#+BEGIN_SRC sh
+pip install git+https://github.com/ttylec/pyan
+alias pygraph='find . -iname "*.py" | xargs pyan --dot --colored --no-defines --grouped | dot -Tpng -Granksep=1.5 > graph.png'
+#+END_SRC
+
+I've done this in the pkr virtual env, and it produced a file, graph.png
+
+#+BEGIN_SRC sh :results none
+cd deck
+pygraph
+#+END_SRC
+
+The resulting graph seems useful.
+I should figure out how to do this for R and other languages. 
+
+

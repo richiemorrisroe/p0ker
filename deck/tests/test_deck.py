@@ -45,3 +45,8 @@ def test_deal_cards() -> None:
     d, p = deal_cards(d, list_players)
     p1, p2 = p
     assert len(p1.hand)==5
+
+def test_split_cards() -> None:
+    rhand = random_hand()
+    ranks, suits = split_cards(rhand)
+    assert len(ranks) and len(suits) == 5
