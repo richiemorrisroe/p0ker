@@ -1,6 +1,6 @@
 import pytest
 
-from pkr import Card, Deck, Player, random_hand, Hand
+from pkr import Card, Deck, Player, random_hand, Hand, deal_cards
 
 
 def test_deck_length() -> None:
@@ -36,3 +36,9 @@ def test_negative_number_deal() -> None:
     d = Deck()
     with pytest.raises(ValueError):
         d.deal(-1)
+def test_deal_cards() -> None:
+    p = Player()
+    d = Deck()
+    cards_in_hand = 5
+    d, p = deal_cards(d, p)
+    assert len(p.hand)==5
