@@ -32,4 +32,5 @@ def test_random_card() -> None:
 
 
 def test_random_hand() -> None:
-    assert isinstance(random_hand(), Hand)
+    rhand = random_hand()
+    assert isinstance(rhand, Hand)

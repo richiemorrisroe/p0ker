@@ -1369,7 +1369,8 @@ def test_random_card() -> None:
 
 
 def test_random_hand() -> None:
-    assert isinstance(random_hand(), Hand)
+    rhand = random_hand()
+    assert isinstance(rhand, Hand)
 #+END_SRC
 
 
@@ -1427,3 +1428,20 @@ def test_deal_cards() -> None:
 # org-src-preserve-indentation: t
 # org-edit-src-content-indentation: 4
 # End:
+
+** Design Thoughts
+
+- I can see that the deal_cards API is not great
+- I have to do lots of jiggery-pokery to actually run the test
+- it's much harder than for the other functions
+
+- I probably need a dealer abstraction to hold the deck and the discard pile. 
+- in general, i could probably just call the Deck with the players to deal
+- note that the rules for dealing differ based on the stage of the game
+- Useful overview of basic rules [[https://www.bigfishgames.com/blog/casino/poker-guide/poker-gameplay/][here]]
+- seems that cards will always be dealt one at a time to each player
+- normally around to the left
+- this is connected to the blind
+- need to account for this logic somewhere
+- seems like blinds, cards and betting should be handled by my hypotethical dealer object
+- but first I need test coverage for what exists now
