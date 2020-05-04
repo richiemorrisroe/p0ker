@@ -135,7 +135,7 @@ class Deck:
             
             cards = self._cards[0:num_cards]
             self._cards = self._cards[num_cards:]
-            return cards
+        return cards
 
 
 class Player:
