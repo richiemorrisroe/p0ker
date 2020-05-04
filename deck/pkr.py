@@ -129,6 +129,8 @@ class Deck:
         self._cards = shuffle(self._cards)
 
     def deal(self, num_cards):
+        if num_cards < 1:
+            raise ValueError("cannot be dealt less than 1 card")
         if num_cards == 1:
             cards = self._cards[0]
         else:

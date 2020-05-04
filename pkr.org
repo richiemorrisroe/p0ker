@@ -936,6 +936,8 @@ class Deck:
         self._cards = shuffle(self._cards)
 
     def deal(self, num_cards):
+        if num_cards < 1:
+            raise ValueError("cannot be dealt less than 1 card")
         if num_cards == 1:
             cards = self._cards[0]
         else:
@@ -1406,6 +1408,11 @@ def test_deck_length_after_dealing() -> None:
     d = Deck()
     cards = d.deal(num_cards=2)
     assert len(d) + len(cards) == 52
+
+def test_negative_number_deal() -> None:
+    d = Deck()
+    with pytest.raises(ValueError):
+        d.deal(-1)
 #+END_SRC
 # Local Variables:
 # org-src-preserve-indentation: t

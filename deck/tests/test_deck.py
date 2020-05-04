@@ -31,3 +31,8 @@ def test_deck_length_after_dealing() -> None:
     d = Deck()
     cards = d.deal(num_cards=2)
     assert len(d) + len(cards) == 52
+
+def test_negative_number_deal() -> None:
+    d = Deck()
+    with pytest.raises(ValueError):
+        d.deal(-1)
