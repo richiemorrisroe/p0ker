@@ -130,6 +130,7 @@ class Deck:
 
     def deal(self, num_cards):
         cards = self._cards[0:num_cards]
+        self._cards = self._cards[num_cards:]
         return cards
 
 
