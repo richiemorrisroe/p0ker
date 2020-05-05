@@ -1,4 +1,4 @@
-from pkr import Card, Player, Suit, Rank,  Deck, deal_cards, random_hand, split_cards, count
+from pkr import Card, Player, Suit, Rank,  Deck, deal_cards, random_hand, split_cards, count, anyrep
 def test_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
@@ -21,3 +21,11 @@ def test_count() -> None:
     ranks, suits = split_cards(hand)
     count_ranks = count(ranks)
     assert max(count_ranks.values()) == 3
+
+# def test_anyrep() -> None:
+#     hand = [Card(Suit(1), Rank(14)), Card(Suit(2), Rank(14)),
+#             Card(Suit(3), Rank(14)), Card(Suit(1), Rank(8)),
+#             Card(Suit(1), Rank(8))]
+#     ranks, suits = split_cards(hand)
+#     ranks_count = count(ranks)
+#     assert anyrep(ranks_count) is True
