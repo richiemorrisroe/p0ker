@@ -1,4 +1,7 @@
-from pkr import Card, Player, Suit, Rank,  Deck, deal_cards, random_hand, split_cards, count, anyrep
+from pkr import (Card, Player, Suit, Rank,  Deck, deal_cards,
+                 random_hand, split_cards, count, anyrep,
+                 find_repeated_cards, make_straight, is_straight,
+                 is_flush)
 def test_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
@@ -29,3 +32,15 @@ def test_count() -> None:
 #     ranks, suits = split_cards(hand)
 #     ranks_count = count(ranks)
 #     assert anyrep(ranks_count) is True
+
+def test_repeated_cards() -> None:
+    hand = [Card(Suit(1), Rank(14)), Card(Suit(2), Rank(14)),
+            Card(Suit(3), Rank(14)), Card(Suit(1), Rank(8)),
+            Card(Suit(1), Rank(8))]
+    ranks, suits = split_cards(hand)
+    reps = find_repeated_cards(ranks)
+    assert len(reps)==1
+
+def test_is_straight_exact() -> None:
+    straight = make_straight(Suit(1), start=5)
+    assert is_straight(straight) is True
