@@ -281,24 +281,17 @@ def find_repeated_cards(ranks):
     return res
 
 
-def is_straight(ranks, exact=True):
+def is_straight(ranks):
     """Check if the hand contains a straight.
       Returns True if so, False otherwise. 
       If exact=False, then returns the number of cards which 
       form part of a straight"""
-    ranks.sort()
-    count = 0
-    for i in range(0, len(ranks) - 1):
-        if ranks[i + 1] - ranks[i] == 1:
-            count += 1
-    if not exact:
-        return count
-
-    if count == 4:
+    ##by definition, a straight has only one distinct rank
+    rank_set = set(ranks)
+    if len(rank_set) == 1:
         return True
     else:
         return False
-
 
 def is_flush(suits, exact=True):
     """Check if a set of suits contains a flush (all suits are the same). 

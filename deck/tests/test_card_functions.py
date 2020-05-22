@@ -44,4 +44,4 @@ def test_repeated_cards() -> None:
 def test_is_straight_exact() -> None:
     straight = make_straight(Suit(1), start=5)
     ranks, suits = split_cards(straight)
-    assert is_straight(ranks) is True
+    assert is_straight(ranks)
