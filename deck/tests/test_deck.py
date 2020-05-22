@@ -1,3 +1,4 @@
+# type: ignore 
 import pytest
 
 from pkr import Card, Deck, Player, random_hand, Hand, deal_cards, split_cards

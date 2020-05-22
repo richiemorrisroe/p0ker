@@ -280,20 +280,24 @@ def find_repeated_cards(ranks):
     return res
 
 
-def is_straight(ranks):
+def is_straight(ranks : List[Rank]) -> bool:
     """Check if the hand contains a straight.
       Returns True if so, False otherwise. 
-      If exact=False, then returns the number of cards which 
-      form part of a straight"""
+      """
     ##by definition, a straight has only one distinct rank
-    
-    rank_set = set(ranks)
-    if len(rank_set) == 1:
+    all_ranks = [x for x in ranks if isinstance(x, Rank)]
+    if len(all_ranks) != len(ranks):
+        raise ValueError('all cards must be of class Rank')
+    ranks_int = [int(rank) for rank in ranks]
+    min_rank = min(ranks_int)
+    straight_seq = list(range(min_rank, min_rank+5))
+    ranks_int.sort()
+    if ranks_int == straight_seq:
         return True
     else:
         return False
 
-def is_flush(suits):
+def is_flush(suits : List[Suit]) -> bool :
     """Check if a set of suits contains a flush (all suits are the same). 
       Returns True if so, False otherwise. 
     If exact=False, returns the highest count of same suits present. """
@@ -305,13 +309,22 @@ def is_flush(suits):
         return False
 
 
-def make_straight(suit: Suit, start: int) -> List[Card]:
-    """This actually makes a straight flush, of suit Suit and starting at Rank start"""
+def make_straight(start: int) -> List[Card]:
+    """This can produce a straight flush, of suit random_suit and starting at Rank start"""
     hand = []
     if not start:
         start = 7
     for rank in range(start, start + 5):
         hand.append(Card(random_suit(), Rank(rank)))
+    return hand
+
+def make_flush(suit: Suit = None) -> List[Card]:
+    """This can produce a flush, of suit random_suit and with a random_ranks"""
+    hand = []
+    if not suit:
+        suit = random_suit()
+    for rank in range(0, 5):
+        hand.append(Card(suit, random_rank()))
     return hand
 
 
@@ -336,8 +349,7 @@ def score_hand(hand):
     """Return the score of a particular hand. Returns a tuple with the
       name of the hand and the score associated with this hand"""
     scores = get_scores()
-    ranks, suits = split_cards(hand)
-    print(f'ranks are {ranks}\n suits are {suits}')
+    suits, ranks = split_cards(hand)
     flush = is_flush(suits)
     straight = is_straight(ranks)
     pairs = find_repeated_cards(ranks)

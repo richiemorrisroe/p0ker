@@ -1,3 +1,4 @@
+# type: ignore 
 import pytest
 from pkr import (Card, Suit, Rank, Hand, random_suit, random_rank, random_card,
                  random_hand)
