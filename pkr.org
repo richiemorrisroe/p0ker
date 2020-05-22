@@ -1458,10 +1458,18 @@ def test_repeated_cards() -> None:
     reps = find_repeated_cards(ranks)
     assert len(reps)==1
 
-def test_is_straight_exact() -> None:
+def test_has_straight_only_one_rank() -> None:
     straight = make_straight(Suit(1), start=5)
     ranks, suits = split_cards(straight)
     assert is_straight(ranks)
+
+
+def test_straight_has_consecutive_numbers() -> None:
+    straight = make_straight(Suit(1), start=5)
+    suits, ranks = split_cards(straight)
+    ranks_int = [int(rank) for rank in ranks]
+    assert ranks_int == [5, 6, 7, 8, 9]
+
 #+END_SRC
 
 ** Design Thoughts
