@@ -13,25 +13,24 @@ def test_deal_cards() -> None:
     assert len(p1.hand)==5
 
 def test_split_cards() -> None:
-    rhand = random_hand()
+    rhand = random_hand() 
     ranks, suits = split_cards(rhand)
     assert len(ranks) and len(suits) == 5
 
+def test_split_cards_suits() -> None:
+    rhand = random_hand() 
+    suits, ranks = split_cards(rhand)
+    assert isinstance(ranks[0], Rank)
+
+    
 def test_count() -> None:
     hand = [Card(Suit(1), Rank(14)), Card(Suit(2), Rank(14)),
             Card(Suit(3), Rank(14)), Card(Suit(1), Rank(8)),
             Card(Suit(1), Rank(8))]
-    ranks, suits = split_cards(hand)
+    suits, ranks = split_cards(hand)
     count_ranks = count(ranks)
     assert max(count_ranks.values()) == 3
 
-# def test_anyrep() -> None:
-#     hand = [Card(Suit(1), Rank(14)), Card(Suit(2), Rank(14)),
-#             Card(Suit(3), Rank(14)), Card(Suit(1), Rank(8)),
-#             Card(Suit(1), Rank(8))]
-#     ranks, suits = split_cards(hand)
-#     ranks_count = count(ranks)
-#     assert anyrep(ranks_count) is True
 
 def test_repeated_cards() -> None:
     hand = [Card(Suit(1), Rank(14)), Card(Suit(2), Rank(14)),
@@ -52,3 +51,8 @@ def test_straight_has_consecutive_numbers() -> None:
     suits, ranks = split_cards(straight)
     ranks_int = [int(rank) for rank in ranks]
     assert ranks_int == [5, 6, 7, 8, 9]
+
+def test_is_flush_correct() -> None:
+    flush = make_straight(Suit(1), start=5)
+    suits, ranks = split_cards(flush)
+    assert is_flush(suits)

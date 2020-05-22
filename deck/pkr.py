@@ -293,7 +293,7 @@ def is_straight(ranks):
     else:
         return False
 
-def is_flush(suits, exact=True):
+def is_flush(suits):
     """Check if a set of suits contains a flush (all suits are the same). 
       Returns True if so, False otherwise. 
     If exact=False, returns the highest count of same suits present. """
