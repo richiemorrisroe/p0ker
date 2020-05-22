@@ -230,7 +230,7 @@ def deal_cards(deck, players):
     return deck, players
 
 
-def split_cards(Hand):
+def split_cards(Hand) -> Tuple[List[Suit], List[Rank]]:
     """Takes a list of card objects (a hand) and returns two lists,
       one of the
       suits, and the other of the ranks of the hand.
@@ -257,8 +257,7 @@ def count(ranks):
 
 
 def anyrep(ranks):
-    """
-      Check if there are any repeated elements in either 
+    """Check if there are any repeated elements in either 
       a selection of suits or ranks.
       Return True if there are, False otherwise.
       """
@@ -287,6 +286,7 @@ def is_straight(ranks):
       If exact=False, then returns the number of cards which 
       form part of a straight"""
     ##by definition, a straight has only one distinct rank
+    
     rank_set = set(ranks)
     if len(rank_set) == 1:
         return True
@@ -311,11 +311,11 @@ def make_straight(suit: Suit, start: int) -> List[Card]:
     if not start:
         start = 7
     for rank in range(start, start + 5):
-        hand.append(Card(suit, Rank(rank)))
+        hand.append(Card(random_suit(), Rank(rank)))
     return hand
 
 
-def get_scores():
+def get_scores() -> Dict[str, int]:
     """Returns a dictionary with potential hands and the scores associated
       with them. Normally only called from within other functions"""
     scores = {
@@ -336,22 +336,21 @@ def score_hand(hand):
     """Return the score of a particular hand. Returns a tuple with the
       name of the hand and the score associated with this hand"""
     scores = get_scores()
-    suits, ranks = split_cards(hand)
+    ranks, suits = split_cards(hand)
+    print(f'ranks are {ranks}\n suits are {suits}')
     flush = is_flush(suits)
     straight = is_straight(ranks)
-    print("flush is {}, and straight is {}".format(flush, straight))
     pairs = find_repeated_cards(ranks)
-    print("len(pairs) = {}".format(len(pairs)))
-    if straight:
+    if straight and not flush:
         handscore = scores['STRAIGHT']
         scorename = 'STRAIGHT'
-    if flush:
+    if flush and not straight:
         handscore = scores['FLUSH']
         scorename = 'FLUSH'
     if straight and flush:
         handscore = scores['STRAIGHT-FLUSH']
         scorename = 'STRAIGHT-FLUSH'
-    if len(pairs) == 0:
+    if len(pairs) == 0 and not flush and not straight:
         handscore = scores['NOTHING']
         scorename = 'NOTHING'
     if len(pairs) >= 1:

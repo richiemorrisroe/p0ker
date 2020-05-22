@@ -61,21 +61,25 @@ def test_get_scores_scores_every_hand() -> None:
     rhand = random_hand()
     assert score_hand(rhand) is not None
 
-def test_score_full_house() -> None:
-    full_house = [Card(Suit(1), Rank(14)), Card(Suit(2), Rank(14)),
-            Card(Suit(3), Rank(14)), Card(Suit(1), Rank(8)),
-            Card(Suit(1), Rank(8))]
-    score, name = score_hand(full_house)
-    assert name == 'FULL-HOUSE'
 
-def test_score_pair() -> None:
-    pair = [Card(Suit(1), Rank(8)), Card(Suit(2), Rank(8)),
-            Card(Suit(1), Rank(2)), Card(Suit(2), Rank(3)),
-            Card(Suit(3), Rank(5))]
-    score, name = score_hand(pair)
-    assert name == 'PAIR'
+# def test_make_straight_is_straight() -> None:
+#     straight = make_straight(Suit(3))
+#     assert is_straight
+# def test_score_full_house() -> None:
+#     full_house = [Card(Suit(1), Rank(14)), Card(Suit(2), Rank(14)),
+#             Card(Suit(3), Rank(14)), Card(Suit(1), Rank(8)),
+#             Card(Suit(1), Rank(8))]
+#     score, name = score_hand(full_house)
+#     assert name == 'FULL-HOUSE'
+
+# def test_score_pair() -> None:
+#     pair = [Card(Suit(1), Rank(8)), Card(Suit(2), Rank(8)),
+#             Card(Suit(1), Rank(2)), Card(Suit(2), Rank(3)),
+#             Card(Suit(3), Rank(5))]
+#     score, name = score_hand(pair)
+#     assert name == 'PAIR'
     
-def test_score_straight() -> None:
-    straight = make_straight(Suit(1), start=5)
-    score, name = score_hand(straight)
-    assert straight is None
+# def test_score_straight() -> None:
+#     straight = make_straight(Suit(1), start=5)
+#     score, name = score_hand(straight)
+#     assert straight is None

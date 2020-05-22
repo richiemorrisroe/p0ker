@@ -1040,7 +1040,7 @@ def deal_cards(deck, players):
     return deck, players
 
 
-def split_cards(Hand):
+def split_cards(Hand) -> Tuple[List[Suit], List[Rank]]:
     """Takes a list of card objects (a hand) and returns two lists,
       one of the
       suits, and the other of the ranks of the hand.
@@ -1067,8 +1067,7 @@ def count(ranks):
 
 
 def anyrep(ranks):
-    """
-      Check if there are any repeated elements in either 
+    """Check if there are any repeated elements in either 
       a selection of suits or ranks.
       Return True if there are, False otherwise.
       """
@@ -1097,6 +1096,7 @@ def is_straight(ranks):
       If exact=False, then returns the number of cards which 
       form part of a straight"""
     ##by definition, a straight has only one distinct rank
+    
     rank_set = set(ranks)
     if len(rank_set) == 1:
         return True
@@ -1121,11 +1121,11 @@ def make_straight(suit: Suit, start: int) -> List[Card]:
     if not start:
         start = 7
     for rank in range(start, start + 5):
-        hand.append(Card(suit, Rank(rank)))
+        hand.append(Card(random_suit(), Rank(rank)))
     return hand
 
 
-def get_scores():
+def get_scores() -> Dict[str, int]:
     """Returns a dictionary with potential hands and the scores associated
       with them. Normally only called from within other functions"""
     scores = {
@@ -1146,22 +1146,21 @@ def score_hand(hand):
     """Return the score of a particular hand. Returns a tuple with the
       name of the hand and the score associated with this hand"""
     scores = get_scores()
-    suits, ranks = split_cards(hand)
+    ranks, suits = split_cards(hand)
+    print(f'ranks are {ranks}\n suits are {suits}')
     flush = is_flush(suits)
     straight = is_straight(ranks)
-    print("flush is {}, and straight is {}".format(flush, straight))
     pairs = find_repeated_cards(ranks)
-    print("len(pairs) = {}".format(len(pairs)))
-    if straight:
+    if straight and not flush:
         handscore = scores['STRAIGHT']
         scorename = 'STRAIGHT'
-    if flush:
+    if flush and not straight:
         handscore = scores['FLUSH']
         scorename = 'FLUSH'
     if straight and flush:
         handscore = scores['STRAIGHT-FLUSH']
         scorename = 'STRAIGHT-FLUSH'
-    if len(pairs) == 0:
+    if len(pairs) == 0 and not flush and not straight:
         handscore = scores['NOTHING']
         scorename = 'NOTHING'
     if len(pairs) >= 1:
@@ -1476,25 +1475,31 @@ def test_get_scores_scores_every_hand() -> None:
     rhand = random_hand()
     assert score_hand(rhand) is not None
 
-def test_score_full_house() -> None:
-    full_house = [Card(Suit(1), Rank(14)), Card(Suit(2), Rank(14)),
-            Card(Suit(3), Rank(14)), Card(Suit(1), Rank(8)),
-            Card(Suit(1), Rank(8))]
-    score, name = score_hand(full_house)
-    assert name == 'FULL-HOUSE'
 
-def test_score_pair() -> None:
-    pair = [Card(Suit(1), Rank(8)), Card(Suit(2), Rank(8)),
-            Card(Suit(1), Rank(2)), Card(Suit(2), Rank(3)),
-            Card(Suit(3), Rank(5))]
-    score, name = score_hand(pair)
-    assert name == 'PAIR'
+# def test_make_straight_is_straight() -> None:
+#     straight = make_straight(Suit(3))
+#     assert is_straight
+# def test_score_full_house() -> None:
+#     full_house = [Card(Suit(1), Rank(14)), Card(Suit(2), Rank(14)),
+#             Card(Suit(3), Rank(14)), Card(Suit(1), Rank(8)),
+#             Card(Suit(1), Rank(8))]
+#     score, name = score_hand(full_house)
+#     assert name == 'FULL-HOUSE'
+
+# def test_score_pair() -> None:
+#     pair = [Card(Suit(1), Rank(8)), Card(Suit(2), Rank(8)),
+#             Card(Suit(1), Rank(2)), Card(Suit(2), Rank(3)),
+#             Card(Suit(3), Rank(5))]
+#     score, name = score_hand(pair)
+#     assert name == 'PAIR'
     
-def test_score_straight() -> None:
-    straight = make_straight(Suit(1), start=5)
-    score, name = score_hand(straight)
-    assert straight is None
+# def test_score_straight() -> None:
+#     straight = make_straight(Suit(1), start=5)
+#     score, name = score_hand(straight)
+#     assert straight is None
 #+END_SRC
+
+#+RESULTS:
 
 ** Design Thoughts
 
@@ -1512,6 +1517,7 @@ def test_score_straight() -> None:
 - need to account for this logic somewhere
 - seems like blinds, cards and betting should be handled by my hypotethical dealer object
 - but first I need test coverage for what exists now
+- split_cards is incredibly awkward. Multiple unpacking returns are a dangerous thing. 
 *** Visualising Code graph
 
 Found a useful article, with the following instructions
