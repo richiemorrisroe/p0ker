@@ -1154,7 +1154,7 @@ def get_scores() -> Dict[str, int]:
         'STRAIGHT': 25641,
         'FLUSH': 52631,
         'FULL-HOUSE': 71428,
-        '4-OF-A-KIND': 500000,
+        'FOUR-OF-A-KIND': 500000,
         'STRAIGHT-FLUSH': 100000000
     }
     return scores
@@ -1211,19 +1211,25 @@ def discard_cards(hand):
     print(f'hand is {hand}')
     if handname == 'NOTHING':
         three_cards = random.sample(set(hand), 3)
-        hand = [card for card in hand if card not in three_cards]
+        keep = [card for card in hand if card not in three_cards]
+        discard = [card for card in hand if card in three_cards]
     else:
-        old_score = score
-        old_hand  = hand
-        rand_card = random.sample(set(hand), 1)
-        hand = [card for card in hand if card is not rand_card]
-        score, handname = score_hand(hand)
-        if score < old_score:
-            hand = old_hand
-            score = old_score
-        else:
-            pass
-
+        for card in hand:
+            keep = []
+            discard = []
+            old_score = score
+            current_card = card
+            new_hand = [c for c in hand if c != current_card]
+            print(f'new_hand is {new_hand}')
+            score_new, _ = score_hand(new_hand)
+            if old_score > score_new:
+                keep.append(card)
+            if old_score == score_new:
+                discard.append(card)
+            if old_score < score_new:
+                raise ValueError("something has gone very wrong")
+        discarded_cards = [c for c in hand if c not in keep]
+        hand = keep
     return hand
 
 
