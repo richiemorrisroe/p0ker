@@ -63,7 +63,12 @@ class Hand:
     def __iter__(self):
         self.pos = 0
         return iter(self.cards)
+    
+    def __str__(self):
+        result = ",".join(str(card) for card in self.cards)
+        return result
 
+        
     def __next__(self):
         self.pos += 1
         if self.pos > len(self.cards):
@@ -393,20 +398,23 @@ def discard_cards(hand):
       In any case, will discard no more than three cards."""
     suits, ranks = split_cards(hand)
     score, handname = score_hand(hand)
-    scount = count(suits)
-    rcount = count(ranks)
+    print(f'hand is {hand}')
     if handname == 'NOTHING':
-        ranks.sort(reverse=True)
-        topranks = ranks[0:2]
-        minretained = topranks[1].value
-        cards_remaining = [(r, s) for r, s in hand if r >= minretained]
+        three_cards = random.sample(set(hand), 3)
+        hand = [card for card in hand if card not in three_cards]
     else:
-        keep = {k: v for k, v in rcount.items() if v >= 2}
-        keepvalues = list(keep)[0].value
-        cards_remaining = [(rank, suit) for rank, suit in hand
-                           if rank == keepvalues]
+        old_score = score
+        old_hand  = hand
+        rand_card = random.sample(set(hand), 1)
+        hand = [card for card in hand if card is not rand_card]
+        score, handname = score_hand(hand)
+        if score < old_score:
+            hand = old_hand
+            score = old_score
+        else:
+            pass
 
-    return cards_remaining
+    return hand
 
 
 def replenish_cards(deck, player):
