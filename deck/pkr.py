@@ -299,8 +299,6 @@ def is_flush(suits):
     If exact=False, returns the highest count of same suits present. """
     sc = count(suits)
     maxval = max(sc.values())
-    if not exact:
-        return maxval
     if maxval == 5:
         return True
     else:
