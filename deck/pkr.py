@@ -235,7 +235,7 @@ def deal_cards(deck, players):
     return deck, players
 
 
-def split_cards(Hand) -> Tuple[List[Suit], List[Rank]]:
+def split_cards(Hand:Hand) -> Tuple[List[Suit], List[Rank]]:
     """Takes a list of card objects (a hand) and returns two lists,
       one of the
       suits, and the other of the ranks of the hand.
@@ -245,6 +245,7 @@ def split_cards(Hand) -> Tuple[List[Suit], List[Rank]]:
     for each in Hand:
         suits.append(each.suit)
         ranks.append(each.rank)
+    print(f'suits are {suits} and ranks are {ranks}')
     return suits, ranks
 
 
@@ -354,6 +355,7 @@ def score_hand(hand):
     """Return the score of a particular hand. Returns a tuple with the
       name of the hand and the score associated with this hand"""
     scores = get_scores()
+    print(f'hand is {hand}')
     suits, ranks = split_cards(hand)
     flush = is_flush(suits)
     straight = is_straight(ranks)
@@ -398,7 +400,10 @@ def discard_cards(hand):
       In any case, will discard no more than three cards."""
     suits, ranks = split_cards(hand)
     score, handname = score_hand(hand)
-    print(f'hand is {hand}')
+    print(f'hand is {handname}')
+    if handname == 'STRAIGHT' or handname == 'FLUSH' or handname == 'STRAIGHT-FLUSH':
+        keep = hand
+        discard = []
     if handname == 'NOTHING':
         three_cards = random.sample(set(hand), 3)
         keep = [card for card in hand if card not in three_cards]
@@ -420,7 +425,7 @@ def discard_cards(hand):
                 raise ValueError("something has gone very wrong")
         discarded_cards = [c for c in hand if c not in keep]
         hand = keep
-    return hand
+    return keep, discard
 
 
 def replenish_cards(deck, player):

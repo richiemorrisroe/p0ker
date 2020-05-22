@@ -69,6 +69,7 @@ def test_make_straight_is_straight() -> None:
 
 
 def test_discard_cards() -> None:
-    rhand = random_hand()
-    discarded = discard_cards(rhand)
-    assert discarded is None
+    testhand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
+                Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))]
+    keep, discarded = discard_cards(testhand)
+    assert len(keep)>=3 and len(discarded)>=2
