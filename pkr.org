@@ -29,7 +29,7 @@
 - So this creates a deck, and each card is just an element of the deck
 - This isn't really what I want, though there are some good ideas that I can steal from it.
 
-#+BEGIN_SRC python :tangle deck.py :session :results none :exports code
+#+BEGIN_SRC python  :session :results none :exports code
 from enum import Enum, IntEnum
 import random as random
 import collections as collections
@@ -127,7 +127,7 @@ def random_hand():
 
 
 
-#+BEGIN_SRC python :session :tangle deck.py
+#+BEGIN_SRC python :session
 
 #+END_SRC
 
@@ -144,7 +144,7 @@ def random_hand():
 - I probably need a Hand object, which consists of 1-5 cards
 - So we can re-use some of the fluent python code, with our new Rank and Suit enums
 
-#+BEGIN_SRC python :session :tangle deck.py
+#+BEGIN_SRC python :session
 
 
 
@@ -183,7 +183,7 @@ Card = collections.namedtuple("Card", ['rank', 'suit'])
 - I need to shuffle the deck
 - Let's steal more code from fluent python! (it was shuffle, see above)
 - I fixed this, this code is not used anymore (but potentially stuff further on relies upon it)
-#+BEGIN_SRC python :session :tangle deck.py
+#+BEGIN_SRC python :session
 
 def deal_cards(deck, players):
     """Takes a list of players (normally empty lists)
@@ -248,7 +248,7 @@ Ace > Deuce
 
 - Official rules can be found [[https://www.pagat.com/poker/rules/ranking.html][here]]
 
-#+BEGIN_SRC python :session :tangle deck.py
+#+BEGIN_SRC python :session
 from typing import List
 
 
@@ -355,7 +355,7 @@ def make_straight(suit: Suit, start: int) -> List[Card]:
 - So I can use 1/prob as a measure of how much to bet.
 - Note that those really small numbers are percentages, which makes things pretty crazy.
 
-#+BEGIN_SRC python :session :tangle deck.py
+#+BEGIN_SRC python :session 
 
 
 def get_scores():
@@ -431,7 +431,7 @@ mydeck, players = deal_cards(mydeck, players)
 scores = [score_hand(player.hand) for player in players]
 #+END_SRC
 
-#+BEGIN_SRC python :session :tangle deck.py
+#+BEGIN_SRC python :session 
 
 
 def discard_cards(hand):
@@ -488,7 +488,7 @@ def replenish_cards(deck, player):
 
 - Seems plausible to create some player objects
 
-#+BEGIN_SRC python :session :tangle deck.py
+#+BEGIN_SRC python :session 
 import math as math
 import random as random
 from typing import List, Set, Dict, Tuple, Optional
@@ -581,7 +581,7 @@ class Player:
 - I probably also need a Game object to handle the deck, pot and
   comparison of hands
 
-#+BEGIN_SRC python :session :tangle deck.py
+#+BEGIN_SRC python :session 
 class Game:
     def __init__(self, name="poker", ante=100):
         self.name = name
@@ -1117,6 +1117,9 @@ def is_flush(suits : List[Suit]) -> bool :
     """Check if a set of suits contains a flush (all suits are the same). 
       Returns True if so, False otherwise. 
     If exact=False, returns the highest count of same suits present. """
+    all_ranks = [x for x in ranks if isinstance(x, Suit)]
+    if len(all_ranks) != len(ranks):
+        raise ValueError('all suits must be of class Suit')
     sc = count(suits)
     maxval = max(sc.values())
     if maxval == 5:
