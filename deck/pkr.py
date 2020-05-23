@@ -35,7 +35,9 @@ class Rank(IntEnum):
 
 class Card:
     """A playing card in the space (2,14) rank and one of four suits"""
-    def __init__(self, suit, rank):
+    def __init__(self, rank:Rank=None, suit:Suit = None):
+        assert isinstance(rank, Rank)
+        assert isinstance(suit, Suit)
         self.rank = rank
         self.suit = suit
 
@@ -46,6 +48,12 @@ class Card:
     def __repr__(self):
         pstring = "Card({rank}, {suit})"
         return pstring.format(rank=self.rank, suit=self.suit)
+
+    def get_suit(self):
+        return self.suit
+
+    def get_rank(self):
+        return self.rank
 
 
 class Hand:
@@ -79,6 +87,12 @@ class Hand:
         else:
             return self.cards[self.pos - 1]
 
+    def get_suits(self) -> List[Suit]:
+        suits = []
+        for card in self.cards:
+            suits.append(card.get_suit())
+        return suits
+
 
 def random_choice(upper: int, lower: int) -> int:
     """Choose an int between upper and lower, uniformly at random"""
@@ -103,7 +117,7 @@ def random_card() -> Card:
       return the combination as a Card object"""
     suit = random_suit()
     rank = random_rank()
-    card = Card(suit, rank)
+    card = Card(rank, suit)
     return card
 
 
@@ -293,10 +307,6 @@ def find_repeated_cards(ranks):
 
 
 def is_straight(ranks : List[Rank]) -> bool:
-    """Check if the hand contains a straight.
-      Returns True if so, False otherwise. 
-      """
-    ##by definition, a straight has only one distinct rank
     all_ranks = [x for x in ranks if isinstance(x, Rank)]
     if len(all_ranks) != len(ranks):
         raise ValueError('all cards must be of class Rank')
@@ -324,23 +334,23 @@ def is_flush(suits : List[Suit]) -> bool :
         return False
 
 
-def make_straight(start: int) -> List[Card]:
+def make_straight(start: int) -> Hand:
     """This can produce a straight flush, of suit random_suit and starting at Rank start"""
     hand = []
     if not start:
         start = 7
     for rank in range(start, start + 5):
-        hand.append(Card(random_suit(), Rank(rank)))
-    return hand
+        hand.append(Card(Rank(rank), random_suit()))
+    return Hand(hand)
 
-def make_flush(suit: Suit = None) -> List[Card]:
+def make_flush(suit: Suit = None) -> Hand:
     """This can produce a flush, of suit random_suit and with a random_ranks"""
     hand = []
     if not suit:
         suit = random_suit()
     for rank in range(0, 5):
-        hand.append(Card(suit, random_rank()))
-    return hand
+        hand.append(Card(random_rank(), suit))
+    return Hand(hand)
 
 
 def get_scores() -> Dict[str, int]:
@@ -360,12 +370,20 @@ def get_scores() -> Dict[str, int]:
     return scores
 
 
-def score_hand(hand):
+def print_source(function):
+    import inspect
+    import pprint
+    pprint.pprint(inspect.getsource(function))
+
+
+def score_hand(hand :Hand):
     """Return the score of a particular hand. Returns a tuple with the
       name of the hand and the score associated with this hand"""
     scores = get_scores()
     print(f'score_hand : hand is {hand}')
     suits, ranks = split_cards(hand)
+    print_source(split_cards)
+    
     flush = is_flush(suits)
     straight = is_straight(ranks)
     pairs = find_repeated_cards(ranks)

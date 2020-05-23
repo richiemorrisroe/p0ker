@@ -37,3 +37,8 @@ def test_negative_number_deal() -> None:
     d = Deck()
     with pytest.raises(ValueError):
         d.deal(-1)
+
+def test_hand_rejects_invalid_card_combinations() -> None:
+    invalid_hand = [Card(Suit(1), Rank(1)), Card(Suit(1), Rank(1))]
+    with pytest.raises(ValueError):
+        Hand(invalid_hand)

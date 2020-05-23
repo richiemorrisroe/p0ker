@@ -1,4 +1,4 @@
-from pkr import (Card, Player, Suit, Rank,  Deck, deal_cards,
+from pkr import (Card, Player, Suit, Rank,  Deck, Hand, deal_cards,
                  random_hand, split_cards, count, anyrep,
                  find_repeated_cards, make_straight, is_straight,
                  is_flush, score_hand, make_flush, discard_cards)
@@ -14,40 +14,40 @@ def test_deal_cards() -> None:
 
 def test_split_cards() -> None:
     rhand = random_hand() 
-    ranks, suits = split_cards(rhand)
+    suits, ranks = split_cards(rhand)
     assert len(ranks) and len(suits) == 5
 
 def test_split_cards_suits() -> None:
     rhand = random_hand() 
-    ranks, suits = split_cards(rhand)
+    suits, ranks = split_cards(rhand)
     assert isinstance(suits[0], Suit)
 
 def test_split_cards_ranks() -> None:
     rhand = random_hand() 
-    ranks, suits = split_cards(rhand)
+    suits, ranks = split_cards(rhand)
     assert isinstance(ranks[0], Rank)
 
     
 def test_count() -> None:
-    hand = [Card(Suit(1), Rank(14)), Card(Suit(2), Rank(14)),
-            Card(Suit(3), Rank(14)), Card(Suit(1), Rank(8)),
-            Card(Suit(1), Rank(8))]
+    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+            Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
+            Card(Rank(8),Suit(1))])
     suits, ranks = split_cards(hand)
     count_ranks = count(ranks)
     assert max(count_ranks.values()) == 3
 
 
 def test_repeated_cards() -> None:
-    hand = [Card(Suit(1), Rank(14)), Card(Suit(2), Rank(14)),
-            Card(Suit(3), Rank(14)), Card(Suit(1), Rank(8)),
-            Card(Suit(1), Rank(8))]
-    ranks, suits = split_cards(hand)
+    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+            Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
+            Card(Rank(8),Suit(2))])
+    suits, ranks = split_cards(hand)
     reps = find_repeated_cards(ranks)
-    assert len(reps)==1
+    assert len(reps)==2
 
-def test_has_straight_only_one_rank() -> None:
+def test_make_straight_is_straight() -> None:
     straight = make_straight(start=5)
-    ranks, suits = split_cards(straight)
+    suits, ranks = split_cards(straight)
     assert is_straight(ranks)
 
 
@@ -62,19 +62,15 @@ def test_is_flush_correct() -> None:
     suits, ranks = split_cards(flush)
     assert is_flush(suits)
 
-# def test_get_scores_scores_every_hand() -> None:
-#     rhand = random_hand()
-#     assert score_hand(rhand) is not None
+def test_get_scores_scores_every_hand() -> None:
+    rhand = random_hand()
+    assert score_hand(rhand) is not None
 
 
-def test_make_straight_is_straight() -> None:
-    straight = make_straight(start=3)
-    suits, ranks = split_cards(straight)
-    assert is_straight(ranks)
 
 
-def test_discard_cards() -> None:
-    testhand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
-                Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))]
-    keep, discarded = discard_cards(testhand)
-    assert len(keep)>=3 and len(discarded)>=2
+# def test_discard_cards() -> None:
+#     testhand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
+#                 Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))]
+#     keep, discarded = discard_cards(testhand)
+#     assert len(keep)>=3 and len(discarded)>=2
