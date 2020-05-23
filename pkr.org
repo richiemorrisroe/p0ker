@@ -802,7 +802,7 @@ We'll use pytest, as it has less boilerplate
 
 First, I need to put all my code into a module
 
-I'm going to recreate the enterity of deck.py within a folder called
+I'm going to recreate the entirity of deck.py within a folder called
 deck
 
 This will make it easier to set up all the testing and whatnot. 
@@ -811,6 +811,7 @@ This will make it easier to set up all the testing and whatnot.
 from enum import Enum, IntEnum
 import random as random
 import collections as collections
+
 from random import shuffle
 import math as math
 import random as random
@@ -878,6 +879,8 @@ class Hand:
         result = ",".join(str(card) for card in self.cards)
         return result
 
+    def __repr__(self):
+        result = ",".join(repr(card) for card in self.cards)
         
     def __next__(self):
         self.pos += 1
@@ -919,10 +922,9 @@ def random_hand() -> Hand:
     Note that this function does not handle the possibility of
     two cards having the same rank & suit.
     Returns a list of Card objects"""
-    cards = []
-    for _ in range(0, 5):
-        cards.append(random_card())
-    return Hand(cards=cards)
+    deck = Deck()
+    hand = deck.deal(num_cards = 5)
+    return Hand(hand)
 
 
 
@@ -930,7 +932,9 @@ def random_hand() -> Hand:
 class Deck:
     """An object representing a deck of playing cards"""
     def __init__(self):
-        self._cards = [Card(rank, suit) for suit in Suit for rank in Rank]
+        deck = [Card(rank, suit) for suit in Suit for rank in Rank]
+        random.shuffle(deck)
+        self._cards = deck
 
     def __len__(self):
         return len(self._cards)
@@ -1054,10 +1058,10 @@ def split_cards(Hand:Hand) -> Tuple[List[Suit], List[Rank]]:
       Mostly useful for further functions """
     suits = []
     ranks = []
-    for each in Hand:
-        suits.append(each.suit)
-        ranks.append(each.rank)
-    print(f'suits are {suits} and ranks are {ranks}')
+    for card in Hand:
+        suits.append(card.suit)
+        ranks.append(card.rank)
+        print(f'split_cards: suits are {suits} and ranks are {ranks}')
     return suits, ranks
 
 
@@ -1171,8 +1175,7 @@ def score_hand(hand):
       name of the hand and the score associated with this hand"""
     scores = get_scores()
     print(f'hand is {hand}')
-    ranks, suits = split_cards(hand)
-    print(f'suits are {suits} and ranks are {ranks}')
+    suits, ranks = split_cards(hand)
     flush = is_flush(suits)
     straight = is_straight(ranks)
     pairs = find_repeated_cards(ranks)
@@ -1473,12 +1476,12 @@ def test_split_cards() -> None:
 
 def test_split_cards_suits() -> None:
     rhand = random_hand() 
-    suits, ranks = split_cards(rhand)
-    assert isinstance(suit[0], Suit)
+    ranks, suits = split_cards(rhand)
+    assert isinstance(suits[0], Suit)
 
 def test_split_cards_ranks() -> None:
     rhand = random_hand() 
-    suits, ranks = split_cards(rhand)
+    ranks, suits = split_cards(rhand)
     assert isinstance(ranks[0], Rank)
 
     
@@ -1516,9 +1519,9 @@ def test_is_flush_correct() -> None:
     suits, ranks = split_cards(flush)
     assert is_flush(suits)
 
-def test_get_scores_scores_every_hand() -> None:
-    rhand = random_hand()
-    assert score_hand(rhand) is not None
+# def test_get_scores_scores_every_hand() -> None:
+#     rhand = random_hand()
+#     assert score_hand(rhand) is not None
 
 
 def test_make_straight_is_straight() -> None:

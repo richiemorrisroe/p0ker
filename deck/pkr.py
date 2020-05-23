@@ -1,6 +1,7 @@
 from enum import Enum, IntEnum
 import random as random
 import collections as collections
+
 from random import shuffle
 import math as math
 import random as random
@@ -68,6 +69,8 @@ class Hand:
         result = ",".join(str(card) for card in self.cards)
         return result
 
+    def __repr__(self):
+        result = ",".join(repr(card) for card in self.cards)
         
     def __next__(self):
         self.pos += 1
@@ -109,10 +112,9 @@ def random_hand() -> Hand:
     Note that this function does not handle the possibility of
     two cards having the same rank & suit.
     Returns a list of Card objects"""
-    cards = []
-    for _ in range(0, 5):
-        cards.append(random_card())
-    return Hand(cards=cards)
+    deck = Deck()
+    hand = deck.deal(num_cards = 5)
+    return Hand(hand)
 
 
 
@@ -120,7 +122,9 @@ def random_hand() -> Hand:
 class Deck:
     """An object representing a deck of playing cards"""
     def __init__(self):
-        self._cards = [Card(rank, suit) for suit in Suit for rank in Rank]
+        deck = [Card(rank, suit) for suit in Suit for rank in Rank]
+        random.shuffle(deck)
+        self._cards = deck
 
     def __len__(self):
         return len(self._cards)
@@ -244,10 +248,10 @@ def split_cards(Hand:Hand) -> Tuple[List[Suit], List[Rank]]:
       Mostly useful for further functions """
     suits = []
     ranks = []
-    for each in Hand:
-        suits.append(each.suit)
-        ranks.append(each.rank)
-    print(f'suits are {suits} and ranks are {ranks}')
+    for card in Hand:
+        suits.append(card.suit)
+        ranks.append(card.rank)
+        print(f'split_cards: suits are {suits} and ranks are {ranks}')
     return suits, ranks
 
 
@@ -361,8 +365,7 @@ def score_hand(hand):
       name of the hand and the score associated with this hand"""
     scores = get_scores()
     print(f'hand is {hand}')
-    ranks, suits = split_cards(hand)
-    print(f'suits are {suits} and ranks are {ranks}')
+    suits, ranks = split_cards(hand)
     flush = is_flush(suits)
     straight = is_straight(ranks)
     pairs = find_repeated_cards(ranks)
