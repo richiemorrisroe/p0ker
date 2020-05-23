@@ -115,6 +115,8 @@ def random_hand() -> Hand:
     return Hand(cards=cards)
 
 
+
+
 class Deck:
     """An object representing a deck of playing cards"""
     def __init__(self):
@@ -359,7 +361,8 @@ def score_hand(hand):
       name of the hand and the score associated with this hand"""
     scores = get_scores()
     print(f'hand is {hand}')
-    suits, ranks = split_cards(hand)
+    ranks, suits = split_cards(hand)
+    print(f'suits are {suits} and ranks are {ranks}')
     flush = is_flush(suits)
     straight = is_straight(ranks)
     pairs = find_repeated_cards(ranks)

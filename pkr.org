@@ -807,7 +807,7 @@ deck
 
 This will make it easier to set up all the testing and whatnot. 
 
-#+BEGIN_SRC python :tangle deck/pkr.py
+#+BEGIN_SRC python :tangle deck/pkr.py :file deck/pkr.py
 from enum import Enum, IntEnum
 import random as random
 import collections as collections
@@ -923,6 +923,8 @@ def random_hand() -> Hand:
     for _ in range(0, 5):
         cards.append(random_card())
     return Hand(cards=cards)
+
+
 
 
 class Deck:
@@ -1169,7 +1171,8 @@ def score_hand(hand):
       name of the hand and the score associated with this hand"""
     scores = get_scores()
     print(f'hand is {hand}')
-    suits, ranks = split_cards(hand)
+    ranks, suits = split_cards(hand)
+    print(f'suits are {suits} and ranks are {ranks}')
     flush = is_flush(suits)
     straight = is_straight(ranks)
     pairs = find_repeated_cards(ranks)
@@ -1471,6 +1474,11 @@ def test_split_cards() -> None:
 def test_split_cards_suits() -> None:
     rhand = random_hand() 
     suits, ranks = split_cards(rhand)
+    assert isinstance(suit[0], Suit)
+
+def test_split_cards_ranks() -> None:
+    rhand = random_hand() 
+    suits, ranks = split_cards(rhand)
     assert isinstance(ranks[0], Rank)
 
     
@@ -1519,11 +1527,11 @@ def test_make_straight_is_straight() -> None:
     assert is_straight(ranks)
 
 
-def test_discard_cards() -> None:
-    testhand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
-                Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))]
-    keep, discarded = discard_cards(testhand)
-    assert len(keep)>=3 and len(discarded)>=2 
+# def test_discard_cards() -> None:
+#     testhand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
+#                 Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))]
+#     keep, discarded = discard_cards(testhand)
+#     assert len(keep)>=3 and len(discarded)>=2 
 
 #+END_SRC
 

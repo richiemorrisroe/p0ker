@@ -20,6 +20,11 @@ def test_split_cards() -> None:
 def test_split_cards_suits() -> None:
     rhand = random_hand() 
     suits, ranks = split_cards(rhand)
+    assert isinstance(suit[0], Suit)
+
+def test_split_cards_ranks() -> None:
+    rhand = random_hand() 
+    suits, ranks = split_cards(rhand)
     assert isinstance(ranks[0], Rank)
 
     
@@ -68,8 +73,8 @@ def test_make_straight_is_straight() -> None:
     assert is_straight(ranks)
 
 
-def test_discard_cards() -> None:
-    testhand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
-                Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))]
-    keep, discarded = discard_cards(testhand)
-    assert len(keep)>=3 and len(discarded)>=2
+# def test_discard_cards() -> None:
+#     testhand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
+#                 Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))]
+#     keep, discarded = discard_cards(testhand)
+#     assert len(keep)>=3 and len(discarded)>=2
