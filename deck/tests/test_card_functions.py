@@ -47,7 +47,7 @@ def test_repeated_cards() -> None:
 
 def test_has_straight_only_one_rank() -> None:
     straight = make_straight(start=5)
-    suits, ranks = split_cards(straight)
+    ranks, suits = split_cards(straight)
     assert is_straight(ranks)
 
 
@@ -73,8 +73,8 @@ def test_make_straight_is_straight() -> None:
     assert is_straight(ranks)
 
 
-# def test_discard_cards() -> None:
-#     testhand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
-#                 Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))]
-#     keep, discarded = discard_cards(testhand)
-#     assert len(keep)>=3 and len(discarded)>=2
+def test_discard_cards() -> None:
+    testhand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
+                Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))]
+    keep, discarded = discard_cards(testhand)
+    assert len(keep)>=3 and len(discarded)>=2

@@ -364,7 +364,7 @@ def score_hand(hand):
     """Return the score of a particular hand. Returns a tuple with the
       name of the hand and the score associated with this hand"""
     scores = get_scores()
-    print(f'hand is {hand}')
+    print(f'score_hand : hand is {hand}')
     suits, ranks = split_cards(hand)
     flush = is_flush(suits)
     straight = is_straight(ranks)

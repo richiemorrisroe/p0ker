@@ -1,6 +1,6 @@
 #+PROPERTY: header-args:R  :session *R*
 #+PROPERTY: header-args:python    :exports code
-* P0ker
+* COMMENT P0ker
 - In which I write a card deck
 - Plan is to implement poker
 - And then potentially some bots.
@@ -1174,7 +1174,7 @@ def score_hand(hand):
     """Return the score of a particular hand. Returns a tuple with the
       name of the hand and the score associated with this hand"""
     scores = get_scores()
-    print(f'hand is {hand}')
+    print(f'score_hand : hand is {hand}')
     suits, ranks = split_cards(hand)
     flush = is_flush(suits)
     straight = is_straight(ranks)
@@ -1504,7 +1504,7 @@ def test_repeated_cards() -> None:
 
 def test_has_straight_only_one_rank() -> None:
     straight = make_straight(start=5)
-    suits, ranks = split_cards(straight)
+    ranks, suits = split_cards(straight)
     assert is_straight(ranks)
 
 
@@ -1530,11 +1530,11 @@ def test_make_straight_is_straight() -> None:
     assert is_straight(ranks)
 
 
-# def test_discard_cards() -> None:
-#     testhand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
-#                 Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))]
-#     keep, discarded = discard_cards(testhand)
-#     assert len(keep)>=3 and len(discarded)>=2 
+def test_discard_cards() -> None:
+    testhand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
+                Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))]
+    keep, discarded = discard_cards(testhand)
+    assert len(keep)>=3 and len(discarded)>=2 
 
 #+END_SRC
 
