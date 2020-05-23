@@ -307,8 +307,8 @@ def is_flush(suits : List[Suit]) -> bool :
     """Check if a set of suits contains a flush (all suits are the same). 
       Returns True if so, False otherwise. 
     If exact=False, returns the highest count of same suits present. """
-    all_ranks = [x for x in ranks if isinstance(x, Suit)]
-    if len(all_ranks) != len(ranks):
+    all_suits = [x for x in suits if isinstance(x, Suit)]
+    if len(all_suits) != len(suits):
         raise ValueError('all suits must be of class Suit')
     sc = count(suits)
     maxval = max(sc.values())
