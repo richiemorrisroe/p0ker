@@ -49,6 +49,21 @@ class Card:
         pstring = "Card({rank}, {suit})"
         return pstring.format(rank=self.rank, suit=self.suit)
 
+    def __eq__(self, other):
+        if self.suit == other.suit and self.rank == other.rank:
+            return True
+        else:
+            return False
+
+    def __hash__(self):
+        return hash((self.rank, self.suit))
+
+    def __gt__(self, other):
+        if self.rank > other.rank:
+            return True
+        if self.rank < other.rank:
+            return False
+        
     def get_suit(self):
         return self.suit
 
@@ -58,10 +73,15 @@ class Card:
 
 class Hand:
     """A hand holds cards from a particular deck"""
-    def __init__(self, cards):
+    def __init__(self, cards:List[Card]):
         all_cards = [x for x in cards if isinstance(x, Card)]
+        cards_set = set(cards)
+        print(f'all_cards:{all_cards}; cards_set:{cards_set}')
         if len(all_cards) != len(cards):
             raise ValueError('all cards must be of class Card')
+        
+        if len(all_cards) != len(cards_set):
+            raise ValueError('all cards must be unique')
         else:
             self.cards = cards
             self.pos = 0
@@ -167,7 +187,10 @@ class Deck:
 
 class Player:
     def __init__(self, hand=None, stash=5000):
-        self.hand = []
+        if hand is None:
+            self.hand = []
+        else:
+            self.hand = hand
         self.stash = stash
         self.score = 0
         self.minbet = 10
@@ -265,7 +288,6 @@ def split_cards(Hand:Hand) -> Tuple[List[Suit], List[Rank]]:
     for card in Hand:
         suits.append(card.suit)
         ranks.append(card.rank)
-        print(f'split_cards: suits are {suits} and ranks are {ranks}')
     return suits, ranks
 
 
@@ -348,8 +370,9 @@ def make_flush(suit: Suit = None) -> Hand:
     hand = []
     if not suit:
         suit = random_suit()
-    for rank in range(0, 5):
-        hand.append(Card(random_rank(), suit))
+    random_ranks = random.sample(set(Rank), 5)
+    for rank in random_ranks:
+        hand.append(Card(rank, suit))
     return Hand(hand)
 
 
@@ -380,10 +403,7 @@ def score_hand(hand :Hand):
     """Return the score of a particular hand. Returns a tuple with the
       name of the hand and the score associated with this hand"""
     scores = get_scores()
-    print(f'score_hand : hand is {hand}')
     suits, ranks = split_cards(hand)
-    print_source(split_cards)
-    
     flush = is_flush(suits)
     straight = is_straight(ranks)
     pairs = find_repeated_cards(ranks)
@@ -427,7 +447,6 @@ def discard_cards(hand):
       In any case, will discard no more than three cards."""
     suits, ranks = split_cards(hand)
     score, handname = score_hand(hand)
-    print(f'hand is {handname}')
     if handname == 'STRAIGHT' or handname == 'FLUSH' or handname == 'STRAIGHT-FLUSH':
         keep = hand
         discard = []
@@ -436,22 +455,23 @@ def discard_cards(hand):
         keep = [card for card in hand if card not in three_cards]
         discard = [card for card in hand if card in three_cards]
     else:
+        keep = []
+        discard = []
         for card in hand:
-            keep = []
-            discard = []
+
             old_score = score
-            current_card = card
-            new_hand = [c for c in hand if c != current_card]
-            print(f'new_hand is {new_hand}')
+            print(f'card is {card}')
+            new_hand = [c for c in hand if c != card]
             score_new, _ = score_hand(new_hand)
+            print(f'new_hand is {new_hand}; new_score is {score_new}; old_score is {old_score}')
             if old_score > score_new:
                 keep.append(card)
             if old_score == score_new:
                 discard.append(card)
             if old_score < score_new:
                 raise ValueError("something has gone very wrong")
-        discarded_cards = [c for c in hand if c not in keep]
-        hand = keep
+        discard = [c for c in hand if c not in keep]
+        
     return keep, discard
 
 

@@ -1,6 +1,6 @@
 # type: ignore 
 import pytest
-from pkr import Rank, Suit
+from pkr import Rank, Suit, Card
 
 
 def generate_rank(num) -> Rank:
@@ -46,3 +46,27 @@ def test_wrong_rank_ordering() -> None:
 
 def test_court_cards() -> None:
     assert Rank(13) > Rank(12) > Rank(11)
+
+def test_card_equality() -> None:
+    c1 = Card(Rank(14), Suit(1))
+    c2 = Card(Rank(14), Suit(1))
+    assert c1 == c2
+
+def test_card_notequal() -> None:
+    c1 = Card(Rank(14), Suit(1))
+    c2 = Card(Rank(14), Suit(2))
+    assert c1 != c2
+
+def test_card_wrong_order_fails() -> None:
+    with pytest.raises(AssertionError):
+        Card(Suit(1), Rank(2))
+
+def test_card_greater_than() -> None:
+    c1 = Card(Rank(14), Suit(1))
+    c2 = Card(Rank(13), Suit(2))
+    assert c1 > c2
+
+def test_card_less_than() -> None:
+    c1 = Card(Rank(14), Suit(1))
+    c2 = Card(Rank(13), Suit(2))
+    assert c2  <   c1

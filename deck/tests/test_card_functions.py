@@ -31,7 +31,7 @@ def test_split_cards_ranks() -> None:
 def test_count() -> None:
     hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
             Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
-            Card(Rank(8),Suit(1))])
+            Card(Rank(8),Suit(2))])
     suits, ranks = split_cards(hand)
     count_ranks = count(ranks)
     assert max(count_ranks.values()) == 3
@@ -69,8 +69,25 @@ def test_get_scores_scores_every_hand() -> None:
 
 
 
-# def test_discard_cards() -> None:
-#     testhand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
-#                 Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))]
-#     keep, discarded = discard_cards(testhand)
-#     assert len(keep)>=3 and len(discarded)>=2
+def test_discard_cards() -> None:
+    testhand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
+                Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))]
+    keep, discarded = discard_cards(testhand)
+    assert len(keep) == 3 and len(discarded) == 2
+
+def test_discard_cards_nothing() -> None:
+    testhand = [Card(Rank(2), Suit(1)), Card(Rank(5), Suit(2)),
+                Card(Rank(14), Suit(3)), Card(Rank(7), Suit(1)),
+                Card(Rank(11), Suit(2))]
+    keep, discarded = discard_cards(testhand)
+    assert len(keep) == 2 and len(discarded) == 3
+
+def test_discard_cards_straight() -> None:
+    straight = make_straight(5)
+    keep, discarded = discard_cards(straight)
+    assert len(keep) == 5
+
+def test_discard_cards_flush() -> None:
+    flush = make_flush()
+    keep, discarded = discard_cards(flush)
+    assert len(discarded) == 0

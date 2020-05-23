@@ -1,7 +1,7 @@
 # type: ignore 
 import pytest
 
-from pkr import Card, Deck, Player, random_hand, Hand, deal_cards, split_cards
+from pkr import Card, Deck, Player, Suit, Rank, random_hand, Hand, deal_cards, split_cards
 
 
 def test_deck_length() -> None:
@@ -39,6 +39,6 @@ def test_negative_number_deal() -> None:
         d.deal(-1)
 
 def test_hand_rejects_invalid_card_combinations() -> None:
-    invalid_hand = [Card(Suit(1), Rank(1)), Card(Suit(1), Rank(1))]
+    invalid_hand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(1))]
     with pytest.raises(ValueError):
         Hand(invalid_hand)
