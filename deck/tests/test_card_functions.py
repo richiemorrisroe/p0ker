@@ -6,20 +6,20 @@ def test_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
     list_players = [p1, p2]
-    d = Deck()
+    d = Game()
     cards_in_hand = 5
     d, p = deal_cards(d, list_players)
     p1, p2 = p
     assert len(p1.hand)==5 and len(p2.hand) == 5
 
-def test_game_deal_cards() -> None:
-    game = Game()
-    p1 = Player()
-    p2 = Player()
-    list_players = [p1, p2]
-    game.deck, players = deal_cards(Game.deck, list_players)
-    p1, p2 = players
-    assert len(Game.deck) + len(p1.hand) + len(p2.hand) == 52
+# def test_game_deal_cards() -> None:
+#     game = Game()
+#     p1 = Player()
+#     p2 = Player()
+#     list_players = [p1, p2]
+#     game, players = deal_cards(game, list_players)
+#     p1, p2 = players
+#     assert len(game.deck) + len(p1.hand) + len(p2.hand) == 52
 
 def test_split_cards() -> None:
     rhand = random_hand() 
