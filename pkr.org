@@ -867,6 +867,9 @@ class Card:
     def __hash__(self):
         return hash((self.rank, self.suit))
 
+    def __len__(self):
+        return 1
+    
     def __gt__(self, other):
         if self.rank > other.rank:
             return True
@@ -987,6 +990,7 @@ class Deck:
             raise ValueError("cannot be dealt less than 1 card")
         if num_cards == 1:
             cards = self._cards[0]
+            self._cards = self._cards[1:]
         else:
             
             cards = self._cards[0:num_cards]
@@ -1026,7 +1030,17 @@ class Player:
         self.hand = discard_cards(self.hand)
 
     def bet(self, bet=None) -> float:
+        def check_bet(bet, stash):
+            if bet > stash:
+                print('got here')
+                raise ValueError('can only bet {max_stash}, you bet {bet}'.format(
+                    max_stash=stash,
+                    bet=bet))
+            else:
+                return bet
+            
         if bet:
+            bet = check_bet(bet, self.stash)
             return bet
         else:
             bet = 0
@@ -1034,11 +1048,15 @@ class Player:
             print(f'score is {score}')
             if score > 200:
                 bet = (self.stash * 0.01) * math.log(score)
+                bet = check_bet(bet, self.stash)
                 self.stash -= bet
                 return bet
             else:
+                bet = self.minbet
+                bet = check_bet(bet, self.stash)
                 self.stash -= self.minbet
                 return self.minbet
+                
 
     def call(self, bet_required=None) -> bool:
         if not self.score:
@@ -1076,15 +1094,73 @@ class Player:
             return 'BET'
 
 
-def deal_cards(deck, players):
+class Game:
+    def __init__(self, name="poker", ante=100):
+        self.name = name
+        self.ante = ante
+        self.maxdrop = 3
+        deck = Deck()
+        self.deck = deck
+        self.pot = 0
+
+    def __repr__(self):
+        fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
+        return fstring.format(name=self.name,
+                              ante=self.ante,
+                              maxdrop=self.maxdrop,
+                              pot=self.pot)
+
+    def start_round(self, players):
+        self.deck.shuffle()
+        deck_len = len(self.deck)
+        print(f'deck_cards:{deck_len}')
+        deck, players = deal_cards(self.deck, players=players)
+        self.deck = deck
+        return players
+
+    def deals(self, players:List[Player]) -> List[Player]:
+        """Takes a list of players (normally empty lists)
+        and deals each of them five cards,
+        returning the updated lists"""
+        deck = self.deck
+        for i in range(0, 5):
+            for player in players:
+                card = deck.deal(num_cards=1)
+                player.hand.append(card)
+                print('deck_length:{deck_len}'.format(deck_len=len(deck)))
+        return players
+
+
+    def update_cards(self, player):
+        deck, player = replenish_cards(self.deck, player)
+        self.deck = deck
+        return player
+    
+    def compare(self, players):
+        scores = {}
+        for player in players:
+            score, sname = score_hand(players.hand)
+            scores[player] = score
+            maxscore = max(scores.items)
+        return maxscore
+
+    def add_to_pot(self, bet):
+        print("pot is {} and bet is {}".format(self.pot, bet))
+        self.pot += bet
+
+    def get_pot_value(self):
+        return self.pot
+
+def deal_cards(game:Game, players:List[Player]) -> Tuple[Game, List[Player]]:
     """Takes a list of players (normally empty lists)
       and deals each of them five cards,
       returning the updated lists"""
     for i in range(0, 5):
         for player in players:
-            card = deck.deal(num_cards=1)
+            card = game.deck.deal(num_cards=1)
             player.hand.append(card)
-    return deck, players
+    return game, players
+
 
 
 def split_cards(Hand:Hand) -> Tuple[List[Suit], List[Rank]]:
@@ -1296,46 +1372,7 @@ def replenish_cards(deck, player):
 
 
 
-class Game:
-    def __init__(self, name="poker", ante=100):
-        self.name = name
-        self.ante = ante
-        self.maxdrop = 3
-        self.deck = Deck()
-        self.pot = 0
 
-    def __repr__(self):
-        fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
-        return fstring.format(name=self.name,
-                              ante=self.ante,
-                              maxdrop=self.maxdrop,
-                              pot=self.pot)
-
-    def start_round(self, players):
-        self.deck.shuffle()
-        deck, players = deal_cards(self.deck, players=players)
-        self.deck = deck
-        return players
-
-    def deal(self, player):
-        deck, player = replenish_cards(self.deck, player)
-        self.deck = deck
-        return player
-
-    def compare(self, players):
-        scores = {}
-        for player in players:
-            score, sname = score_hand(players.hand)
-            scores[player] = score
-            maxscore = max(scores.items)
-        return maxscore
-
-    def add_to_pot(self, bet):
-        print("pot is {} and bet is {}".format(self.pot, bet))
-        self.pot += bet
-
-    def get_pot_value(self):
-        return self.pot
 
 
 #+END_SRC
@@ -1540,6 +1577,11 @@ def test_hand_rejects_invalid_card_combinations() -> None:
     invalid_hand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(1))]
     with pytest.raises(ValueError):
         Hand(invalid_hand)
+
+def test_deck_deal_one_card() -> None:
+    d = Deck()
+    cards = d.deal(num_cards=1)
+    assert len(d) + len(cards) == 52
 #+END_SRC
 
 
@@ -1552,20 +1594,20 @@ def test_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
     list_players = [p1, p2]
-    d = Deck()
+    d = Game()
     cards_in_hand = 5
     d, p = deal_cards(d, list_players)
     p1, p2 = p
     assert len(p1.hand)==5 and len(p2.hand) == 5
 
-def test_game_deal_cards() -> None:
-    game = Game()
-    p1 = Player()
-    p2 = Player()
-    list_players = [p1, p2]
-    game.deck, players = deal_cards(Game.deck, list_players)
-    p1, p2 = players
-    assert len(Game.deck) + len(p1.hand) + len(p2.hand) == 52
+# def test_game_deal_cards() -> None:
+#     game = Game()
+#     p1 = Player()
+#     p2 = Player()
+#     list_players = [p1, p2]
+#     game, players = deal_cards(game, list_players)
+#     p1, p2 = players
+#     assert len(game.deck) + len(p1.hand) + len(p2.hand) == 52
 
 def test_split_cards() -> None:
     rhand = random_hand() 
@@ -1647,6 +1689,7 @@ def test_discard_cards_flush() -> None:
     keep, discarded = discard_cards(flush)
     assert len(discarded) == 0
 
+
 #+END_SRC
 
 #+begin_src python :tangle deck/tests/test_score_hand.py
@@ -1697,6 +1740,7 @@ def test_score_twopair() -> None:
 
 #+begin_src python :results none :tangle deck/tests/test_player.py
 from pkr import Player, random_hand, Card, Suit, Rank, Game
+import pytest
 def test_player_exists() -> None:
     player = Player()
     assert isinstance(player, Player)
@@ -1788,10 +1832,15 @@ def test_player_decide_action():
     player = Player(hand=hand)
     game = Game()
     assert player.decide_action(game) is not None
+
+def test_player_cannot_go_into_debt() -> None:
+    p = Player(stash=100)
+    with pytest.raises(ValueError):
+        p.bet(101)
 #+end_src
 
 #+begin_src python :tangle deck/tests/test_game.py
-from pkr import Game, Deck, Player
+from pkr import Game, Deck, Player, deal_cards
 def test_game_is_game() -> None:
     game = Game()
     assert isinstance(game, Game)
@@ -1804,12 +1853,23 @@ def test_game_pot_is_zero() -> None:
     game = Game()
     assert game.pot == 0
 
+def test_game_deal_cards() -> None:
+    p1 = Player()
+    p2 = Player()
+    lp = [p1, p2]
+    game = Game()
+    original_len = len(game.deck)
+    list_players = game.deals(lp)
+    p1, p2 = list_players
+    assert len(game.deck) == 42
 # def test_game_start_round() -> None:
 #     game = Game()
 #     p1 = Player()
 #     p2 = Player()
 #     players = game.start_round([p1, p2])
 #     assert players is None
+
+
 #+end_src
 
 ** Design Thoughts

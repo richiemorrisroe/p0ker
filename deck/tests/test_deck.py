@@ -42,3 +42,8 @@ def test_hand_rejects_invalid_card_combinations() -> None:
     invalid_hand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(1))]
     with pytest.raises(ValueError):
         Hand(invalid_hand)
+
+def test_deck_deal_one_card() -> None:
+    d = Deck()
+    cards = d.deal(num_cards=1)
+    assert len(d) + len(cards) == 52

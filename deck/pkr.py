@@ -58,6 +58,9 @@ class Card:
     def __hash__(self):
         return hash((self.rank, self.suit))
 
+    def __len__(self):
+        return 1
+    
     def __gt__(self, other):
         if self.rank > other.rank:
             return True
@@ -178,6 +181,7 @@ class Deck:
             raise ValueError("cannot be dealt less than 1 card")
         if num_cards == 1:
             cards = self._cards[0]
+            self._cards = self._cards[1:]
         else:
             
             cards = self._cards[0:num_cards]
@@ -217,7 +221,17 @@ class Player:
         self.hand = discard_cards(self.hand)
 
     def bet(self, bet=None) -> float:
+        def check_bet(bet, stash):
+            if bet > stash:
+                print('got here')
+                raise ValueError('can only bet {max_stash}, you bet {bet}'.format(
+                    max_stash=stash,
+                    bet=bet))
+            else:
+                return bet
+            
         if bet:
+            bet = check_bet(bet, self.stash)
             return bet
         else:
             bet = 0
@@ -225,11 +239,15 @@ class Player:
             print(f'score is {score}')
             if score > 200:
                 bet = (self.stash * 0.01) * math.log(score)
+                bet = check_bet(bet, self.stash)
                 self.stash -= bet
                 return bet
             else:
+                bet = self.minbet
+                bet = check_bet(bet, self.stash)
                 self.stash -= self.minbet
                 return self.minbet
+                
 
     def call(self, bet_required=None) -> bool:
         if not self.score:
@@ -267,15 +285,73 @@ class Player:
             return 'BET'
 
 
-def deal_cards(deck, players):
+class Game:
+    def __init__(self, name="poker", ante=100):
+        self.name = name
+        self.ante = ante
+        self.maxdrop = 3
+        deck = Deck()
+        self.deck = deck
+        self.pot = 0
+
+    def __repr__(self):
+        fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
+        return fstring.format(name=self.name,
+                              ante=self.ante,
+                              maxdrop=self.maxdrop,
+                              pot=self.pot)
+
+    def start_round(self, players):
+        self.deck.shuffle()
+        deck_len = len(self.deck)
+        print(f'deck_cards:{deck_len}')
+        deck, players = deal_cards(self.deck, players=players)
+        self.deck = deck
+        return players
+
+    def deals(self, players:List[Player]) -> List[Player]:
+        """Takes a list of players (normally empty lists)
+        and deals each of them five cards,
+        returning the updated lists"""
+        deck = self.deck
+        for i in range(0, 5):
+            for player in players:
+                card = deck.deal(num_cards=1)
+                player.hand.append(card)
+                print('deck_length:{deck_len}'.format(deck_len=len(deck)))
+        return players
+
+
+    def update_cards(self, player):
+        deck, player = replenish_cards(self.deck, player)
+        self.deck = deck
+        return player
+    
+    def compare(self, players):
+        scores = {}
+        for player in players:
+            score, sname = score_hand(players.hand)
+            scores[player] = score
+            maxscore = max(scores.items)
+        return maxscore
+
+    def add_to_pot(self, bet):
+        print("pot is {} and bet is {}".format(self.pot, bet))
+        self.pot += bet
+
+    def get_pot_value(self):
+        return self.pot
+
+def deal_cards(game:Game, players:List[Player]) -> Tuple[Game, List[Player]]:
     """Takes a list of players (normally empty lists)
       and deals each of them five cards,
       returning the updated lists"""
     for i in range(0, 5):
         for player in players:
-            card = deck.deal(num_cards=1)
+            card = game.deck.deal(num_cards=1)
             player.hand.append(card)
-    return deck, players
+    return game, players
+
 
 
 def split_cards(Hand:Hand) -> Tuple[List[Suit], List[Rank]]:
@@ -484,46 +560,3 @@ def replenish_cards(deck, player):
         if len(player.hand) == 5:
             pass
     return deck, player
-
-
-
-class Game:
-    def __init__(self, name="poker", ante=100):
-        self.name = name
-        self.ante = ante
-        self.maxdrop = 3
-        self.deck = Deck()
-        self.pot = 0
-
-    def __repr__(self):
-        fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
-        return fstring.format(name=self.name,
-                              ante=self.ante,
-                              maxdrop=self.maxdrop,
-                              pot=self.pot)
-
-    def start_round(self, players):
-        self.deck.shuffle()
-        deck, players = deal_cards(self.deck, players=players)
-        self.deck = deck
-        return players
-
-    def deal(self, player):
-        deck, player = replenish_cards(self.deck, player)
-        self.deck = deck
-        return player
-
-    def compare(self, players):
-        scores = {}
-        for player in players:
-            score, sname = score_hand(players.hand)
-            scores[player] = score
-            maxscore = max(scores.items)
-        return maxscore
-
-    def add_to_pot(self, bet):
-        print("pot is {} and bet is {}".format(self.pot, bet))
-        self.pot += bet
-
-    def get_pot_value(self):
-        return self.pot
