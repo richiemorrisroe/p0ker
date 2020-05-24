@@ -1100,11 +1100,24 @@ class Game:
         self.deck = deck
         return players
 
-    def deal(self, player):
+    def deals(self, players:List[Player]) -> List[Player]:
+        """Takes a list of players (normally empty lists)
+        and deals each of them five cards,
+        returning the updated lists"""
+        deck = self.deck
+        for i in range(0, 5):
+            for player in players:
+                card = deck.deal(num_cards=1)
+                player.hand.append(card)
+                print('deck_length:{deck_len}'.format(deck_len=len(deck)))
+        return players
+
+
+    def update_cards(self, player):
         deck, player = replenish_cards(self.deck, player)
         self.deck = deck
         return player
-
+    
     def compare(self, players):
         scores = {}
         for player in players:
@@ -1816,7 +1829,7 @@ def test_game_deal_cards() -> None:
     lp = [p1, p2]
     game = Game()
     original_len = len(game.deck)
-    game, list_players = deal_cards(game, lp)
+    list_players = game.deals(lp)
     p1, p2 = list_players
     assert len(game.deck) is None
 # def test_game_start_round() -> None:
@@ -1825,6 +1838,8 @@ def test_game_deal_cards() -> None:
 #     p2 = Player()
 #     players = game.start_round([p1, p2])
 #     assert players is None
+
+
 #+end_src
 
 ** Design Thoughts

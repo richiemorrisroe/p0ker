@@ -285,15 +285,30 @@ class Game:
 
     def start_round(self, players):
         self.deck.shuffle()
+        deck_len = len(self.deck)
+        print(f'deck_cards:{deck_len}')
         deck, players = deal_cards(self.deck, players=players)
         self.deck = deck
         return players
 
-    def deal(self, player):
+    def deals(self, players:List[Player]) -> List[Player]:
+        """Takes a list of players (normally empty lists)
+        and deals each of them five cards,
+        returning the updated lists"""
+        deck = self.deck
+        for i in range(0, 5):
+            for player in players:
+                card = deck.deal(num_cards=1)
+                player.hand.append(card)
+                print('deck_length:{deck_len}'.format(deck_len=len(deck)))
+        return players
+
+
+    def update_cards(self, player):
         deck, player = replenish_cards(self.deck, player)
         self.deck = deck
         return player
-
+    
     def compare(self, players):
         scores = {}
         for player in players:
