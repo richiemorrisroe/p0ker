@@ -218,8 +218,9 @@ class Player:
             return self.score
 
     def discard(self):
-        self.hand = discard_cards(self.hand)
-
+        self.hand, discard = discard_cards(self.hand)
+        return discard
+    
     def bet(self, bet=None) -> float:
         def check_bet(bet, stash):
             if bet > stash:
@@ -293,6 +294,7 @@ class Dealer:
         deck = Deck()
         self.deck = deck
         self.pot = 0
+        self.discard_pile = []
 
     def __repr__(self):
         fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
@@ -320,7 +322,7 @@ class Dealer:
                 player.hand.append(card)
                 print('deck_length:{deck_len}'.format(deck_len=len(deck)))
         return players
-
+        
 
     def update_cards(self, player):
         deck, player = replenish_cards(self.deck, player)
