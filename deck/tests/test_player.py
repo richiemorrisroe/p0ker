@@ -15,8 +15,8 @@ def test_player_discard_cards() -> None:
             Card(Rank(2), Suit(1) ), Card(Rank(2), Suit(2)),
             Card( Rank(5), Suit(3))]
     player = Player(hand=twopair)
-    player.discard()
-    keep, discard = player.hand
+    discard = player.discard()
+    keep = player.hand
     assert len(keep)==4 and len(discard)==1
 
 def test_player_bet_amount() -> None:

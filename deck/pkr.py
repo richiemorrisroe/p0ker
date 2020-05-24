@@ -328,6 +328,7 @@ class Dealer:
         deck, player = replenish_cards(self.deck, player)
         self.deck = deck
         return player
+
     
     def compare(self, players):
         scores = {}
@@ -337,12 +338,39 @@ class Dealer:
             maxscore = max(scores.items)
         return maxscore
 
+    
+    def take_discards(self, cards:List[Card]) -> None:
+        for card in cards:
+            self.discard_pile.append(card)
+
+            
     def add_to_pot(self, bet):
         print("pot is {} and bet is {}".format(self.pot, bet))
         self.pot += bet
 
+        
     def get_pot_value(self):
         return self.pot
+
+    
+    def get_blind(self, blind_type):
+        if blind_type == 'small':
+            return self.ante
+        if blind_type == 'big':
+            return self.ante * 2
+        else:
+            raise NotImplementedError
+
+        
+    def get_blinds(self, players:List[Player]) -> List[Player]:
+        small_blind_pos = 0
+        big_blind_pos = 1
+        small_blind = self.get_blind('small')
+        big_blind = self.get_blind('big')
+        players[small_blind_pos].stash -= small_blind
+        players[big_blind_pos].stash -= big_blind
+        self.add_to_pot(small_blind+big_blind)
+        return players
 
 def deal_cards(dealer:Dealer, players:List[Player]) -> Tuple[Dealer, List[Player]]:
     """Takes a list of players (normally empty lists)
