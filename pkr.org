@@ -867,6 +867,9 @@ class Card:
     def __hash__(self):
         return hash((self.rank, self.suit))
 
+    def __len__(self):
+        return 1
+    
     def __gt__(self, other):
         if self.rank > other.rank:
             return True
