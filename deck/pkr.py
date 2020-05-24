@@ -285,7 +285,7 @@ class Player:
             return 'BET'
 
 
-class Game:
+class Dealer:
     def __init__(self, name="poker", ante=100):
         self.name = name
         self.ante = ante
@@ -342,15 +342,15 @@ class Game:
     def get_pot_value(self):
         return self.pot
 
-def deal_cards(game:Game, players:List[Player]) -> Tuple[Game, List[Player]]:
+def deal_cards(dealer:Dealer, players:List[Player]) -> Tuple[Dealer, List[Player]]:
     """Takes a list of players (normally empty lists)
       and deals each of them five cards,
       returning the updated lists"""
     for i in range(0, 5):
         for player in players:
-            card = game.deck.deal(num_cards=1)
+            card = dealer.deck.deal(num_cards=1)
             player.hand.append(card)
-    return game, players
+    return dealer, players
 
 
 

@@ -1094,7 +1094,7 @@ class Player:
             return 'BET'
 
 
-class Game:
+class Dealer:
     def __init__(self, name="poker", ante=100):
         self.name = name
         self.ante = ante
@@ -1151,15 +1151,15 @@ class Game:
     def get_pot_value(self):
         return self.pot
 
-def deal_cards(game:Game, players:List[Player]) -> Tuple[Game, List[Player]]:
+def deal_cards(dealer:Dealer, players:List[Player]) -> Tuple[Dealer, List[Player]]:
     """Takes a list of players (normally empty lists)
       and deals each of them five cards,
       returning the updated lists"""
     for i in range(0, 5):
         for player in players:
-            card = game.deck.deal(num_cards=1)
+            card = dealer.deck.deal(num_cards=1)
             player.hand.append(card)
-    return game, players
+    return dealer, players
 
 
 
@@ -1589,12 +1589,12 @@ def test_deck_deal_one_card() -> None:
 from pkr import (Card, Player, Suit, Rank,  Deck, Hand, deal_cards,
                  random_hand, split_cards, count, anyrep,
                  find_repeated_cards, make_straight, is_straight,
-                 is_flush, score_hand, make_flush, discard_cards, Game)
+                 is_flush, score_hand, make_flush, discard_cards, Dealer)
 def test_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
     list_players = [p1, p2]
-    d = Game()
+    d = Dealer()
     cards_in_hand = 5
     d, p = deal_cards(d, list_players)
     p1, p2 = p
@@ -1739,7 +1739,7 @@ def test_score_twopair() -> None:
 #+RESULTS:
 
 #+begin_src python :results none :tangle deck/tests/test_player.py
-from pkr import Player, random_hand, Card, Suit, Rank, Game
+from pkr import Player, random_hand, Card, Suit, Rank, Dealer
 import pytest
 def test_player_exists() -> None:
     player = Player()
@@ -1830,8 +1830,8 @@ def test_player_stash_default_correct() -> None:
 def test_player_decide_action():
     hand = random_hand()
     player = Player(hand=hand)
-    game = Game()
-    assert player.decide_action(game) is not None
+    dealer = Dealer()
+    assert player.decide_action(dealer) is not None
 
 def test_player_cannot_go_into_debt() -> None:
     p = Player(stash=100)
@@ -1840,28 +1840,28 @@ def test_player_cannot_go_into_debt() -> None:
 #+end_src
 
 #+begin_src python :tangle deck/tests/test_game.py
-from pkr import Game, Deck, Player, deal_cards
-def test_game_is_game() -> None:
-    game = Game()
-    assert isinstance(game, Game)
+from pkr import Dealer, Deck, Player, deal_cards
+def test_dealer_is_dealer() -> None:
+    dealer = Dealer()
+    assert isinstance(dealer, Dealer)
 
-def test_game_has_deck() -> None:
-    game = Game()
-    assert isinstance(game.deck, Deck)
+def test_dealer_has_deck() -> None:
+    dealer = Dealer()
+    assert isinstance(dealer.deck, Deck)
 
-def test_game_pot_is_zero() -> None:
-    game = Game()
-    assert game.pot == 0
+def test_dealer_pot_is_zero() -> None:
+    dealer = Dealer()
+    assert dealer.pot == 0
 
-def test_game_deal_cards() -> None:
+def test_dealer_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
     lp = [p1, p2]
-    game = Game()
-    original_len = len(game.deck)
-    list_players = game.deals(lp)
+    dealer = Dealer()
+    original_len = len(dealer.deck)
+    list_players = dealer.deals(lp)
     p1, p2 = list_players
-    assert len(game.deck) == 42
+    assert len(dealer.deck) == 42
 # def test_game_start_round() -> None:
 #     game = Game()
 #     p1 = Player()

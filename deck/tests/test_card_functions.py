@@ -1,12 +1,12 @@
 from pkr import (Card, Player, Suit, Rank,  Deck, Hand, deal_cards,
                  random_hand, split_cards, count, anyrep,
                  find_repeated_cards, make_straight, is_straight,
-                 is_flush, score_hand, make_flush, discard_cards, Game)
+                 is_flush, score_hand, make_flush, discard_cards, Dealer)
 def test_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
     list_players = [p1, p2]
-    d = Game()
+    d = Dealer()
     cards_in_hand = 5
     d, p = deal_cards(d, list_players)
     p1, p2 = p
