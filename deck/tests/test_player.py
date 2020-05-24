@@ -1,4 +1,4 @@
-from pkr import Player, random_hand, Card, Suit, Rank
+from pkr import Player, random_hand, Card, Suit, Rank, Game
 def test_player_exists() -> None:
     player = Player()
     assert isinstance(player, Player)
@@ -72,3 +72,21 @@ def test_player_fold() -> None:
                 Card(Rank(11), Suit(2))]
     player = Player(stash=100, hand=testhand)
     assert player.fold() is True
+
+def test_player_fold_false() -> None:
+    full_house = [Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+                       Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
+                       Card(Rank(8),Suit(2))]
+    player = Player(stash=100, hand=full_house)
+    assert player.fold() is False
+
+def test_player_stash_default_correct() -> None:
+    hand = random_hand()
+    player = Player(hand=hand)
+    assert player.stash == 5000
+
+def test_player_decide_action():
+    hand = random_hand()
+    player = Player(hand=hand)
+    game = Game()
+    assert player.decide_action(game) is not None

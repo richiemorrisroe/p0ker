@@ -222,14 +222,10 @@ class Player:
         else:
             bet = 0
             score, name = score_hand(self.hand)
+            print(f'score is {score}')
             if score > 200:
                 bet = (self.stash * 0.01) * math.log(score)
-            randnumber = random.random()
-            if randnumber < 0.25:
-                bet += self.randnum
-            if randnumber > 0.75:
-                bet -= self.randnum
-                self.stash = self.stash - bet
+                self.stash -= bet
                 return bet
             else:
                 self.stash -= self.minbet
@@ -496,7 +492,7 @@ class Game:
         self.name = name
         self.ante = ante
         self.maxdrop = 3
-        self.deck = FirstDeck()
+        self.deck = Deck()
         self.pot = 0
 
     def __repr__(self):

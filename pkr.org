@@ -1031,14 +1031,10 @@ class Player:
         else:
             bet = 0
             score, name = score_hand(self.hand)
+            print(f'score is {score}')
             if score > 200:
                 bet = (self.stash * 0.01) * math.log(score)
-            randnumber = random.random()
-            if randnumber < 0.25:
-                bet += self.randnum
-            if randnumber > 0.75:
-                bet -= self.randnum
-                self.stash = self.stash - bet
+                self.stash -= bet
                 return bet
             else:
                 self.stash -= self.minbet
@@ -1305,7 +1301,7 @@ class Game:
         self.name = name
         self.ante = ante
         self.maxdrop = 3
-        self.deck = FirstDeck()
+        self.deck = Deck()
         self.pot = 0
 
     def __repr__(self):
@@ -1551,7 +1547,7 @@ def test_hand_rejects_invalid_card_combinations() -> None:
 from pkr import (Card, Player, Suit, Rank,  Deck, Hand, deal_cards,
                  random_hand, split_cards, count, anyrep,
                  find_repeated_cards, make_straight, is_straight,
-                 is_flush, score_hand, make_flush, discard_cards)
+                 is_flush, score_hand, make_flush, discard_cards, Game)
 def test_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
@@ -1560,7 +1556,16 @@ def test_deal_cards() -> None:
     cards_in_hand = 5
     d, p = deal_cards(d, list_players)
     p1, p2 = p
-    assert len(p1.hand)==5
+    assert len(p1.hand)==5 and len(p2.hand) == 5
+
+def test_game_deal_cards() -> None:
+    game = Game()
+    p1 = Player()
+    p2 = Player()
+    list_players = [p1, p2]
+    game.deck, players = deal_cards(Game.deck, list_players)
+    p1, p2 = players
+    assert len(Game.deck) + len(p1.hand) + len(p2.hand) == 52
 
 def test_split_cards() -> None:
     rhand = random_hand() 
@@ -1691,7 +1696,7 @@ def test_score_twopair() -> None:
 #+RESULTS:
 
 #+begin_src python :results none :tangle deck/tests/test_player.py
-from pkr import Player, random_hand, Card, Suit, Rank
+from pkr import Player, random_hand, Card, Suit, Rank, Game
 def test_player_exists() -> None:
     player = Player()
     assert isinstance(player, Player)
@@ -1765,9 +1770,47 @@ def test_player_fold() -> None:
                 Card(Rank(11), Suit(2))]
     player = Player(stash=100, hand=testhand)
     assert player.fold() is True
+
+def test_player_fold_false() -> None:
+    full_house = [Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+                       Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
+                       Card(Rank(8),Suit(2))]
+    player = Player(stash=100, hand=full_house)
+    assert player.fold() is False
+
+def test_player_stash_default_correct() -> None:
+    hand = random_hand()
+    player = Player(hand=hand)
+    assert player.stash == 5000
+
+def test_player_decide_action():
+    hand = random_hand()
+    player = Player(hand=hand)
+    game = Game()
+    assert player.decide_action(game) is not None
 #+end_src
 
+#+begin_src python :tangle deck/tests/test_game.py
+from pkr import Game, Deck, Player
+def test_game_is_game() -> None:
+    game = Game()
+    assert isinstance(game, Game)
 
+def test_game_has_deck() -> None:
+    game = Game()
+    assert isinstance(game.deck, Deck)
+
+def test_game_pot_is_zero() -> None:
+    game = Game()
+    assert game.pot == 0
+
+# def test_game_start_round() -> None:
+#     game = Game()
+#     p1 = Player()
+#     p2 = Player()
+#     players = game.start_round([p1, p2])
+#     assert players is None
+#+end_src
 
 ** Design Thoughts
 
