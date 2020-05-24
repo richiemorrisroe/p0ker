@@ -995,12 +995,15 @@ class Deck:
 
 
 class Player:
-    def __init__(self, hand=None, stash=5000):
+    def __init__(self, hand=None, stash=None):
         if hand is None:
             self.hand = []
         else:
             self.hand = hand
-        self.stash = stash
+        if stash is None:
+            self.stash = 5000
+        else:
+            self.stash = stash
         self.score = 0
         self.minbet = 10
         self.randnum = random.randint(0, 100)
@@ -1026,10 +1029,11 @@ class Player:
         if bet:
             return bet
         else:
+            bet = 0
             score, name = score_hand(self.hand)
             if score > 200:
                 bet = (self.stash * 0.01) * math.log(score)
-                randnumber = random.random()
+            randnumber = random.random()
             if randnumber < 0.25:
                 bet += self.randnum
             if randnumber > 0.75:
@@ -1659,7 +1663,8 @@ def test_score_pair() -> None:
 def test_score_straight() -> None:
     straight = make_straight(start=5)
     score, name = score_hand(straight)
-    assert name == 'STRAIGHT'
+    ## make straight sometimes returns a straight flush
+    assert name.startswith('STRAIGHT')
 
 def test_score_straight_flush() -> None:
     straight_flush = Hand([Card( Rank(7),Suit(1)),  Card(Rank(8),Suit(1)),
@@ -1703,9 +1708,59 @@ def test_player_discard_cards() -> None:
             Card( Rank(5), Suit(3))]
     player = Player(hand=twopair)
     player.discard()
-    assert player.hand is None
+    keep, discard = player.hand
+    assert len(keep)==4 and len(discard)==1
 
+def test_player_bet_amount() -> None:
+    p = Player()
+    bet = 200
+    new_bet = p.bet(bet=bet)
+    assert bet == new_bet
+
+def test_player_always_calculate_bet() -> None:
+    hand = random_hand()
+    p = Player(hand=hand)
+    assert p.bet() is not  None
+
+def test_player_bet_always_positive() -> None:
+    hand = random_hand()
+    p = Player(hand=hand)
+    assert p.bet() > 0
+
+def test_player_call() -> None:
+    p = Player(hand=random_hand())
+    assert p.call() is not None
+
+def test_player_call_true() -> None:
+    twopair = [Card(Rank(8),Suit(1)), Card(Rank(8), Suit(2)),
+            Card(Rank(2), Suit(1) ), Card(Rank(2), Suit(2)),
+            Card( Rank(5), Suit(3))]
+    p = Player(hand=twopair)
+    assert p.call() is True
+
+
+def test_player_call_false() -> None:
+    testhand = [Card(Rank(2), Suit(1)), Card(Rank(5), Suit(2)),
+                Card(Rank(14), Suit(3)), Card(Rank(7), Suit(1)),
+                Card(Rank(11), Suit(2))]
+    p = Player(hand=testhand)
+    assert p.call() is False
+
+def test_player_negative_bet_impossible() -> None:
+    hand = [Card(Rank(7), Suit.DIAMONDS),
+            Card(Rank(3), Suit.DIAMONDS),
+            Card(Rank(13), Suit.SPADES),
+            Card(Rank(9), Suit.DIAMONDS),
+            Card(Rank(5), Suit.SPADES)]
+    player = Player(stash=5077, hand=hand)
+    assert player.bet() > 0
+    
+def test_player_stash_identical() -> None:
+    player = Player(stash=100)
+    assert player.stash == 100
 #+end_src
+
+
 
 ** Design Thoughts
 
@@ -1728,6 +1783,10 @@ def test_player_discard_cards() -> None:
 - i'd like some way to generate random hands with particular sets of
   cards like make(two-pair) 
 - this would help with all the repetition in test\_score\_hand
+
+- Discard cards needs some love:
+  - i need to make some kind of stash object to hold the discarded cards
+  - should probably exist as something off a Dealer/Game object
 
 *** Visualising Code graph
 

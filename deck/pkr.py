@@ -186,12 +186,15 @@ class Deck:
 
 
 class Player:
-    def __init__(self, hand=None, stash=5000):
+    def __init__(self, hand=None, stash=None):
         if hand is None:
             self.hand = []
         else:
             self.hand = hand
-        self.stash = stash
+        if stash is None:
+            self.stash = 5000
+        else:
+            self.stash = stash
         self.score = 0
         self.minbet = 10
         self.randnum = random.randint(0, 100)
@@ -217,10 +220,11 @@ class Player:
         if bet:
             return bet
         else:
+            bet = 0
             score, name = score_hand(self.hand)
             if score > 200:
                 bet = (self.stash * 0.01) * math.log(score)
-                randnumber = random.random()
+            randnumber = random.random()
             if randnumber < 0.25:
                 bet += self.randnum
             if randnumber > 0.75:
