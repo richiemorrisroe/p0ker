@@ -65,3 +65,10 @@ def test_player_negative_bet_impossible() -> None:
 def test_player_stash_identical() -> None:
     player = Player(stash=100)
     assert player.stash == 100
+
+def test_player_fold() -> None:
+    testhand = [Card(Rank(2), Suit(1)), Card(Rank(5), Suit(2)),
+                Card(Rank(14), Suit(3)), Card(Rank(7), Suit(1)),
+                Card(Rank(11), Suit(2))]
+    player = Player(stash=100, hand=testhand)
+    assert player.fold() is True

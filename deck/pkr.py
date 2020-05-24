@@ -252,7 +252,7 @@ class Player:
 
     def fold(self) -> bool:
         if not self.score:
-            self.score = score_hand(self.hand)
+            self.score, _ = score_hand(self.hand)
         if self.score < 100:
             return True
         else:
