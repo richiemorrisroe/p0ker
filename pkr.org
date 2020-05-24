@@ -990,6 +990,7 @@ class Deck:
             raise ValueError("cannot be dealt less than 1 card")
         if num_cards == 1:
             cards = self._cards[0]
+            self._cards = self._cards[1:]
         else:
             
             cards = self._cards[0:num_cards]
@@ -1029,7 +1030,17 @@ class Player:
         self.hand = discard_cards(self.hand)
 
     def bet(self, bet=None) -> float:
+        def check_bet(bet, stash):
+            if bet > stash:
+                print('got here')
+                raise ValueError('can only bet {max_stash}, you bet {bet}'.format(
+                    max_stash=stash,
+                    bet=bet))
+            else:
+                return bet
+            
         if bet:
+            bet = check_bet(bet, self.stash)
             return bet
         else:
             bet = 0
@@ -1037,11 +1048,15 @@ class Player:
             print(f'score is {score}')
             if score > 200:
                 bet = (self.stash * 0.01) * math.log(score)
+                bet = check_bet(bet, self.stash)
                 self.stash -= bet
                 return bet
             else:
+                bet = self.minbet
+                bet = check_bet(bet, self.stash)
                 self.stash -= self.minbet
                 return self.minbet
+                
 
     def call(self, bet_required=None) -> bool:
         if not self.score:
@@ -1674,6 +1689,7 @@ def test_discard_cards_flush() -> None:
     keep, discarded = discard_cards(flush)
     assert len(discarded) == 0
 
+
 #+END_SRC
 
 #+begin_src python :tangle deck/tests/test_score_hand.py
@@ -1724,6 +1740,7 @@ def test_score_twopair() -> None:
 
 #+begin_src python :results none :tangle deck/tests/test_player.py
 from pkr import Player, random_hand, Card, Suit, Rank, Game
+import pytest
 def test_player_exists() -> None:
     player = Player()
     assert isinstance(player, Player)
@@ -1815,6 +1832,11 @@ def test_player_decide_action():
     player = Player(hand=hand)
     game = Game()
     assert player.decide_action(game) is not None
+
+def test_player_cannot_go_into_debt() -> None:
+    p = Player(stash=100)
+    with pytest.raises(ValueError):
+        p.bet(101)
 #+end_src
 
 #+begin_src python :tangle deck/tests/test_game.py
@@ -1839,7 +1861,7 @@ def test_game_deal_cards() -> None:
     original_len = len(game.deck)
     list_players = game.deals(lp)
     p1, p2 = list_players
-    assert len(game.deck) is None
+    assert len(game.deck) == 42
 # def test_game_start_round() -> None:
 #     game = Game()
 #     p1 = Player()

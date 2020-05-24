@@ -1,4 +1,5 @@
 from pkr import Player, random_hand, Card, Suit, Rank, Game
+import pytest
 def test_player_exists() -> None:
     player = Player()
     assert isinstance(player, Player)
@@ -90,3 +91,8 @@ def test_player_decide_action():
     player = Player(hand=hand)
     game = Game()
     assert player.decide_action(game) is not None
+
+def test_player_cannot_go_into_debt() -> None:
+    p = Player(stash=100)
+    with pytest.raises(ValueError):
+        p.bet(101)

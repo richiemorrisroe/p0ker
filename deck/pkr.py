@@ -181,6 +181,7 @@ class Deck:
             raise ValueError("cannot be dealt less than 1 card")
         if num_cards == 1:
             cards = self._cards[0]
+            self._cards = self._cards[1:]
         else:
             
             cards = self._cards[0:num_cards]
@@ -220,7 +221,17 @@ class Player:
         self.hand = discard_cards(self.hand)
 
     def bet(self, bet=None) -> float:
+        def check_bet(bet, stash):
+            if bet > stash:
+                print('got here')
+                raise ValueError('can only bet {max_stash}, you bet {bet}'.format(
+                    max_stash=stash,
+                    bet=bet))
+            else:
+                return bet
+            
         if bet:
+            bet = check_bet(bet, self.stash)
             return bet
         else:
             bet = 0
@@ -228,11 +239,15 @@ class Player:
             print(f'score is {score}')
             if score > 200:
                 bet = (self.stash * 0.01) * math.log(score)
+                bet = check_bet(bet, self.stash)
                 self.stash -= bet
                 return bet
             else:
+                bet = self.minbet
+                bet = check_bet(bet, self.stash)
                 self.stash -= self.minbet
                 return self.minbet
+                
 
     def call(self, bet_required=None) -> bool:
         if not self.score:
