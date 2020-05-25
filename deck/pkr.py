@@ -295,6 +295,7 @@ class Dealer:
         self.deck = deck
         self.pot = 0
         self.discard_pile = []
+        
 
     def __repr__(self):
         fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
@@ -371,6 +372,15 @@ class Dealer:
         players[big_blind_pos].stash -= big_blind
         self.add_to_pot(small_blind+big_blind)
         return players
+
+    def update_state(self):
+        sblind = self.get_blind('small')
+        lblind = self.get_blind('big')
+        return {'small_blind' : sblind,
+                'big_blind': lblind}
+
+    def get_state(self):
+        return self.update_state()
 
 def deal_cards(dealer:Dealer, players:List[Player]) -> Tuple[Dealer, List[Player]]:
     """Takes a list of players (normally empty lists)

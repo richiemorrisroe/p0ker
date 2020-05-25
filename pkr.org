@@ -1104,6 +1104,7 @@ class Dealer:
         self.deck = deck
         self.pot = 0
         self.discard_pile = []
+        
 
     def __repr__(self):
         fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
@@ -1180,6 +1181,15 @@ class Dealer:
         players[big_blind_pos].stash -= big_blind
         self.add_to_pot(small_blind+big_blind)
         return players
+
+    def update_state(self):
+        sblind = self.get_blind('small')
+        lblind = self.get_blind('big')
+        return {'small_blind' : sblind,
+                'big_blind': lblind}
+
+    def get_state(self):
+        return self.update_state()
 
 def deal_cards(dealer:Dealer, players:List[Player]) -> Tuple[Dealer, List[Player]]:
     """Takes a list of players (normally empty lists)
@@ -1867,6 +1877,10 @@ def test_player_cannot_go_into_debt() -> None:
     p = Player(stash=100)
     with pytest.raises(ValueError):
         p.bet(101)
+
+def test_player_can_pay() -> None:
+    p = Player()
+    assert p.pay() is float
 #+end_src
 
 #+begin_src python :tangle deck/tests/test_game.py
@@ -1929,6 +1943,25 @@ def test_dealer_get_blind() -> None:
     dealer.get_blinds(list_players)
     assert dealer.get_pot_value() == 300
 
+def test_dealer_ask_for_action() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    list_players = [p1, p2, p3]
+    p1, p2, p3 = dealer.get_blinds(list_players)
+    p1, p2, p3 = dealer.deals([p1, p2, p3])
+    
+    p1_action = p1.decide_action(dealer)
+    p2_action = p2.decide_action(dealer)
+    p3_action = p3.decide_action(dealer)
+    assert all([p1_action, p2_action, p3_action]) is not  None
+
+
+def test_dealer_has_state() -> None:
+    dealer = Dealer()
+    state = dealer.get_state()
+    assert state is not None
 #+end_src
 
 ** Next Steps
@@ -1938,6 +1971,7 @@ def test_dealer_get_blind() -> None:
 - small blind
 - large blind
 - deal cards to players
+- send players state so they can decide action
 - bet/call/fold in order
 - discard cards
 - get new cards

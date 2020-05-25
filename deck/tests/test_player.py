@@ -96,3 +96,7 @@ def test_player_cannot_go_into_debt() -> None:
     p = Player(stash=100)
     with pytest.raises(ValueError):
         p.bet(101)
+
+def test_player_can_pay() -> None:
+    p = Player()
+    assert p.pay() is float
