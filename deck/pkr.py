@@ -284,7 +284,9 @@ class Player:
             return 'CHECK'
         else:
             return 'BET'
-
+    def pay(self, amount):
+        self.stash -= amount
+        return amount
 
 class Dealer:
     def __init__(self, name="poker", ante=100):
@@ -368,9 +370,9 @@ class Dealer:
         big_blind_pos = 1
         small_blind = self.get_blind('small')
         big_blind = self.get_blind('big')
-        players[small_blind_pos].stash -= small_blind
-        players[big_blind_pos].stash -= big_blind
-        self.add_to_pot(small_blind+big_blind)
+        sb = players[small_blind_pos].pay(small_blind)
+        bb = players[big_blind_pos].pay(big_blind)
+        self.add_to_pot(bb+sb)
         return players
 
     def update_state(self):

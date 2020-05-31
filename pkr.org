@@ -1093,7 +1093,9 @@ class Player:
             return 'CHECK'
         else:
             return 'BET'
-
+    def pay(self, amount):
+        self.stash -= amount
+        return amount
 
 class Dealer:
     def __init__(self, name="poker", ante=100):
@@ -1177,9 +1179,9 @@ class Dealer:
         big_blind_pos = 1
         small_blind = self.get_blind('small')
         big_blind = self.get_blind('big')
-        players[small_blind_pos].stash -= small_blind
-        players[big_blind_pos].stash -= big_blind
-        self.add_to_pot(small_blind+big_blind)
+        sb = players[small_blind_pos].pay(small_blind)
+        bb = players[big_blind_pos].pay(big_blind)
+        self.add_to_pot(bb+sb)
         return players
 
     def update_state(self):
@@ -1880,7 +1882,10 @@ def test_player_cannot_go_into_debt() -> None:
 
 def test_player_can_pay() -> None:
     p = Player()
-    assert p.pay() is float
+    dealer = Dealer()
+    small_blind = dealer.get_blind('small')
+    pay_blind = p.pay(small_blind)
+    assert pay_blind == small_blind
 #+end_src
 
 #+begin_src python :tangle deck/tests/test_game.py
