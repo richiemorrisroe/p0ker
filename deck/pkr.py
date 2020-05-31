@@ -174,7 +174,7 @@ class Deck:
         return fstring.format(left=len(self._cards))
 
     def shuffle(self):
-        self._cards = shuffle(self._cards)
+        shuffle(self._cards)
 
     def deal(self, num_cards):
         if num_cards < 1:

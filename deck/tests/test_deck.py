@@ -47,3 +47,9 @@ def test_deck_deal_one_card() -> None:
     d = Deck()
     cards = d.deal(num_cards=1)
     assert len(d) + len(cards) == 52
+
+def test_deck_shuffle() -> None:
+    d = Deck()
+    len1 = len(d)
+    d.shuffle()
+    assert len(d) == len1
