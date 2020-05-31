@@ -1406,7 +1406,7 @@ def replenish_cards(deck, player):
     """Takes a deck and player as argument. Deals cards to the player,
       until they have five cards again."""
     while len(player.hand) < 5:
-        card = deck.deal()
+        card = deck.deal(num_cards=1)
         player.hand.append(card)
         if len(player.hand) == 5:
             pass
@@ -1967,6 +1967,16 @@ def test_dealer_has_state() -> None:
     dealer = Dealer()
     state = dealer.get_state()
     assert state is not None
+
+def test_dealer_update_cards() -> None:
+    p1 = Player()
+    dealer = Dealer()
+    p1 = dealer.update_cards(p1)
+    assert len(p1.hand) == 5
+    
+    
+    
+
 #+end_src
 
 ** Next Steps

@@ -597,7 +597,7 @@ def replenish_cards(deck, player):
     """Takes a deck and player as argument. Deals cards to the player,
       until they have five cards again."""
     while len(player.hand) < 5:
-        card = deck.deal()
+        card = deck.deal(num_cards=1)
         player.hand.append(card)
         if len(player.hand) == 5:
             pass
