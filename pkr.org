@@ -1187,8 +1187,10 @@ class Dealer:
     def update_state(self):
         sblind = self.get_blind('small')
         lblind = self.get_blind('big')
+        potval = self.get_pot_value()
         return {'small_blind' : sblind,
-                'big_blind': lblind}
+                'big_blind': lblind,
+                'pot_value' : potval}
 
     def get_state(self):
         return self.update_state()
@@ -1974,6 +1976,16 @@ def test_dealer_has_state() -> None:
     state = dealer.get_state()
     assert state is not None
 
+def test_dealer_state_is_dict() -> None:
+    dealer = Dealer()
+    state = dealer.get_state()
+    assert isinstance(state, dict)
+
+def test_dealer_state_has_pot_value() -> None:
+    dealer = Dealer()
+    state = dealer.get_state()
+    assert state['pot_value'] is not None
+    
 def test_dealer_update_cards() -> None:
     p1 = Player()
     dealer = Dealer()

@@ -378,8 +378,10 @@ class Dealer:
     def update_state(self):
         sblind = self.get_blind('small')
         lblind = self.get_blind('big')
+        potval = self.get_pot_value()
         return {'small_blind' : sblind,
-                'big_blind': lblind}
+                'big_blind': lblind,
+                'pot_value' : potval}
 
     def get_state(self):
         return self.update_state()
