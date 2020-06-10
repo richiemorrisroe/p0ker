@@ -1115,13 +1115,6 @@ class Dealer:
                               maxdrop=self.maxdrop,
                               pot=self.pot)
 
-    def start_round(self, players):
-        self.deck.shuffle()
-        deck_len = len(self.deck)
-        print(f'deck_cards:{deck_len}')
-        deck, players = deal_cards(self.deck, players=players)
-        self.deck = deck
-        return players
 
     def deals(self, players:List[Player]) -> List[Player]:
         """Takes a list of players (normally empty lists)
@@ -1924,6 +1917,7 @@ def test_dealer_discard_pile_exists() -> None:
     d = Dealer()
     assert d.discard_pile is not None
 
+
 def test_dealer_discard_pile_update() -> None:
     d = Dealer()
     p1 = Player()
@@ -1933,12 +1927,8 @@ def test_dealer_discard_pile_update() -> None:
     len_discard = len(discard)
     d.take_discards(discard)
     assert len(d.discard_pile) == len_discard
-# def test_game_start_round() -> None:
-#     game = Game()
-#     p1 = Player()
-#     p2 = Player()
-#     players = game.start_round([p1, p2])
-#     assert players is None
+
+
 
 
 def test_dealer_set_blind() -> None:
@@ -1992,7 +1982,15 @@ def test_dealer_update_cards() -> None:
     p1 = dealer.update_cards(p1)
     assert len(p1.hand) == 5
     
-    
+def test_dealer_pot_value_state() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    list_players = [p1, p2, p3]
+    dealer.get_blinds(list_players)
+    state = dealer.get_state()
+    assert state['pot_value'] == 300
     
 
 #+end_src
@@ -2001,9 +1999,9 @@ def test_dealer_update_cards() -> None:
 
 *** Add round to dealer object
 
-- small blind
-- large blind
-- deal cards to players
+**** DONE small blind
+**** DONE large blind
+**** DONE deal cards to players
 - send players state so they can decide action
 - bet/call/fold in order
 - discard cards

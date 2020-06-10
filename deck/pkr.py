@@ -306,13 +306,6 @@ class Dealer:
                               maxdrop=self.maxdrop,
                               pot=self.pot)
 
-    def start_round(self, players):
-        self.deck.shuffle()
-        deck_len = len(self.deck)
-        print(f'deck_cards:{deck_len}')
-        deck, players = deal_cards(self.deck, players=players)
-        self.deck = deck
-        return players
 
     def deals(self, players:List[Player]) -> List[Player]:
         """Takes a list of players (normally empty lists)

@@ -25,6 +25,7 @@ def test_dealer_discard_pile_exists() -> None:
     d = Dealer()
     assert d.discard_pile is not None
 
+
 def test_dealer_discard_pile_update() -> None:
     d = Dealer()
     p1 = Player()
@@ -34,12 +35,8 @@ def test_dealer_discard_pile_update() -> None:
     len_discard = len(discard)
     d.take_discards(discard)
     assert len(d.discard_pile) == len_discard
-# def test_game_start_round() -> None:
-#     game = Game()
-#     p1 = Player()
-#     p2 = Player()
-#     players = game.start_round([p1, p2])
-#     assert players is None
+
+
 
 
 def test_dealer_set_blind() -> None:
@@ -92,3 +89,13 @@ def test_dealer_update_cards() -> None:
     dealer = Dealer()
     p1 = dealer.update_cards(p1)
     assert len(p1.hand) == 5
+    
+def test_dealer_pot_value_state() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    list_players = [p1, p2, p3]
+    dealer.get_blinds(list_players)
+    state = dealer.get_state()
+    assert state['pot_value'] == 300
