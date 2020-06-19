@@ -91,6 +91,13 @@ def test_dealer_update_cards() -> None:
     dealer = Dealer()
     p1 = dealer.update_cards(p1)
     assert len(p1.hand) == 5
+
+def test_dealer_update_cards_two_player() -> None:
+    p1 = Player()
+    p2 = Player()
+    dealer = Dealer()
+    dealer.update_cards([p1, p2])
+    assert len(p1.hand) == 5 and len(p2.hand) == 5
     
 def test_dealer_pot_value_state() -> None:
     dealer = Dealer()
