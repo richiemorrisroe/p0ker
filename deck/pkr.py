@@ -273,7 +273,7 @@ class Player:
         else:
             return False
 
-    def decide_action(self, game):
+    def decide_action(self, state=None):
         is_call = self.call()
         is_fold = self.fold()
         if is_fold:
@@ -284,9 +284,12 @@ class Player:
             return 'CHECK'
         else:
             return 'BET'
+
+
     def pay(self, amount):
         self.stash -= amount
         return amount
+
 
 class Dealer:
     def __init__(self, name="poker", ante=100):

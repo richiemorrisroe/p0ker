@@ -1,4 +1,4 @@
-from pkr import Dealer, Deck, Player, deal_cards
+from pkr import Dealer, Deck, Player, deal_cards, random_choice
 def test_dealer_is_dealer() -> None:
     dealer = Dealer()
     assert isinstance(dealer, Dealer)
@@ -83,6 +83,8 @@ def test_dealer_state_has_pot_value() -> None:
     dealer = Dealer()
     state = dealer.get_state()
     assert state['pot_value'] is not None
+
+
     
 def test_dealer_update_cards() -> None:
     p1 = Player()

@@ -788,9 +788,11 @@ this paper presents an approach towards solving this problem
   - depth-limited lookahead using a learned value function
   - a restricted set of lookahead options
 
-- they claim that this is analogous to heuristic search approaches for perfect information games
+- they claim that this is analogous to heuristic search approaches for
+  perfect information games
 
-- DeepStack uses "continual re-solving" (hopefully this will make more sense when I have details)
+- DeepStack uses "continual re-solving" (hopefully this will make more
+  sense when I have details)
 
 * Testing
 
@@ -1082,7 +1084,7 @@ class Player:
         else:
             return False
 
-    def decide_action(self, game):
+    def decide_action(self, state=None):
         is_call = self.call()
         is_fold = self.fold()
         if is_fold:
@@ -1093,9 +1095,12 @@ class Player:
             return 'CHECK'
         else:
             return 'BET'
+
+
     def pay(self, amount):
         self.stash -= amount
         return amount
+
 
 class Dealer:
     def __init__(self, name="poker", ante=100):
@@ -1994,12 +1999,16 @@ def test_dealer_state_has_pot_value() -> None:
     dealer = Dealer()
     state = dealer.get_state()
     assert state['pot_value'] is not None
+
+
     
 def test_dealer_update_cards() -> None:
     p1 = Player()
     dealer = Dealer()
     p1 = dealer.update_cards(p1)
     assert len(p1.hand) == 5
+
+def test
     
 def test_dealer_pot_value_state() -> None:
     dealer = Dealer()
