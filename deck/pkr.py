@@ -367,14 +367,23 @@ class Dealer:
         bb = players[big_blind_pos].pay(big_blind)
         self.add_to_pot(bb+sb)
         return players
+        
+    def get_position(self):
+        self.position = 0
+        return(self.position)
+
+    def set_position(self, position):
+        self.position = position
 
     def update_state(self):
         sblind = self.get_blind('small')
         lblind = self.get_blind('big')
         potval = self.get_pot_value()
+        position = self.get_position()
         return {'small_blind' : sblind,
                 'big_blind': lblind,
-                'pot_value' : potval}
+                'pot_value' : potval,
+                'position': position}
 
     def get_state(self):
         return self.update_state()
