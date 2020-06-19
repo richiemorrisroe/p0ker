@@ -2048,15 +2048,24 @@ def test_dealer_can_start_round() -> None:
 **** DONE small blind
 **** DONE large blind
 **** DONE deal cards to players
-- send players state so they can decide action
-- bet/call/fold in order
-- discard cards
-- get new cards
-- bet/call/fold in order
-- finish round
-  - award pot
-  - reset deck and cards
-  - log player/dealer state
+- Wrap up all of these functions into a start round one, which returns players with Hands
+**** send players state so they can decide action
+  - have player decide on action based on state
+  - internal state (cards held)
+  - external state (position, pot value, actions of other players)
+**** Fix hand API
+- have a hand class
+- also have a bunch of functions that act on hand objects
+- should join them together in holy matrimony/encapsulation
+
+***** bet/call/fold in order
+***** discard cards
+***** get new cards
+***** bet/call/fold in order
+***** finish round
+ - award pot
+ - reset deck and cards
+ - log player/dealer state
 
 
 ** Design Thoughts
@@ -2082,8 +2091,8 @@ def test_dealer_can_start_round() -> None:
 - this would help with all the repetition in test\_score\_hand
 
 - Discard cards needs some love:
-  - i need to make some kind of stash object to hold the discarded cards
-  - should probably exist as something off a Dealer/Game object
+*** DONE i need to make some kind of stash object to hold the discarded cards
+*** DONE should probably exist as something off a Dealer/Game object
 
 *** Visualising Code graph
 
