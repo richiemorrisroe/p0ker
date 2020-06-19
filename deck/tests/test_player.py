@@ -105,10 +105,10 @@ def test_player_can_pay() -> None:
     assert pay_blind == small_blind
 
 
-def test_player_send_action() -> None:
-    p1 = Player()
-    p2 = Player()
-    dealer = Dealer()
-    p1, p2 = dealer.update_cards([p1, p2])
-    action = p1.decide_action()
-    assert action in ['CALL', 'BET', 'FOLD', 'RAISE']
+# def test_player_send_action() -> None:
+#     p1 = Player()
+#     p2 = Player()
+#     dealer = Dealer()
+#     p1, p2 = dealer.update_cards([p1, p2])
+#     action = p1.decide_action()
+#     assert action in ['CALL', 'BET', 'FOLD', 'RAISE']
