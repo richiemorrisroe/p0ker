@@ -1176,14 +1176,23 @@ class Dealer:
         bb = players[big_blind_pos].pay(big_blind)
         self.add_to_pot(bb+sb)
         return players
+        
+    def get_position(self):
+        self.position = 0
+        return(self.position)
+
+    def set_position(self, position):
+        self.position = position
 
     def update_state(self):
         sblind = self.get_blind('small')
         lblind = self.get_blind('big')
         potval = self.get_pot_value()
+        position = self.get_position()
         return {'small_blind' : sblind,
                 'big_blind': lblind,
-                'pot_value' : potval}
+                'pot_value' : potval,
+                'position': position}
 
     def get_state(self):
         return self.update_state()
@@ -1887,10 +1896,20 @@ def test_player_can_pay() -> None:
     small_blind = dealer.get_blind('small')
     pay_blind = p.pay(small_blind)
     assert pay_blind == small_blind
+
+
+# def test_player_send_action() -> None:
+#     p1 = Player()
+#     p2 = Player()
+#     dealer = Dealer()
+#     p1, p2 = dealer.update_cards([p1, p2])
+#     action = p1.decide_action()
+#     assert action in ['CALL', 'BET', 'FOLD', 'RAISE']
+    
 #+end_src
 
 #+begin_src python :tangle deck/tests/test_game.py
-from pkr import Dealer, Deck, Player, deal_cards
+from pkr import Dealer, Deck, Player, deal_cards, random_choice
 def test_dealer_is_dealer() -> None:
     dealer = Dealer()
     assert isinstance(dealer, Dealer)
@@ -1992,6 +2011,24 @@ def test_dealer_pot_value_state() -> None:
     state = dealer.get_state()
     assert state['pot_value'] == 300
     
+def test_dealer_state_has_player_pos() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    state = dealer.get_state()
+    assert state['position'] is not None
+
+def test_dealer_set_position() -> None:
+    pos = random_choice(0, 4)
+    dealer = Dealer()
+    dealer.set_position(pos)
+    assert dealer.get_state()['position'] == pos
+
+
+def test_dealer_can_start_round() -> None:
+    pass
+
 
 #+end_src
 

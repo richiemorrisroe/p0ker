@@ -99,3 +99,21 @@ def test_dealer_pot_value_state() -> None:
     dealer.get_blinds(list_players)
     state = dealer.get_state()
     assert state['pot_value'] == 300
+    
+def test_dealer_state_has_player_pos() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    state = dealer.get_state()
+    assert state['position'] is not None
+
+def test_dealer_set_position() -> None:
+    pos = random_choice(0, 4)
+    dealer = Dealer()
+    dealer.set_position(pos)
+    assert dealer.get_state()['position'] == pos
+
+
+def test_dealer_can_start_round() -> None:
+    pass
