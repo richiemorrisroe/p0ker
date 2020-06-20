@@ -1,4 +1,5 @@
 from pkr import Dealer, Deck, Player, deal_cards, random_choice
+import pytest
 def test_dealer_is_dealer() -> None:
     dealer = Dealer()
     assert isinstance(dealer, Dealer)
@@ -96,8 +97,9 @@ def test_dealer_update_cards_two_player() -> None:
     p1 = Player()
     p2 = Player()
     dealer = Dealer()
-    dealer.update_cards([p1, p2])
-    assert len(p1.hand) == 5 and len(p2.hand) == 5
+    with pytest.raises(ValueError):
+        dealer.update_cards([p1, p2])
+
     
 def test_dealer_pot_value_state() -> None:
     dealer = Dealer()

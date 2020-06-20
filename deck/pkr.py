@@ -209,6 +209,9 @@ class Player:
                               score=self.score,
                               hand=self.hand)
 
+    def __len__(self):
+        return(1)
+    
     def scores(self) -> float:
         if len(self.hand) > 0:
             score, sname = score_hand(self.hand)
@@ -300,6 +303,7 @@ class Dealer:
         self.deck = deck
         self.pot = 0
         self.discard_pile = []
+        self.position = 0
         
 
     def __repr__(self):
@@ -324,6 +328,8 @@ class Dealer:
         
 
     def update_cards(self, player):
+        if len(player)>1:
+            raise ValueError('update cards only takes one player, not {x}'.format(x=len(player)))
         deck, player = replenish_cards(self.deck, player)
         self.deck = deck
         return player
@@ -372,7 +378,6 @@ class Dealer:
         return players
         
     def get_position(self):
-        self.position = 0
         return(self.position)
 
     def set_position(self, position):

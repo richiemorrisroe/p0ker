@@ -1020,6 +1020,9 @@ class Player:
                               score=self.score,
                               hand=self.hand)
 
+    def __len__(self):
+        return(1)
+    
     def scores(self) -> float:
         if len(self.hand) > 0:
             score, sname = score_hand(self.hand)
@@ -1111,6 +1114,7 @@ class Dealer:
         self.deck = deck
         self.pot = 0
         self.discard_pile = []
+        self.position = 0
         
 
     def __repr__(self):
@@ -1135,6 +1139,8 @@ class Dealer:
         
 
     def update_cards(self, player):
+        if len(player)>1:
+            raise ValueError('update cards only takes one player, not {x}'.format(x=len(player)))
         deck, player = replenish_cards(self.deck, player)
         self.deck = deck
         return player
@@ -1183,7 +1189,6 @@ class Dealer:
         return players
         
     def get_position(self):
-        self.position = 0
         return(self.position)
 
     def set_position(self, position):
@@ -1915,6 +1920,7 @@ def test_player_can_pay() -> None:
 
 #+begin_src python :tangle deck/tests/test_game.py
 from pkr import Dealer, Deck, Player, deal_cards, random_choice
+import pytest
 def test_dealer_is_dealer() -> None:
     dealer = Dealer()
     assert isinstance(dealer, Dealer)
@@ -2012,8 +2018,9 @@ def test_dealer_update_cards_two_player() -> None:
     p1 = Player()
     p2 = Player()
     dealer = Dealer()
-    dealer.update_cards([p1, p2])
-    assert len(p1.hand) == 5 and len(p2.hand) == 5
+    with pytest.raises(ValueError):
+        dealer.update_cards([p1, p2])
+
     
 def test_dealer_pot_value_state() -> None:
     dealer = Dealer()
