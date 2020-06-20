@@ -10,7 +10,9 @@ def test_dealer_has_deck() -> None:
 
 def test_dealer_pot_is_zero() -> None:
     dealer = Dealer()
-    assert dealer.pot == 0
+    dealer.start_round()
+    pot = dealer.get_pot_value()
+    assert pot == 0
 
 def test_dealer_deal_cards() -> None:
     p1 = Player()

@@ -301,7 +301,7 @@ class Dealer:
         self.maxdrop = 3
         deck = Deck()
         self.deck = deck
-        self.pot = 0
+        self.round = None
         self.discard_pile = []
         self.position = 0
         
@@ -310,8 +310,8 @@ class Dealer:
         fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
         return fstring.format(name=self.name,
                               ante=self.ante,
-                              maxdrop=self.maxdrop,
-                              pot=self.pot)
+                              maxdrop=self.maxdrop
+                              )
 
 
     def deals(self, players:List[Player]) -> List[Player]:
@@ -343,19 +343,19 @@ class Dealer:
             maxscore = max(scores.items)
         return maxscore
 
-    
+    def start_round(self):
+        r = Round()
+        self.round = r
+
+
     def take_discards(self, cards:List[Card]) -> None:
         for card in cards:
             self.discard_pile.append(card)
 
-            
-    def add_to_pot(self, bet):
-        print("pot is {} and bet is {}".format(self.pot, bet))
-        self.pot += bet
-
-        
     def get_pot_value(self):
-        return self.pot
+        val = self.round.get_pot_value()
+        return(val)
+    
 
     
     def get_blind(self, blind_type):
@@ -368,13 +368,15 @@ class Dealer:
 
         
     def get_blinds(self, players:List[Player]) -> List[Player]:
+        if not self.round:
+            self.start_round()
         small_blind_pos = 0
         big_blind_pos = 1
         small_blind = self.get_blind('small')
         big_blind = self.get_blind('big')
         sb = players[small_blind_pos].pay(small_blind)
         bb = players[big_blind_pos].pay(big_blind)
-        self.add_to_pot(bb+sb)
+        self.round.add_to_pot(bb+sb)
         return players
         
     def get_position(self):
@@ -384,6 +386,8 @@ class Dealer:
         self.position = position
 
     def update_state(self):
+        if not self.round:
+            self.start_round()
         sblind = self.get_blind('small')
         lblind = self.get_blind('big')
         potval = self.get_pot_value()
@@ -395,6 +399,18 @@ class Dealer:
 
     def get_state(self):
         return self.update_state()
+
+
+class Round():
+    def __init__(self):
+        self.pot = 0
+
+    def add_to_pot(self, bet):
+        self.pot += bet
+
+        
+    def get_pot_value(self):
+        return self.pot
 
 def deal_cards(dealer:Dealer, players:List[Player]) -> Tuple[Dealer, List[Player]]:
     """Takes a list of players (normally empty lists)
