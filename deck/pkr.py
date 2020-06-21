@@ -303,7 +303,7 @@ class Dealer:
         self.deck = deck
         self.round = None
         self.discard_pile = []
-        self.position = 0
+        
         
 
     def __repr__(self):
@@ -380,10 +380,12 @@ class Dealer:
         return players
         
     def get_position(self):
-        return(self.position)
+        return(self.round.position)
 
     def set_position(self, position):
-        self.position = position
+        if not self.round:
+            self.round = Round()
+        self.round.position = position
 
     def update_state(self):
         if not self.round:
@@ -404,13 +406,20 @@ class Dealer:
 class Round():
     def __init__(self):
         self.pot = 0
-
+        self.position = 0
+        
     def add_to_pot(self, bet):
         self.pot += bet
 
         
     def get_pot_value(self):
         return self.pot
+
+    def get_position(self):
+        return(self.position)
+
+    def set_position(self, position):
+        self.position = position
 
 def deal_cards(dealer:Dealer, players:List[Player]) -> Tuple[Dealer, List[Player]]:
     """Takes a list of players (normally empty lists)
