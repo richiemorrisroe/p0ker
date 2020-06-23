@@ -44,6 +44,7 @@ def test_dealer_discard_pile_update() -> None:
 
 def test_dealer_set_blind() -> None:
     dealer = Dealer()
+    dealer.start_round()
     small_blind = dealer.get_blind('small')
     big_blind = dealer.get_blind('big')
     assert big_blind > small_blind

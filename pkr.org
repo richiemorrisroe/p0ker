@@ -1170,12 +1170,7 @@ class Dealer:
 
     
     def get_blind(self, blind_type):
-        if blind_type == 'small':
-            return self.ante
-        if blind_type == 'big':
-            return self.ante * 2
-        else:
-            raise NotImplementedError
+        return(self.round.get_blind(blind_type))
 
         
     def get_blinds(self, players:List[Player]) -> List[Player]:
@@ -1941,6 +1936,7 @@ def test_player_cannot_go_into_debt() -> None:
 def test_player_can_pay() -> None:
     p = Player()
     dealer = Dealer()
+    dealer.start_round()
     small_blind = dealer.get_blind('small')
     pay_blind = p.pay(small_blind)
     assert pay_blind == small_blind
@@ -2003,6 +1999,7 @@ def test_dealer_discard_pile_update() -> None:
 
 def test_dealer_set_blind() -> None:
     dealer = Dealer()
+    dealer.start_round()
     small_blind = dealer.get_blind('small')
     big_blind = dealer.get_blind('big')
     assert big_blind > small_blind

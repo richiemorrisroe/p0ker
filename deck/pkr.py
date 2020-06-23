@@ -359,12 +359,7 @@ class Dealer:
 
     
     def get_blind(self, blind_type):
-        if blind_type == 'small':
-            return self.ante
-        if blind_type == 'big':
-            return self.ante * 2
-        else:
-            raise NotImplementedError
+        return(self.round.get_blind(blind_type))
 
         
     def get_blinds(self, players:List[Player]) -> List[Player]:
