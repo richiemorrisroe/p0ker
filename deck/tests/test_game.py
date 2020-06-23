@@ -1,5 +1,6 @@
 from pkr import Dealer, Deck, Player, deal_cards, random_choice
 import pytest
+from typing import List, Set, Dict, Tuple, Optional
 def test_dealer_is_dealer() -> None:
     dealer = Dealer()
     assert isinstance(dealer, Dealer)
@@ -137,5 +138,13 @@ def test_dealer_set_position() -> None:
     assert dealer.get_state()['position'] == pos
 
 
-def test_dealer_can_start_round() -> None:
-    pass
+def test_dealer_start_round_does_not_return_none() -> None:
+    dealer = Dealer()
+    assert dealer.start_round() is not None
+
+def test_dealer_start_round_returns_a_list_of_players() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p1, p2 = dealer.start_round([p1, p2])
+    assert isinstance(p1, Player) and isinstance(p2, Player)

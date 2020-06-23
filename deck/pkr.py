@@ -307,11 +307,8 @@ class Dealer:
         
 
     def __repr__(self):
-        fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
-        return fstring.format(name=self.name,
-                              ante=self.ante,
-                              maxdrop=self.maxdrop
-                              )
+        fstring = "Dealer:{name}"
+        return fstring.format(name=self.name)
 
 
     def deals(self, players:List[Player]) -> List[Player]:
@@ -346,6 +343,7 @@ class Dealer:
     def start_round(self):
         r = Round(self.ante)
         self.round = r
+        return(1)
 
 
     def take_discards(self, cards:List[Card]) -> None:
@@ -371,11 +369,9 @@ class Dealer:
     def set_position(self, position):
         self.round.position = position
 
-    def update_state(self):
-        return(self.round.update_state())
 
     def get_state(self):
-        return self.update_state()
+        return self.round.update_state()
 
 
 class Round():
@@ -383,6 +379,8 @@ class Round():
         self.pot = 0
         self.position = 0
         self.ante = ante
+
+
     def add_to_pot(self, bet):
         self.pot += bet
 
@@ -390,11 +388,14 @@ class Round():
     def get_pot_value(self):
         return self.pot
 
+
     def get_position(self):
         return(self.position)
 
+
     def set_position(self, position):
         self.position = position
+
 
     def get_blind(self, blind_type):
         if blind_type == 'small':
@@ -403,6 +404,7 @@ class Round():
             return self.ante * 2
         else:
             raise NotImplementedError
+
 
         
     def get_blinds(self, players:List[Player]) -> List[Player]:
@@ -414,6 +416,7 @@ class Round():
         bb = players[big_blind_pos].pay(big_blind)
         self.add_to_pot(bb+sb)
         return players
+
 
     def update_state(self):
         sblind = self.get_blind('small')
