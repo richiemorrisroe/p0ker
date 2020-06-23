@@ -54,6 +54,7 @@ def test_dealer_get_blind() -> None:
     p2 = Player()
     p3 = Player()
     list_players = [p1, p2, p3]
+    dealer.start_round()
     dealer.get_blinds(list_players)
     assert dealer.get_pot_value() == 300
 
@@ -63,6 +64,7 @@ def test_dealer_ask_for_action() -> None:
     p2 = Player()
     p3 = Player()
     list_players = [p1, p2, p3]
+    dealer.start_round()
     p1, p2, p3 = dealer.get_blinds(list_players)
     p1, p2, p3 = dealer.deals([p1, p2, p3])
     
@@ -74,16 +76,19 @@ def test_dealer_ask_for_action() -> None:
 
 def test_dealer_has_state() -> None:
     dealer = Dealer()
+    dealer.start_round()
     state = dealer.get_state()
     assert state is not None
 
 def test_dealer_state_is_dict() -> None:
     dealer = Dealer()
+    dealer.start_round()
     state = dealer.get_state()
     assert isinstance(state, dict)
 
 def test_dealer_state_has_pot_value() -> None:
     dealer = Dealer()
+    dealer.start_round()
     state = dealer.get_state()
     assert state['pot_value'] is not None
 
@@ -109,6 +114,7 @@ def test_dealer_pot_value_state() -> None:
     p2 = Player()
     p3 = Player()
     list_players = [p1, p2, p3]
+    dealer.start_round()
     dealer.get_blinds(list_players)
     state = dealer.get_state()
     assert state['pot_value'] == 300
@@ -118,12 +124,14 @@ def test_dealer_state_has_player_pos() -> None:
     p1 = Player()
     p2 = Player()
     p3 = Player()
+    dealer.start_round()
     state = dealer.get_state()
     assert state['position'] is not None
 
 def test_dealer_set_position() -> None:
     pos = random_choice(0, 4)
     dealer = Dealer()
+    dealer.start_round()
     dealer.set_position(pos)
     assert dealer.get_state()['position'] == pos
 

@@ -344,7 +344,7 @@ class Dealer:
         return maxscore
 
     def start_round(self):
-        r = Round()
+        r = Round(self.ante)
         self.round = r
 
 
@@ -368,8 +368,6 @@ class Dealer:
 
         
     def get_blinds(self, players:List[Player]) -> List[Player]:
-        if not self.round:
-            self.start_round()
         small_blind_pos = 0
         big_blind_pos = 1
         small_blind = self.get_blind('small')
@@ -383,13 +381,9 @@ class Dealer:
         return(self.round.position)
 
     def set_position(self, position):
-        if not self.round:
-            self.round = Round()
         self.round.position = position
 
     def update_state(self):
-        if not self.round:
-            self.start_round()
         sblind = self.get_blind('small')
         lblind = self.get_blind('big')
         potval = self.get_pot_value()
@@ -404,10 +398,10 @@ class Dealer:
 
 
 class Round():
-    def __init__(self):
+    def __init__(self, ante):
         self.pot = 0
         self.position = 0
-        
+        self.ante = ante
     def add_to_pot(self, bet):
         self.pot += bet
 
@@ -420,6 +414,25 @@ class Round():
 
     def set_position(self, position):
         self.position = position
+
+    def get_blind(self, blind_type):
+        if blind_type == 'small':
+            return self.ante
+        if blind_type == 'big':
+            return self.ante * 2
+        else:
+            raise NotImplementedError
+
+        
+    def get_blinds(self, players:List[Player]) -> List[Player]:
+        small_blind_pos = 0
+        big_blind_pos = 1
+        small_blind = self.get_blind('small')
+        big_blind = self.get_blind('big')
+        sb = players[small_blind_pos].pay(small_blind)
+        bb = players[big_blind_pos].pay(big_blind)
+        self.round.add_to_pot(bb+sb)
+        return players
 
 def deal_cards(dealer:Dealer, players:List[Player]) -> Tuple[Dealer, List[Player]]:
     """Takes a list of players (normally empty lists)

@@ -1155,7 +1155,7 @@ class Dealer:
         return maxscore
 
     def start_round(self):
-        r = Round()
+        r = Round(self.ante)
         self.round = r
 
 
@@ -1179,8 +1179,6 @@ class Dealer:
 
         
     def get_blinds(self, players:List[Player]) -> List[Player]:
-        if not self.round:
-            self.start_round()
         small_blind_pos = 0
         big_blind_pos = 1
         small_blind = self.get_blind('small')
@@ -1194,13 +1192,9 @@ class Dealer:
         return(self.round.position)
 
     def set_position(self, position):
-        if not self.round:
-            self.round = Round()
         self.round.position = position
 
     def update_state(self):
-        if not self.round:
-            self.start_round()
         sblind = self.get_blind('small')
         lblind = self.get_blind('big')
         potval = self.get_pot_value()
@@ -1215,10 +1209,10 @@ class Dealer:
 
 
 class Round():
-    def __init__(self):
+    def __init__(self, ante):
         self.pot = 0
         self.position = 0
-        
+        self.ante = ante
     def add_to_pot(self, bet):
         self.pot += bet
 
@@ -1231,6 +1225,25 @@ class Round():
 
     def set_position(self, position):
         self.position = position
+
+    def get_blind(self, blind_type):
+        if blind_type == 'small':
+            return self.ante
+        if blind_type == 'big':
+            return self.ante * 2
+        else:
+            raise NotImplementedError
+
+        
+    def get_blinds(self, players:List[Player]) -> List[Player]:
+        small_blind_pos = 0
+        big_blind_pos = 1
+        small_blind = self.get_blind('small')
+        big_blind = self.get_blind('big')
+        sb = players[small_blind_pos].pay(small_blind)
+        bb = players[big_blind_pos].pay(big_blind)
+        self.round.add_to_pot(bb+sb)
+        return players
 
 def deal_cards(dealer:Dealer, players:List[Player]) -> Tuple[Dealer, List[Player]]:
     """Takes a list of players (normally empty lists)
@@ -2000,6 +2013,7 @@ def test_dealer_get_blind() -> None:
     p2 = Player()
     p3 = Player()
     list_players = [p1, p2, p3]
+    dealer.start_round()
     dealer.get_blinds(list_players)
     assert dealer.get_pot_value() == 300
 
@@ -2009,6 +2023,7 @@ def test_dealer_ask_for_action() -> None:
     p2 = Player()
     p3 = Player()
     list_players = [p1, p2, p3]
+    dealer.start_round()
     p1, p2, p3 = dealer.get_blinds(list_players)
     p1, p2, p3 = dealer.deals([p1, p2, p3])
     
@@ -2020,16 +2035,19 @@ def test_dealer_ask_for_action() -> None:
 
 def test_dealer_has_state() -> None:
     dealer = Dealer()
+    dealer.start_round()
     state = dealer.get_state()
     assert state is not None
 
 def test_dealer_state_is_dict() -> None:
     dealer = Dealer()
+    dealer.start_round()
     state = dealer.get_state()
     assert isinstance(state, dict)
 
 def test_dealer_state_has_pot_value() -> None:
     dealer = Dealer()
+    dealer.start_round()
     state = dealer.get_state()
     assert state['pot_value'] is not None
 
@@ -2055,6 +2073,7 @@ def test_dealer_pot_value_state() -> None:
     p2 = Player()
     p3 = Player()
     list_players = [p1, p2, p3]
+    dealer.start_round()
     dealer.get_blinds(list_players)
     state = dealer.get_state()
     assert state['pot_value'] == 300
@@ -2064,12 +2083,14 @@ def test_dealer_state_has_player_pos() -> None:
     p1 = Player()
     p2 = Player()
     p3 = Player()
+    dealer.start_round()
     state = dealer.get_state()
     assert state['position'] is not None
 
 def test_dealer_set_position() -> None:
     pos = random_choice(0, 4)
     dealer = Dealer()
+    dealer.start_round()
     dealer.set_position(pos)
     assert dealer.get_state()['position'] == pos
 
@@ -2084,7 +2105,7 @@ def test_dealer_can_start_round() -> None:
 from pkr import Round
 
 def test_round_exists() -> None:
-    r = Round()
+    r = Round(100)
     assert r is not None
 #+end_src
 
