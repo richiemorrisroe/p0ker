@@ -363,14 +363,7 @@ class Dealer:
 
         
     def get_blinds(self, players:List[Player]) -> List[Player]:
-        small_blind_pos = 0
-        big_blind_pos = 1
-        small_blind = self.get_blind('small')
-        big_blind = self.get_blind('big')
-        sb = players[small_blind_pos].pay(small_blind)
-        bb = players[big_blind_pos].pay(big_blind)
-        self.round.add_to_pot(bb+sb)
-        return players
+        return(self.round.get_blinds(players))
         
     def get_position(self):
         return(self.round.position)
@@ -426,7 +419,7 @@ class Round():
         big_blind = self.get_blind('big')
         sb = players[small_blind_pos].pay(small_blind)
         bb = players[big_blind_pos].pay(big_blind)
-        self.round.add_to_pot(bb+sb)
+        self.add_to_pot(bb+sb)
         return players
 
 def deal_cards(dealer:Dealer, players:List[Player]) -> Tuple[Dealer, List[Player]]:

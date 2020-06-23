@@ -739,7 +739,7 @@ len(pairs) = 1
 - need a function that returns an action, which can then be implemented
 - move all of the logic out of the bet, call and fold functions
 - function decide_action perhaps?
-* DeepStack
+* COMMENT DeepStack
 
 - So, we have a fancy ass paper in [[https://www.deepstack.ai/][Science]] which apparently solves Texas Hold'Em.
 - They also supply an implementation of a [[https://github.com/lifrordi/DeepStack-Leduc][much simpler version]] (Leduc HoldEm)
@@ -803,7 +803,7 @@ We'll use pytest, as it has less boilerplate
 
 First, I need to put all my code into a module
 
-I'm going to recreate the entirity of deck.py within a folder called
+I'm going to recreate the entirety of deck.py within a folder called
 deck
 
 This will make it easier to set up all the testing and whatnot. 
@@ -1174,14 +1174,7 @@ class Dealer:
 
         
     def get_blinds(self, players:List[Player]) -> List[Player]:
-        small_blind_pos = 0
-        big_blind_pos = 1
-        small_blind = self.get_blind('small')
-        big_blind = self.get_blind('big')
-        sb = players[small_blind_pos].pay(small_blind)
-        bb = players[big_blind_pos].pay(big_blind)
-        self.round.add_to_pot(bb+sb)
-        return players
+        return(self.round.get_blinds(players))
         
     def get_position(self):
         return(self.round.position)
@@ -1237,7 +1230,7 @@ class Round():
         big_blind = self.get_blind('big')
         sb = players[small_blind_pos].pay(small_blind)
         bb = players[big_blind_pos].pay(big_blind)
-        self.round.add_to_pot(bb+sb)
+        self.add_to_pot(bb+sb)
         return players
 
 def deal_cards(dealer:Dealer, players:List[Player]) -> Tuple[Dealer, List[Player]]:
