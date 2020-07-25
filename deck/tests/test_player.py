@@ -100,7 +100,8 @@ def test_player_cannot_go_into_debt() -> None:
 def test_player_can_pay() -> None:
     p = Player()
     dealer = Dealer()
-    small_blind = dealer.get_blind('small')
+    round = dealer.start_round()
+    small_blind = round.get_blind('small')
     pay_blind = p.pay(small_blind)
     assert pay_blind == small_blind
 
