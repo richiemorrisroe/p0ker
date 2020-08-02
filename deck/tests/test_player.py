@@ -106,6 +106,12 @@ def test_player_can_pay() -> None:
     assert pay_blind == small_blind
 
 
+def test_player_add_card_to_hand() -> None:
+    p = Player()
+    c = Card(Rank(2), Suit(1))
+    p.add_card(c)
+    assert len(p.hand) == 1
+
 # def test_player_send_action() -> None:
 #     p1 = Player()
 #     p2 = Player()

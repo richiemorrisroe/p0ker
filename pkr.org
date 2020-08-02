@@ -794,7 +794,7 @@ this paper presents an approach towards solving this problem
 - DeepStack uses "continual re-solving" (hopefully this will make more
   sense when I have details)
 
-* Testing
+*  Testing
 
 I need some tests, as I now have no idea what I was getting at before
 :(
@@ -808,15 +808,15 @@ deck
 
 This will make it easier to set up all the testing and whatnot. 
 
-#+BEGIN_SRC python :tangle deck/pkr.py :file deck/pkr.py
+#+BEGIN_SRC python :tangle deck/pkr.py  :file deck/pkr.py
 from enum import Enum, IntEnum
 import random as random
-import collections as collections
+
 
 from random import shuffle
 import math as math
 import random as random
-from typing import List, Set, Dict, Tuple, Optional
+from typing import List,  Dict, Tuple, Optional
 
 
 class Suit(Enum):
@@ -846,7 +846,7 @@ class Rank(IntEnum):
 
 class Card:
     """A playing card in the space (2,14) rank and one of four suits"""
-    def __init__(self, rank:Rank=None, suit:Suit = None):
+    def __init__(self, rank:Rank, suit:Suit):
         assert isinstance(rank, Rank)
         assert isinstance(suit, Suit)
         self.rank = rank
@@ -921,11 +921,151 @@ class Hand:
         else:
             return self.cards[self.pos - 1]
 
+    def add_card(self, card:Card) -> None:
+        self.cards.append(card)
+
+    def count(self, suit_or_rank=None):
+        """Take either a list of suits of ranks and returns
+        a dict with the counts of each. 
+        Used as input to checking functions"""
+        suits, ranks = self.split_cards()
+        if suit_or_rank == 'suits':
+            vals = suits
+        if suit_or_rank == 'ranks':
+            vals = ranks
+        rdict = dict.fromkeys(vals)
+        for each in vals:
+            if rdict[each]:
+                rdict[each] += 1
+            if not rdict[each]:
+                rdict[each] = 1
+        return rdict
+        
+
+    def split_cards(self) -> Tuple[List[Suit], List[Rank]]:
+        """Takes a list of card objects (a hand) and returns two lists,
+        one of the
+        suits, and the other of the ranks of the hand.
+        Mostly useful for further functions """
+        suits = []
+        ranks = []
+        for card in self.cards:
+            suits.append(card.suit)
+            ranks.append(card.rank)
+        return suits, ranks
+
+    
+    def get_scores(self) -> Dict[str, int]:
+        """Returns a dictionary with potential hands and the scores associated
+        with them. Normally only called from within other functions"""
+        scores = {
+        'NOTHING': 2,
+            'PAIR': 238,
+            'TWO-PAIR': 2105,
+            'THREE-OF-A-KIND': 4741,
+            'STRAIGHT': 25641,
+            'FLUSH': 52631,
+            'FULL-HOUSE': 71428,
+            'FOUR-OF-A-KIND': 500000,
+            'STRAIGHT-FLUSH': 100000000
+        }
+        return scores
+
+    def is_flush(self) -> bool :
+        """Check if a set of suits contains a flush (all suits are the same). 
+        Returns True if so, False otherwise. 
+        If exact=False, returns the highest count of same suits present. """
+        suits, ranks = self.split_cards()
+        all_suits = [x for x in suits if isinstance(x, Suit)]
+        if len(all_suits) != len(suits):
+            raise ValueError('all suits must be of class Suit')
+        sc = self.count('suits')
+        maxval = max(sc.values())
+        if maxval == 5:
+            return True
+        else:
+            return False
+
+    def is_straight(self) -> bool:
+        suits, ranks = self.split_cards()
+        all_ranks = [x for x in ranks if isinstance(x, Rank)]
+        if len(all_ranks) != len(ranks):
+            raise ValueError('all cards must be of class Rank')
+        ranks_int = [int(rank) for rank in ranks]
+        min_rank = min(ranks_int)
+        straight_seq = list(range(min_rank, min_rank+5))
+        ranks_int.sort()
+        if ranks_int == straight_seq:
+            return True
+        else:
+            return False
+
+    def find_repeated_cards(self):
+        """Check if there are any repeated cards in a list of suits or ranks. 
+        Return the elements which are repeated if so, an empty dictionary otherwise"""
+        suits, ranks = self.split_cards()
+        res = {}
+        counts = self.count('ranks')
+        for k, v in counts.items():
+            if v >= 2:
+                res[k] = v
+        return res
+
+    def score(self):
+        """Return the score of a particular hand. Returns a tuple with the
+        name of the hand and the score associated with this hand"""
+        hand = Hand(self.cards)
+        scores = hand.get_scores()
+        suits, ranks = hand.split_cards()
+        flush = hand.is_flush()
+        straight = hand.is_straight()
+        pairs = hand.find_repeated_cards()
+        if straight and not flush:
+            handscore = scores['STRAIGHT']
+            scorename = 'STRAIGHT'
+        if flush and not straight:
+            handscore = scores['FLUSH']
+            scorename = 'FLUSH'
+        if straight and flush:
+            handscore = scores['STRAIGHT-FLUSH']
+            scorename = 'STRAIGHT-FLUSH'
+        if len(pairs) == 0 and not flush and not straight:
+            handscore = scores['NOTHING']
+            scorename = 'NOTHING'
+        if len(pairs) >= 1:
+            vals = pairs.values()
+            if max(vals) == 2 and len(pairs) == 1:
+                handscore = scores['PAIR']
+                scorename = 'PAIR'
+            if max(vals) == 2 and len(pairs) == 2:
+                handscore = scores['TWO-PAIR']
+                scorename = 'TWO-PAIR'
+            if max(vals) == 3 and len(pairs) == 1:
+                handscore = scores['THREE-OF-A-KIND']
+                scorename = 'THREE-OF-A-KIND'
+            if max(vals) == 3 and len(pairs) == 2:
+                handscore = scores['FULL-HOUSE']
+                scorename = 'FULL-HOUSE'
+            if max(vals) == 4:
+                handscore = scores['FOUR-OF-A-KIND']
+                scorename = 'FOUR-OF-A-KIND'
+        return handscore, scorename    
+
+
     def get_suits(self) -> List[Suit]:
         suits = []
         for card in self.cards:
             suits.append(card.get_suit())
         return suits
+
+    
+
+
+
+
+
+
+
 
 
 def random_choice(upper: int, lower: int) -> int:
@@ -1005,7 +1145,7 @@ class Player:
         if hand is None:
             self.hand = []
         else:
-            self.hand = hand
+            self.hand = Hand(hand)
         if stash is None:
             self.stash = 5000
         else:
@@ -1025,7 +1165,7 @@ class Player:
     
     def scores(self) -> float:
         if len(self.hand) > 0:
-            score, sname = score_hand(self.hand)
+            score, sname = Hand(self.hand).score()
             self.score = score
             return self.score
         else:
@@ -1050,7 +1190,7 @@ class Player:
             return bet
         else:
             bet = 0
-            score, name = score_hand(self.hand)
+            score, name = Hand(self.hand).score()
             print(f'score is {score}')
             if score > 200:
                 bet = (self.stash * 0.01) * math.log(score)
@@ -1066,7 +1206,7 @@ class Player:
 
     def call(self, bet_required=None) -> bool:
         if not self.score:
-            self.score, _ = score_hand(self.hand)
+            self.score, _ = Hand(self.hand).score()
 
         if self.score < 200:
             return False
@@ -1081,7 +1221,7 @@ class Player:
 
     def fold(self) -> bool:
         if not self.score:
-            self.score, _ = score_hand(self.hand)
+            self.score, _ = Hand(self.hand).score()
         if self.score < 100:
             return True
         else:
@@ -1103,6 +1243,12 @@ class Player:
     def pay(self, amount):
         self.stash -= amount
         return amount
+
+    def add_card(self, card:Card) -> None:
+        if not isinstance(self.hand, Hand):
+            self.hand = Hand(self.hand)
+        self.hand.add_card(card)
+        return None
 
 
 class Dealer:
@@ -1134,7 +1280,7 @@ class Dealer:
         for i in range(0, 5):
             for player in players:
                 card = deck.deal(num_cards=1)
-                player.hand.append(card)
+                player.add_card(card)
                 print('deck_length:{deck_len}'.format(deck_len=len(deck)))
         return players
         
@@ -1150,7 +1296,7 @@ class Dealer:
     def compare(self, players):
         scores = {}
         for player in players:
-            score, sname = score_hand(players.hand)
+            score, sname = players.hand.score()
             scores[player] = score
             maxscore = max(scores.items)
         return maxscore
@@ -1242,6 +1388,9 @@ class Round():
                 'pot_value' : potval,
                 'position': position}
 
+
+
+
 def deal_cards(dealer:Dealer, players:List[Player]) -> Tuple[Dealer, List[Player]]:
     """Takes a list of players (normally empty lists)
       and deals each of them five cards,
@@ -1254,30 +1403,10 @@ def deal_cards(dealer:Dealer, players:List[Player]) -> Tuple[Dealer, List[Player
 
 
 
-def split_cards(Hand:Hand) -> Tuple[List[Suit], List[Rank]]:
-    """Takes a list of card objects (a hand) and returns two lists,
-      one of the
-      suits, and the other of the ranks of the hand.
-      Mostly useful for further functions """
-    suits = []
-    ranks = []
-    for card in Hand:
-        suits.append(card.suit)
-        ranks.append(card.rank)
-    return suits, ranks
 
 
-def count(ranks):
-    """Take either a list of suits of ranks and returns
-      a dict with the counts of each. 
-      Used as input to checking functions"""
-    rdict = dict.fromkeys(ranks)
-    for each in ranks:
-        if rdict[each]:
-            rdict[each] += 1
-        if not rdict[each]:
-            rdict[each] = 1
-    return rdict
+
+
 
 
 def anyrep(ranks):
@@ -1293,43 +1422,10 @@ def anyrep(ranks):
         return True
 
 
-def find_repeated_cards(ranks):
-    """Check if there are any repeated cards in a list of suits or ranks. 
-    Return the elements which are repeated if so, an empty dictionary otherwise"""
-    res = {}
-    counts = count(ranks)
-    for k, v in counts.items():
-        if v >= 2:
-            res[k] = v
-    return res
 
 
-def is_straight(ranks : List[Rank]) -> bool:
-    all_ranks = [x for x in ranks if isinstance(x, Rank)]
-    if len(all_ranks) != len(ranks):
-        raise ValueError('all cards must be of class Rank')
-    ranks_int = [int(rank) for rank in ranks]
-    min_rank = min(ranks_int)
-    straight_seq = list(range(min_rank, min_rank+5))
-    ranks_int.sort()
-    if ranks_int == straight_seq:
-        return True
-    else:
-        return False
 
-def is_flush(suits : List[Suit]) -> bool :
-    """Check if a set of suits contains a flush (all suits are the same). 
-      Returns True if so, False otherwise. 
-    If exact=False, returns the highest count of same suits present. """
-    all_suits = [x for x in suits if isinstance(x, Suit)]
-    if len(all_suits) != len(suits):
-        raise ValueError('all suits must be of class Suit')
-    sc = count(suits)
-    maxval = max(sc.values())
-    if maxval == 5:
-        return True
-    else:
-        return False
+
 
 
 def make_straight(start: int) -> Hand:
@@ -1341,7 +1437,7 @@ def make_straight(start: int) -> Hand:
         hand.append(Card(Rank(rank), random_suit()))
     return Hand(hand)
 
-def make_flush(suit: Suit = None) -> Hand:
+def make_flush(suit: Optional[Suit] = None) -> Hand:
     """This can produce a flush, of suit random_suit and with a random_ranks"""
     hand = []
     if not suit:
@@ -1352,21 +1448,6 @@ def make_flush(suit: Suit = None) -> Hand:
     return Hand(hand)
 
 
-def get_scores() -> Dict[str, int]:
-    """Returns a dictionary with potential hands and the scores associated
-      with them. Normally only called from within other functions"""
-    scores = {
-        'NOTHING': 2,
-        'PAIR': 238,
-        'TWO-PAIR': 2105,
-        'THREE-OF-A-KIND': 4741,
-        'STRAIGHT': 25641,
-        'FLUSH': 52631,
-        'FULL-HOUSE': 71428,
-        'FOUR-OF-A-KIND': 500000,
-        'STRAIGHT-FLUSH': 100000000
-    }
-    return scores
 
 
 def print_source(function):
@@ -1375,56 +1456,20 @@ def print_source(function):
     pprint.pprint(inspect.getsource(function))
 
 
-def score_hand(hand :Hand):
-    """Return the score of a particular hand. Returns a tuple with the
-      name of the hand and the score associated with this hand"""
-    scores = get_scores()
-    suits, ranks = split_cards(hand)
-    flush = is_flush(suits)
-    straight = is_straight(ranks)
-    pairs = find_repeated_cards(ranks)
-    if straight and not flush:
-        handscore = scores['STRAIGHT']
-        scorename = 'STRAIGHT'
-    if flush and not straight:
-        handscore = scores['FLUSH']
-        scorename = 'FLUSH'
-    if straight and flush:
-        handscore = scores['STRAIGHT-FLUSH']
-        scorename = 'STRAIGHT-FLUSH'
-    if len(pairs) == 0 and not flush and not straight:
-        handscore = scores['NOTHING']
-        scorename = 'NOTHING'
-    if len(pairs) >= 1:
-        vals = pairs.values()
-        if max(vals) == 2 and len(pairs) == 1:
-            handscore = scores['PAIR']
-            scorename = 'PAIR'
-        if max(vals) == 2 and len(pairs) == 2:
-            handscore = scores['TWO-PAIR']
-            scorename = 'TWO-PAIR'
-        if max(vals) == 3 and len(pairs) == 1:
-            handscore = scores['THREE-OF-A-KIND']
-            scorename = 'THREE-OF-A-KIND'
-        if max(vals) == 3 and len(pairs) == 2:
-            handscore = scores['FULL-HOUSE']
-            scorename = 'FULL-HOUSE'
-        if max(vals) == 4:
-            handscore = scores['FOUR-OF-A-KIND']
-            scorename = 'FOUR-OF-A-KIND'
-    return handscore, scorename
 
 
-def discard_cards(hand):
+def discard_cards(hand:Hand):
     """Discard cards that do not add to the value of the hand. Ignores the
       possibility of straights or flushes. 
       Keeps any pairs etc, otherwise
       keeps the highest numeric cards and discards the rest. 
       In any case, will discard no more than three cards."""
-    suits, ranks = split_cards(hand)
-    score, handname = score_hand(hand)
+    # if not isinstance(hand, Hand):
+    #     hand = Hand(hand)
+    suits, ranks = hand.split_cards()
+    this_score, handname = hand.score()
     if handname == 'STRAIGHT' or handname == 'FLUSH' or handname == 'STRAIGHT-FLUSH':
-        keep = hand
+        keep = hand.cards
         discard = []
     if handname == 'NOTHING':
         three_cards = random.sample(set(hand), 3)
@@ -1435,10 +1480,10 @@ def discard_cards(hand):
         discard = []
         for card in hand:
 
-            old_score = score
+            old_score = this_score
             print(f'card is {card}')
-            new_hand = [c for c in hand if c != card]
-            score_new, _ = score_hand(new_hand)
+            new_hand = Hand([c for c in hand if c != card])
+            score_new, _ = new_hand.score()
             print(f'new_hand is {new_hand}; new_score is {score_new}; old_score is {old_score}')
             if old_score > score_new:
                 keep.append(card)
@@ -1469,6 +1514,7 @@ def replenish_cards(deck, player):
 #+END_SRC
 
 #+RESULTS:
+: None
 
 - We need to create an empty ~__init_file.py~  for /reasons/. 
 
@@ -1627,7 +1673,7 @@ def test_get_rank_type() -> None:
 # type: ignore 
 import pytest
 
-from pkr import Card, Deck, Player, Suit, Rank, random_hand, Hand, deal_cards, split_cards
+from pkr import Card, Deck, Player, Suit, Rank, random_hand, Hand, deal_cards
 
 
 def test_deck_length() -> None:
@@ -1684,9 +1730,9 @@ def test_deck_shuffle() -> None:
 
 #+BEGIN_SRC python :tangle deck/tests/test_card_functions.py
 from pkr import (Card, Player, Suit, Rank,  Deck, Hand, deal_cards,
-                 random_hand, split_cards, count, anyrep,
-                 find_repeated_cards, make_straight, is_straight,
-                 is_flush, score_hand, make_flush, discard_cards, Dealer)
+                 random_hand, anyrep,
+                  make_straight,
+                  make_flush, discard_cards, Dealer)
 def test_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
@@ -1708,17 +1754,17 @@ def test_deal_cards() -> None:
 
 def test_split_cards() -> None:
     rhand = random_hand() 
-    suits, ranks = split_cards(rhand)
+    suits, ranks = rhand.split_cards()
     assert len(ranks) and len(suits) == 5
 
 def test_split_cards_suits() -> None:
     rhand = random_hand() 
-    suits, ranks = split_cards(rhand)
+    suits, ranks = rhand.split_cards()
     assert isinstance(suits[0], Suit)
 
 def test_split_cards_ranks() -> None:
     rhand = random_hand() 
-    suits, ranks = split_cards(rhand)
+    suits, ranks = rhand.split_cards()
     assert isinstance(ranks[0], Rank)
 
     
@@ -1726,8 +1772,7 @@ def test_count() -> None:
     hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
             Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
             Card(Rank(8),Suit(2))])
-    suits, ranks = split_cards(hand)
-    count_ranks = count(ranks)
+    count_ranks = hand.count('ranks')
     assert max(count_ranks.values()) == 3
 
 
@@ -1735,44 +1780,42 @@ def test_repeated_cards() -> None:
     hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
             Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
             Card(Rank(8),Suit(2))])
-    suits, ranks = split_cards(hand)
-    reps = find_repeated_cards(ranks)
+    reps = hand.find_repeated_cards()
     assert len(reps)==2
 
 def test_make_straight_is_straight() -> None:
     straight = make_straight(start=5)
-    suits, ranks = split_cards(straight)
-    assert is_straight(ranks)
+    assert straight.is_straight()
 
 
 def test_straight_has_consecutive_numbers() -> None:
     straight = make_straight(start=5)
-    suits, ranks = split_cards(straight)
+    suits, ranks = straight.split_cards()
     ranks_int = [int(rank) for rank in ranks]
     assert ranks_int == [5, 6, 7, 8, 9]
 
 def test_is_flush_correct() -> None:
     flush = make_flush()
-    suits, ranks = split_cards(flush)
-    assert is_flush(suits)
+    assert flush.is_flush()
 
 def test_get_scores_scores_every_hand() -> None:
     rhand = random_hand()
-    assert score_hand(rhand) is not None
+    rscore, scorename = rhand.score()
+    assert rscore is not None
 
 
 
 
 def test_discard_cards() -> None:
-    testhand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
-                Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))]
+    testhand = Hand([Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
+                Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))])
     keep, discarded = discard_cards(testhand)
     assert len(keep) == 3 and len(discarded) == 2
 
 def test_discard_cards_nothing() -> None:
-    testhand = [Card(Rank(2), Suit(1)), Card(Rank(5), Suit(2)),
+    testhand = Hand([Card(Rank(2), Suit(1)), Card(Rank(5), Suit(2)),
                 Card(Rank(14), Suit(3)), Card(Rank(7), Suit(1)),
-                Card(Rank(11), Suit(2))]
+                Card(Rank(11), Suit(2))])
     keep, discarded = discard_cards(testhand)
     assert len(keep) == 2 and len(discarded) == 3
 
@@ -1790,24 +1833,24 @@ def test_discard_cards_flush() -> None:
 #+END_SRC
 
 #+begin_src python :tangle deck/tests/test_score_hand.py
-from pkr import Card, Suit, Rank, Hand, score_hand, make_straight
+from pkr import Card, Suit, Rank, Hand,  make_straight
 def test_score_full_house() -> None:
     full_house = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
                        Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
                        Card(Rank(8),Suit(2))])
-    score, name = score_hand(full_house)
+    score, name = full_house.score()
     assert name == 'FULL-HOUSE'
 
 def test_score_pair() -> None:
     pair = Hand([Card(Rank(8),Suit(1)), Card(Rank(8), Suit(2)),
                  Card(Rank(2), Suit(1)), Card( Rank(3), Suit(2)),
                  Card(Rank(5), Suit(3))])
-    score, name = score_hand(pair)
+    score, name = pair.score()
     assert name == 'PAIR'
     
 def test_score_straight() -> None:
     straight = make_straight(start=5)
-    score, name = score_hand(straight)
+    score, name = straight.score()
     ## make straight sometimes returns a straight flush
     assert name.startswith('STRAIGHT')
 
@@ -1815,21 +1858,21 @@ def test_score_straight_flush() -> None:
     straight_flush = Hand([Card( Rank(7),Suit(1)),  Card(Rank(8),Suit(1)),
                            Card(Rank(9), Suit(1)), Card( Rank(10), Suit(1)),
                            Card(Rank(11), Suit(1))])
-    score, name = score_hand(straight_flush)
+    score, name = straight_flush.score()
     assert name == 'STRAIGHT-FLUSH'
 
 def test_score_three_of_a_kind() -> None:
     three_of_a_kind = Hand([Card(Rank(14), Suit(1)), Card( Rank(14), Suit(2)),
                             Card(Rank(14), Suit(3)), Card( Rank(3), Suit(1)),
                             Card(Rank(5), Suit(1))])
-    score, name = score_hand(three_of_a_kind)
+    score, name = three_of_a_kind.score()
     assert name == 'THREE-OF-A-KIND'
 
 def test_score_twopair() -> None:
     twopair = Hand([Card(Rank(8), Suit(1)), Card(Rank(8), Suit(2)),
                     Card(Rank(2), Suit(1)), Card( Rank(2), Suit(2)),
                     Card(Rank(5), Suit(3))])
-    score, name = score_hand(twopair)
+    score, name = twopair.score()
     assert name == 'TWO-PAIR'
 #+end_src
 
@@ -1943,6 +1986,12 @@ def test_player_can_pay() -> None:
     pay_blind = p.pay(small_blind)
     assert pay_blind == small_blind
 
+
+def test_player_add_card_to_hand() -> None:
+    p = Player()
+    c = Card(Rank(2), Suit(1))
+    p.add_card(c)
+    assert len(p.hand) == 1
 
 # def test_player_send_action() -> None:
 #     p1 = Player()
@@ -2139,7 +2188,7 @@ def test_round_set_position() -> None:
 
 ** Next Steps
 
-*** Add round to dealer object
+*** DONE Add round to dealer object
 
 **** DONE small blind
 **** DONE large blind
@@ -2149,7 +2198,7 @@ def test_round_set_position() -> None:
   - have player decide on action based on state
   - internal state (cards held)
   - external state (position, pot value, actions of other players)
-**** Fix hand API
+**** TODO Fix hand API
 - have a hand class
 - also have a bunch of functions that act on hand objects
 - should join them together in holy matrimony/encapsulation
