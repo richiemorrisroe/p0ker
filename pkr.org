@@ -2200,19 +2200,30 @@ def test_round_set_position() -> None:
   - have player decide on action based on state
   - internal state (cards held)
   - external state (position, pot value, actions of other players)
-**** TODO Fix hand API
+**** DONE Fix hand API
 - have a hand class
 - also have a bunch of functions that act on hand objects
 - should join them together in holy matrimony/encapsulation
-
-***** bet/call/fold in order
-***** discard cards
-***** get new cards
-***** bet/call/fold in order
-***** finish round
- - award pot
- - reset deck and cards
- - log player/dealer state
+***** TODO deal_cards apparently isn't used anywhere, delete
+***** Player Updates
+****** Change player function names to calculate_bet, call etc
+****** Make use of state object to decide action
+***** Dealer Updates
+****** Add dealer get action function
+****** Add dealer logic for round structure
+****** Add dealing of cards to start_round
+***** Deck Object
+****** Move discard pile to deck object
+****** Move replenish_cards and update_cards to dealer object
+***** Round Structure
+****** bet/call/fold in order
+****** discard cards
+****** get new cards
+****** bet/call/fold in order
+****** finish round
+  - award pot
+  - reset deck and cards
+  - log player/dealer state
 
 
 ** Design Thoughts
