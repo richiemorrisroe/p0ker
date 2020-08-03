@@ -1301,7 +1301,7 @@ class Dealer:
             maxscore = max(scores.items)
         return maxscore
 
-    def start_round(self):
+    def start_round(self, players:List[Player]=None):
         r = Round(self.ante)
         return(r)
 
@@ -1346,6 +1346,7 @@ class Round():
         self.pot = 0
         self.position = 0
         self.ante = ante
+
     def add_to_pot(self, bet):
         self.pot += bet
 
@@ -2186,6 +2187,14 @@ def test_round_set_position() -> None:
     assert dealer.get_state(round)['position'] == pos
 
 
+def test_round_takes_a_list_of_players() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    round = dealer.start_round([p1, p2, p3])
+    assert round is not None
+    
 #+end_src
 
 ** Next Steps

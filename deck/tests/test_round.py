@@ -81,3 +81,12 @@ def test_round_set_position() -> None:
     round = dealer.start_round()
     round.set_position(pos)
     assert dealer.get_state(round)['position'] == pos
+
+
+def test_round_takes_a_list_of_players() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    round = dealer.start_round([p1, p2, p3])
+    assert round is not None

@@ -490,7 +490,7 @@ class Dealer:
             maxscore = max(scores.items)
         return maxscore
 
-    def start_round(self):
+    def start_round(self, players:List[Player]=None):
         r = Round(self.ante)
         return(r)
 
@@ -535,6 +535,7 @@ class Round():
         self.pot = 0
         self.position = 0
         self.ante = ante
+
     def add_to_pot(self, bet):
         self.pot += bet
 
