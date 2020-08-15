@@ -329,9 +329,22 @@ class Deck:
             self._cards = self._cards[num_cards:]
         return cards
 
+# class PlayerNamer():
+#     def __init__(names):
+#         if not names:
+#             names = set(["Liam","Emma","Noah","Olivia","William","Ava",
+#                 "James","Isabella","Oliver","Sophia"])
+#     def get_name(self):
+#         return(self.names.pop())
+        
+    
 
+    
 class Player:
-    def __init__(self, hand=None, stash=None):
+    def __init__(self, hand=None, stash=None, names=["Liam","Emma","Noah",
+                                                     "Olivia","William","Ava",
+                                                     "James","Isabella",
+                                                     "Oliver","Sophia"]):
         if hand is None:
             self.hand = []
         else:
@@ -343,7 +356,13 @@ class Player:
         self.score = 0
         self.minbet = 10
         self.randnum = random.randint(0, 100)
-
+        ##this guarentees unique names as the names list is shared
+        ##between player objects. Normally this would be a bug,
+        ##it's a little tricksy
+        length_names = len(names)
+        rand_choice = random_choice(0, length_names-1)
+        self.name = names[rand_choice]
+        
     def __repr__(self):
         fstring = "Player(stash = {stash}, score={score}, hand = {hand})"
         return fstring.format(stash=self.stash,

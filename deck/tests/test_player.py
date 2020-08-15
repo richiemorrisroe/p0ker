@@ -119,3 +119,12 @@ def test_player_send_action() -> None:
     p1, p2 = dealer.deals([p1, p2])
     action = p1.decide_action()
     assert action in ['CALL', 'BET', 'FOLD', 'RAISE']
+
+def test_player_has_name() -> None:
+    p1 = Player()
+    assert p1.name is not None
+
+def test_different_players_have_different_names() -> None:
+    p1 = Player()
+    p2 = Player()
+    assert p1.name != p2.name
