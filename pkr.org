@@ -1324,11 +1324,10 @@ class Dealer:
         return maxscore
 
     def start_round(self, players:List[Player]=None):
-        r = Round(self.ante)
+        r = Round(self.ante, players)
         self.round = r
-        if players:
-            players = self.round.get_blinds(players)
-            players = self.deals(players)
+        players = self.round.get_blinds(players)
+        players = self.deals(players)
         return(r)
 
     def end_round(self, players:List[Player]):
@@ -1368,10 +1367,12 @@ class Dealer:
 
 
 class Round():
-    def __init__(self, ante):
+    def __init__(self, ante, players:List[Player]):
         self.pot = 0
         self.position = 0
         self.ante = ante
+        self.num_players = len(players)
+        self.min_bet = ante
 
     def add_to_pot(self, bet):
         self.pot += bet
@@ -1405,15 +1406,22 @@ class Round():
         self.add_to_pot(bb+sb)
         return players
 
+    def get_minimum_bet(self):
+        if not self.min_bet:
+            self.min_bet = self.ante
+        return(self.min_bet)
+    
     def update_state(self):
         sblind = self.get_blind('small')
         lblind = self.get_blind('big')
         potval = self.get_pot_value()
         position = self.get_position()
+        min_bet = self.get_minimum_bet()
         return {'small_blind' : sblind,
                 'big_blind': lblind,
                 'pot_value' : potval,
-                'position': position}
+                'position': position,
+                'min_bet' : min_bet}
 
 
 
@@ -2076,11 +2084,12 @@ def test_player_cannot_go_into_debt() -> None:
         p.bet(101)
 
 def test_player_can_pay() -> None:
-    p = Player()
+    p1 = Player()
+    p2 = Player()
     dealer = Dealer()
-    round = dealer.start_round()
+    round = dealer.start_round([p1, p2])
     small_blind = round.get_blind('small')
-    pay_blind = p.pay(small_blind)
+    pay_blind = p1.pay(small_blind)
     assert pay_blind == small_blind
 
 
@@ -2122,9 +2131,11 @@ def test_dealer_has_deck() -> None:
 
 def test_dealer_pot_is_zero() -> None:
     dealer = Dealer()
-    round = dealer.start_round()
+    p1 = Player()
+    p2 = Player()
+    round = dealer.start_round([p1, p2])
     pot = round.get_pot_value()
-    assert pot == 0
+    assert pot == 300
 
 def test_dealer_deal_cards() -> None:
     p1 = Player()
@@ -2158,16 +2169,14 @@ def test_dealer_discard_pile_update() -> None:
 
 
 
+
 def test_dealer_ask_for_action() -> None:
     dealer = Dealer()
     p1 = Player()
     p2 = Player()
     p3 = Player()
     list_players = [p1, p2, p3]
-    round = dealer.start_round()
-    p1, p2, p3 = round.get_blinds(list_players)
-    p1, p2, p3 = dealer.deals([p1, p2, p3])
-    
+    round = dealer.start_round(list_players)
     p1_action = p1.decide_action(dealer)
     p2_action = p2.decide_action(dealer)
     p3_action = p3.decide_action(dealer)
@@ -2199,7 +2208,9 @@ def test_dealer_update_cards_two_player() -> None:
     
 def test_dealer_keeps_track_of_completed_rounds() -> None:
     dealer = Dealer()
-    dealer.start_round()
+    p1 = Player()
+    p2 = Player()
+    dealer.start_round([p1, p2])
     assert dealer.round_count is not None
 
 
@@ -2212,22 +2223,24 @@ from deck.pkr import Round, Dealer, Player, random_choice
 
 def test_dealer_round_is_round() -> None:
     dealer = Dealer()
-    round =  dealer.start_round()
+    p1 = Player()
+    p2 = Player()
+    round =  dealer.start_round([p1, p2])
     assert isinstance(round, Round)
 
 def test_round_exists() -> None:
-    r = Round(100)
+    p1 = Player()
+    p2 = Player()
+    r = Round(100, [p1, p2])
     assert r is not None
 
-def test_round_pot_is_zero_before_blinds() -> None:
-    dealer = Dealer()
-    round = dealer.start_round()
-    pot = round.get_pot_value()
-    assert pot == 0
+
 
 def test_dealer_set_blind() -> None:
     dealer = Dealer()
-    round = dealer.start_round()
+    p1 = Player()
+    p2 = Player()
+    round = dealer.start_round([p1, p2])
     small_blind = round.get_blind('small')
     big_blind = round.get_blind('big')
     assert big_blind > small_blind
@@ -2238,27 +2251,34 @@ def test_round_get_blind() -> None:
     p2 = Player()
     p3 = Player()
     list_players = [p1, p2, p3]
-    round = dealer.start_round()
-    round.get_blinds(list_players)
+    round = dealer.start_round(list_players)
     assert round.get_pot_value() == 300
 
 def test_dealer_has_state() -> None:
+    p1 = Player()
+    p2 = Player()
+    
     dealer = Dealer()
-    round = dealer.start_round()
+    round = dealer.start_round([p1, p2])
     state = dealer.get_state(round)
     assert state is not None
 
 
 def test_round_state_is_dict() -> None:
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
     dealer = Dealer()
-    round = dealer.start_round()
+    round = dealer.start_round([p1, p2, p3])
     state = dealer.get_state(round)
     assert isinstance(state, dict)
 
 
 def test_round_state_has_pot_value() -> None:
     dealer = Dealer()
-    round = dealer.start_round()
+    p1 = Player()
+    p2 = Player()
+    round = dealer.start_round([p1, p2])
     state = dealer.get_state(round)
     assert state['pot_value'] is not None
 
@@ -2268,8 +2288,7 @@ def test_round_pot_value_state() -> None:
     p2 = Player()
     p3 = Player()
     list_players = [p1, p2, p3]
-    round = dealer.start_round()
-    round.get_blinds(list_players)
+    round = dealer.start_round(list_players)
     state = dealer.get_state(round)
     assert state['pot_value'] == 300
 
@@ -2279,15 +2298,19 @@ def test_round_state_has_player_pos() -> None:
     p1 = Player()
     p2 = Player()
     p3 = Player()
-    round = dealer.start_round()
+    round = dealer.start_round([p1, p2, p3])
     state = dealer.get_state(round)
     assert state['position'] is not None
 
 
 def test_round_set_position() -> None:
-    pos = random_choice(0, 4)
+    
     dealer = Dealer()
-    round = dealer.start_round()
+    p1 = Player()
+    p2 = Player()
+    list_players = [p1, p2]
+    pos = random_choice(0, len(list_players))
+    round = dealer.start_round(list_players)
     round.set_position(pos)
     assert dealer.get_state(round)['position'] == pos
 
@@ -2308,6 +2331,14 @@ def test_round_returns_players_with_hands() -> None:
     round = dealer.start_round([p1, p2, p3])
     assert (len(p1.hand) == 5 and len(p2.hand) == 5
             and len(p3.hand) == 5)
+
+def test_round_has_minimum_bet() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    round  = dealer.start_round([p1, p2, p3])
+    assert dealer.get_state(round)['min_bet'] is not None
 #+end_src
 
 ** Next Steps

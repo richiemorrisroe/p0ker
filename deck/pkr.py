@@ -511,11 +511,10 @@ class Dealer:
         return maxscore
 
     def start_round(self, players:List[Player]=None):
-        r = Round(self.ante)
+        r = Round(self.ante, players)
         self.round = r
-        if players:
-            players = self.round.get_blinds(players)
-            players = self.deals(players)
+        players = self.round.get_blinds(players)
+        players = self.deals(players)
         return(r)
 
     def end_round(self, players:List[Player]):
@@ -555,10 +554,12 @@ class Dealer:
 
 
 class Round():
-    def __init__(self, ante):
+    def __init__(self, ante, players:List[Player]):
         self.pot = 0
         self.position = 0
         self.ante = ante
+        self.num_players = len(players)
+        self.min_bet = ante
 
     def add_to_pot(self, bet):
         self.pot += bet
@@ -592,15 +593,22 @@ class Round():
         self.add_to_pot(bb+sb)
         return players
 
+    def get_minimum_bet(self):
+        if not self.min_bet:
+            self.min_bet = self.ante
+        return(self.min_bet)
+    
     def update_state(self):
         sblind = self.get_blind('small')
         lblind = self.get_blind('big')
         potval = self.get_pot_value()
         position = self.get_position()
+        min_bet = self.get_minimum_bet()
         return {'small_blind' : sblind,
                 'big_blind': lblind,
                 'pot_value' : potval,
-                'position': position}
+                'position': position,
+                'min_bet' : min_bet}
 
 
 
