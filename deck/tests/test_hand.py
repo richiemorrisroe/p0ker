@@ -7,6 +7,11 @@ king_clubs = Card(Rank(13), Suit(2))
 hand = Hand([ace_spades, king_clubs])
 fake_hand = [1, 2, 3]
 
+def test_repr_hand() -> None:
+    hand = random_hand()
+    assert isinstance(repr(hand), str)
+
+
 
 def test_fake_hand():
     with pytest.raises(ValueError):
