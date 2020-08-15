@@ -1,6 +1,6 @@
 # type: ignore 
 import pytest
-from pkr import Rank, Suit, Card
+from deck.pkr import Rank, Suit, Card
 
 
 def generate_rank(num) -> Rank:

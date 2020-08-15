@@ -1526,7 +1526,7 @@ def replenish_cards(deck, player):
 #+BEGIN_SRC python :tangle deck/tests/test_cards.py
 # type: ignore 
 import pytest
-from pkr import Rank, Suit, Card
+from deck.pkr import Rank, Suit, Card
 
 
 def generate_rank(num) -> Rank:
@@ -1609,7 +1609,7 @@ pytest --help #for far too much information
 #+BEGIN_SRC python :tangle deck/tests/test_hand.py
 # type: ignore 
 import pytest
-from pkr import (Card, Suit, Rank, Hand, random_suit, random_rank, random_card,
+from deck.pkr import (Card, Suit, Rank, Hand, random_suit, random_rank, random_card,
                  random_hand)
 ace_spades = Card(Rank(14), Suit(1))
 king_clubs = Card(Rank(13), Suit(2))
@@ -1683,7 +1683,7 @@ def test_get_rank_type() -> None:
 # type: ignore 
 import pytest
 
-from pkr import Card, Deck, Player, Suit, Rank, random_hand, Hand, deal_cards
+from deck.pkr import Card, Deck, Player, Suit, Rank, random_hand, Hand, deal_cards
 
 
 def test_deck_length() -> None:
@@ -1739,7 +1739,7 @@ def test_deck_shuffle() -> None:
 
 
 #+BEGIN_SRC python :tangle deck/tests/test_card_functions.py
-from pkr import (Card, Player, Suit, Rank,  Deck, Hand, deal_cards,
+from deck.pkr import (Card, Player, Suit, Rank,  Deck, Hand, deal_cards,
                  random_hand, anyrep,
                   make_straight,
                   make_flush, discard_cards, Dealer)
@@ -1843,7 +1843,7 @@ def test_discard_cards_flush() -> None:
 #+END_SRC
 
 #+begin_src python :tangle deck/tests/test_score_hand.py
-from pkr import Card, Suit, Rank, Hand,  make_straight
+from deck.pkr import Card, Suit, Rank, Hand,  make_straight
 def test_score_full_house() -> None:
     full_house = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
                        Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
@@ -1889,7 +1889,7 @@ def test_score_twopair() -> None:
 #+RESULTS:
 
 #+begin_src python :results none :tangle deck/tests/test_player.py
-from pkr import Player, random_hand, Card, Suit, Rank, Dealer
+from deck.pkr import Player, random_hand, Card, Suit, Rank, Dealer
 import pytest
 def test_player_exists() -> None:
     player = Player()
@@ -2014,7 +2014,7 @@ def test_player_send_action() -> None:
 #+end_src
 
 #+begin_src python :tangle deck/tests/test_game.py
-from pkr import Dealer, Deck, Player, deal_cards, random_choice, Round
+from deck.pkr import Dealer, Deck, Player, deal_cards, random_choice, Round
 import pytest
 def test_dealer_is_dealer() -> None:
     dealer = Dealer()
@@ -2111,7 +2111,7 @@ def test_dealer_keeps_track_of_completed_rounds() -> None:
 #+end_src
 
 #+begin_src python :tangle deck/tests/test_round.py
-from pkr import Round, Dealer, Player, random_choice
+from deck.pkr import Round, Dealer, Player, random_choice
 
 
 def test_dealer_round_is_round() -> None:

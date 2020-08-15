@@ -1,4 +1,4 @@
-from pkr import Dealer, Deck, Player, deal_cards, random_choice, Round
+from deck.pkr import Dealer, Deck, Player, deal_cards, random_choice, Round
 import pytest
 def test_dealer_is_dealer() -> None:
     dealer = Dealer()

@@ -1,4 +1,4 @@
-from pkr import Round, Dealer, Player, random_choice
+from deck.pkr import Round, Dealer, Player, random_choice
 
 
 def test_dealer_round_is_round() -> None:

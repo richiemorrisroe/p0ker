@@ -102,9 +102,7 @@ class Hand:
 
     def __repr__(self):
         result = ",".join(repr(card) for card in self.cards)
-        return(result)
-
-    
+        
     def __next__(self):
         self.pos += 1
         if self.pos > len(self.cards):

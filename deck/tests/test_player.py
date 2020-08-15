@@ -1,4 +1,4 @@
-from pkr import Player, random_hand, Card, Suit, Rank, Dealer
+from deck.pkr import Player, random_hand, Card, Suit, Rank, Dealer
 import pytest
 def test_player_exists() -> None:
     player = Player()

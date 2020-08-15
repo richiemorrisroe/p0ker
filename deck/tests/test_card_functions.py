@@ -1,4 +1,4 @@
-from pkr import (Card, Player, Suit, Rank,  Deck, Hand, deal_cards,
+from deck.pkr import (Card, Player, Suit, Rank,  Deck, Hand, deal_cards,
                  random_hand, anyrep,
                   make_straight,
                   make_flush, discard_cards, Dealer)
