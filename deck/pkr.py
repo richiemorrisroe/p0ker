@@ -492,6 +492,10 @@ class Dealer:
 
     def start_round(self, players:List[Player]=None):
         r = Round(self.ante)
+        self.round = r
+        if players:
+            players = self.round.get_blinds(players)
+            players = self.deals(players)
         return(r)
 
     def end_round(self, players:List[Player]):

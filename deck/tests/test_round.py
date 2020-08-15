@@ -90,3 +90,12 @@ def test_round_takes_a_list_of_players() -> None:
     p3 = Player()
     round = dealer.start_round([p1, p2, p3])
     assert round is not None
+
+def test_round_returns_players_with_hands() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    round = dealer.start_round([p1, p2, p3])
+    assert (len(p1.hand) == 5 and len(p2.hand) == 5
+            and len(p3.hand) == 5)
