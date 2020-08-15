@@ -756,19 +756,21 @@ len(pairs) = 1
 
 ** Deep Stack Paper (2015)
 
-there has been success with perfect information games recently
-poker is a similarly complicated imperfect information (i.e. hidden state) game
-this paper presents an approach towards solving this problem
+there has been success with perfect information games recently poker
+is a similarly complicated imperfect information (i.e. hidden state)
+game this paper presents an approach towards solving this problem
 - game used is Heads Up No Limit HoldEm
 - heads up means two players
 - no limit any bet size up to pot is allowed
 - 2 hidden, 3 +1 + 1 flop
 - supplement has full details of game and rules
 
-- correct decision depends on prob distribution over opponents hidden state
+- correct decision depends on prob distribution over opponents hidden
+  state
 - Counter-factual regret minimisation is one competitive approach
 - normally uses a whole-game approach
-- compare actual strategy to perfect strategy, update strategy probabilities based on this
+- compare actual strategy to perfect strategy, update strategy
+  probabilities based on this
 - DeepStack is different
   - uses CFR, but does not compute a strategy prior to play
   - instead constructs lookahead trees from current state
@@ -890,7 +892,6 @@ class Hand:
     def __init__(self, cards:List[Card]):
         all_cards = [x for x in cards if isinstance(x, Card)]
         cards_set = set(cards)
-        print(f'all_cards:{all_cards}; cards_set:{cards_set}')
         if len(all_cards) != len(cards):
             raise ValueError('all cards must be of class Card')
         
@@ -913,7 +914,9 @@ class Hand:
 
     def __repr__(self):
         result = ",".join(repr(card) for card in self.cards)
-        
+        return(result)
+
+    
     def __next__(self):
         self.pos += 1
         if self.pos > len(self.cards):
@@ -1521,6 +1524,38 @@ def replenish_cards(deck, player):
 #+RESULTS:
 : None
 
+
+#+begin_src python :tangle deck/stats.py
+from typing import List
+from collections import defaultdict
+
+
+from .pkr import Hand
+
+def score_hand_distribution(hands:List[Hand]):
+    dist = defaultdict(int)
+    for hand in hands:
+        score, name = hand.score()
+        
+        if dist[name]:
+            dist[name] += 1
+    return(dist)
+
+
+#+end_src
+
+
+#+begin_src python :tangle deck/tests/test_stats.py
+from pkr import random_hand
+from stats import score_hand_distribution
+def test_count_list_of_hands() -> None:
+    manyhands = [random_hand() for x in range(100)]
+    hand_dist = score_hand_distribution(manyhands)
+    assert hand_dist is not None
+
+#+end_src
+
+
 - We need to create an empty ~__init_file.py~  for /reasons/. 
 
 #+BEGIN_SRC python :tangle deck/tests/test_cards.py
@@ -2010,7 +2045,9 @@ def test_player_send_action() -> None:
     p1, p2 = dealer.deals([p1, p2])
     action = p1.decide_action()
     assert action in ['CALL', 'BET', 'FOLD', 'RAISE']
-    
+
+
+
 #+end_src
 
 #+begin_src python :tangle deck/tests/test_game.py

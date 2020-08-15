@@ -79,7 +79,6 @@ class Hand:
     def __init__(self, cards:List[Card]):
         all_cards = [x for x in cards if isinstance(x, Card)]
         cards_set = set(cards)
-        print(f'all_cards:{all_cards}; cards_set:{cards_set}')
         if len(all_cards) != len(cards):
             raise ValueError('all cards must be of class Card')
         
@@ -102,7 +101,9 @@ class Hand:
 
     def __repr__(self):
         result = ",".join(repr(card) for card in self.cards)
-        
+        return(result)
+
+    
     def __next__(self):
         self.pos += 1
         if self.pos > len(self.cards):
