@@ -112,7 +112,10 @@ class Hand:
             return self.cards[self.pos - 1]
 
     def add_card(self, card:Card) -> None:
-        self.cards.append(card)
+        if len(self) >= 5:
+            pass
+        else:
+            self.cards.append(card)
 
     def count(self, suit_or_rank=None):
         """Take either a list of suits of ranks and returns
@@ -428,26 +431,32 @@ class Player:
             else:
                 return True
 
-    def fold(self) -> bool:
+    def fold(self, state=None) -> bool:
+        if not state:
+         state =    {'min_bet' : 100}
         if not self.score:
             self.score, _ = Hand(self.hand).score()
-        if self.score < 100:
+        if self.score < state['min_bet']:
             return True
         else:
             return False
 
+
+
     def decide_action(self, state=None):
         is_call = self.call()
-        is_fold = self.fold()
+        is_fold = self.fold(state)
         if is_fold:
-            return 'FOLD'
+            return {'action' : 'FOLD', 'amount' : 0}
         if not is_fold and is_call:
-            return 'CALL'
-        if self.score < 200 or self.score > 400:
-            return 'CHECK'
+            return {'action' : 'CALL', 'amount' : 0}
+        if self.score < 200 or self.score > 400 :
+            return {'action' : 'CHECK',  'amount': 0}
         else:
-            return 'BET'
-
+            return {'action': 'BET', 'amount' : 0}
+    def send_action(self, state=None):
+        action = self.decide_action(state)
+        return action
 
     def pay(self, amount):
         self.stash -= amount

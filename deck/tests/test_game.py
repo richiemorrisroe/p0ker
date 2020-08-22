@@ -56,9 +56,10 @@ def test_dealer_ask_for_action() -> None:
     p3 = Player()
     list_players = [p1, p2, p3]
     round = dealer.start_round(list_players)
-    p1_action = p1.decide_action(dealer)
-    p2_action = p2.decide_action(dealer)
-    p3_action = p3.decide_action(dealer)
+    state = dealer.get_state(round)
+    p1_action = p1.decide_action(state)
+    p2_action = p2.decide_action(state)
+    p3_action = p3.decide_action(state)
     assert all([p1_action, p2_action, p3_action]) is not  None
 
 

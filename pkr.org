@@ -925,7 +925,10 @@ class Hand:
             return self.cards[self.pos - 1]
 
     def add_card(self, card:Card) -> None:
-        self.cards.append(card)
+        if len(self) >= 5:
+            pass
+        else:
+            self.cards.append(card)
 
     def count(self, suit_or_rank=None):
         """Take either a list of suits of ranks and returns
@@ -1241,26 +1244,32 @@ class Player:
             else:
                 return True
 
-    def fold(self) -> bool:
+    def fold(self, state=None) -> bool:
+        if not state:
+         state =    {'min_bet' : 100}
         if not self.score:
             self.score, _ = Hand(self.hand).score()
-        if self.score < 100:
+        if self.score < state['min_bet']:
             return True
         else:
             return False
 
+
+
     def decide_action(self, state=None):
         is_call = self.call()
-        is_fold = self.fold()
+        is_fold = self.fold(state)
         if is_fold:
-            return 'FOLD'
+            return {'action' : 'FOLD', 'amount' : 0}
         if not is_fold and is_call:
-            return 'CALL'
-        if self.score < 200 or self.score > 400:
-            return 'CHECK'
+            return {'action' : 'CALL', 'amount' : 0}
+        if self.score < 200 or self.score > 400 :
+            return {'action' : 'CHECK',  'amount': 0}
         else:
-            return 'BET'
-
+            return {'action': 'BET', 'amount' : 0}
+    def send_action(self, state=None):
+        action = self.decide_action(state)
+        return action
 
     def pay(self, amount):
         self.stash -= amount
@@ -1984,7 +1993,7 @@ def test_all_hands_can_be_scored() -> None:
 #+RESULTS:
 
 #+begin_src python :results none :tangle deck/tests/test_player.py
-from deck.pkr import Player, random_hand, Card, Suit, Rank, Dealer
+from deck.pkr import Player, random_hand, Card, Suit, Rank, Dealer, Hand, Round
 import pytest
 def test_player_exists() -> None:
     player = Player()
@@ -2075,8 +2084,11 @@ def test_player_stash_default_correct() -> None:
 def test_player_decide_action():
     hand = random_hand()
     player = Player(hand=hand)
+    p2 = Player()
     dealer = Dealer()
-    assert player.decide_action(dealer) is not None
+    round = dealer.start_round([player, p2])
+    state = dealer.get_state(round)
+    assert player.decide_action(state) is not None
 
 def test_player_cannot_go_into_debt() -> None:
     p = Player(stash=100)
@@ -2105,7 +2117,7 @@ def test_player_send_action() -> None:
     dealer = Dealer()
     p1, p2 = dealer.deals([p1, p2])
     action = p1.decide_action()
-    assert action in ['CALL', 'BET', 'FOLD', 'RAISE']
+    assert action['action'] in ['CALL', 'BET', 'FOLD', 'RAISE']
 
 def test_player_has_name() -> None:
     p1 = Player()
@@ -2116,6 +2128,42 @@ def test_different_players_have_different_names() -> None:
     p2 = Player()
     assert p1.name != p2.name
 
+def test_player_action_response_is_dict() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    round  = dealer.start_round([p1, p2, p3])
+    state = dealer.update_state(round)
+    action = p1.send_action(state)
+    assert isinstance(action, dict)
+
+def test_player_can_have_predetermined_hand() -> None:
+        full_house = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+                       Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
+                       Card(Rank(8),Suit(2))])
+        twopair = Hand([Card(Rank(8),Suit(1)), Card(Rank(8), Suit(2)),
+            Card(Rank(2), Suit(1) ), Card(Rank(2), Suit(2)),
+            Card( Rank(5), Suit(3))])
+        p1 = Player(hand = full_house)
+        p2 = Player(hand = twopair)
+        dealer = Dealer()
+        round = dealer.start_round([p1, p2])
+        state = dealer.get_state(round)
+        p1_action = p1.send_action(state)
+        p2_action = p2.send_action(state)
+        assert p1_action['action'] and p2_action['action'] == 'CALL'
+
+
+# def test_round_adds_player_state() -> None:
+#     dealer = Dealer()
+#     p1 = Player()
+#     p2 = Player()
+#     p3 = Player()
+#     round = dealer.start_round([p1, p2, p3])
+#     state = dealer.get_state(round)
+#     action = p1.decide_action(round)
+#     assert p1.send_action(state) is not None
 #+end_src
 
 #+begin_src python :tangle deck/tests/test_game.py
@@ -2177,9 +2225,10 @@ def test_dealer_ask_for_action() -> None:
     p3 = Player()
     list_players = [p1, p2, p3]
     round = dealer.start_round(list_players)
-    p1_action = p1.decide_action(dealer)
-    p2_action = p2.decide_action(dealer)
-    p3_action = p3.decide_action(dealer)
+    state = dealer.get_state(round)
+    p1_action = p1.decide_action(state)
+    p2_action = p2.decide_action(state)
+    p3_action = p3.decide_action(state)
     assert all([p1_action, p2_action, p3_action]) is not  None
 
 
@@ -2339,10 +2388,20 @@ def test_round_has_minimum_bet() -> None:
     p3 = Player()
     round  = dealer.start_round([p1, p2, p3])
     assert dealer.get_state(round)['min_bet'] is not None
+
+def test_round_has_minimum_bet_greater_than_zero() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    round  = dealer.start_round([p1, p2, p3])
+    assert dealer.get_state(round)['min_bet'] > 0 
+
+
 #+end_src
 
 ** Next Steps
-
+   
 *** DONE Add round to dealer object
 
 **** DONE small blind
