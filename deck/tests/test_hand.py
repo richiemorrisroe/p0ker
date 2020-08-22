@@ -1,11 +1,16 @@
 # type: ignore 
 import pytest
-from pkr import (Card, Suit, Rank, Hand, random_suit, random_rank, random_card,
+from deck.pkr import (Card, Suit, Rank, Hand, random_suit, random_rank, random_card,
                  random_hand)
 ace_spades = Card(Rank(14), Suit(1))
 king_clubs = Card(Rank(13), Suit(2))
 hand = Hand([ace_spades, king_clubs])
 fake_hand = [1, 2, 3]
+
+def test_repr_hand() -> None:
+    hand = random_hand()
+    assert isinstance(repr(hand), str)
+
 
 
 def test_fake_hand():

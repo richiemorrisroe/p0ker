@@ -79,7 +79,6 @@ class Hand:
     def __init__(self, cards:List[Card]):
         all_cards = [x for x in cards if isinstance(x, Card)]
         cards_set = set(cards)
-        print(f'all_cards:{all_cards}; cards_set:{cards_set}')
         if len(all_cards) != len(cards):
             raise ValueError('all cards must be of class Card')
         
@@ -102,7 +101,9 @@ class Hand:
 
     def __repr__(self):
         result = ",".join(repr(card) for card in self.cards)
-        
+        return(result)
+
+    
     def __next__(self):
         self.pos += 1
         if self.pos > len(self.cards):
@@ -328,9 +329,22 @@ class Deck:
             self._cards = self._cards[num_cards:]
         return cards
 
+# class PlayerNamer():
+#     def __init__(names):
+#         if not names:
+#             names = set(["Liam","Emma","Noah","Olivia","William","Ava",
+#                 "James","Isabella","Oliver","Sophia"])
+#     def get_name(self):
+#         return(self.names.pop())
+        
+    
 
+    
 class Player:
-    def __init__(self, hand=None, stash=None):
+    def __init__(self, hand=None, stash=None, names=["Liam","Emma","Noah",
+                                                     "Olivia","William","Ava",
+                                                     "James","Isabella",
+                                                     "Oliver","Sophia"]):
         if hand is None:
             self.hand = []
         else:
@@ -342,7 +356,13 @@ class Player:
         self.score = 0
         self.minbet = 10
         self.randnum = random.randint(0, 100)
-
+        ##this guarentees unique names as the names list is shared
+        ##between player objects. Normally this would be a bug,
+        ##it's a little tricksy
+        length_names = len(names)
+        rand_choice = random_choice(0, length_names-1)
+        self.name = names[rand_choice]
+        
     def __repr__(self):
         fstring = "Player(stash = {stash}, score={score}, hand = {hand})"
         return fstring.format(stash=self.stash,
@@ -490,8 +510,11 @@ class Dealer:
             maxscore = max(scores.items)
         return maxscore
 
-    def start_round(self):
-        r = Round(self.ante)
+    def start_round(self, players:List[Player]=None):
+        r = Round(self.ante, players)
+        self.round = r
+        players = self.round.get_blinds(players)
+        players = self.deals(players)
         return(r)
 
     def end_round(self, players:List[Player]):
@@ -531,10 +554,13 @@ class Dealer:
 
 
 class Round():
-    def __init__(self, ante):
+    def __init__(self, ante, players:List[Player]):
         self.pot = 0
         self.position = 0
         self.ante = ante
+        self.num_players = len(players)
+        self.min_bet = ante
+
     def add_to_pot(self, bet):
         self.pot += bet
 
@@ -567,15 +593,22 @@ class Round():
         self.add_to_pot(bb+sb)
         return players
 
+    def get_minimum_bet(self):
+        if not self.min_bet:
+            self.min_bet = self.ante
+        return(self.min_bet)
+    
     def update_state(self):
         sblind = self.get_blind('small')
         lblind = self.get_blind('big')
         potval = self.get_pot_value()
         position = self.get_position()
+        min_bet = self.get_minimum_bet()
         return {'small_blind' : sblind,
                 'big_blind': lblind,
                 'pot_value' : potval,
-                'position': position}
+                'position': position,
+                'min_bet' : min_bet}
 
 
 

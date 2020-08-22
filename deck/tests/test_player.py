@@ -1,4 +1,4 @@
-from pkr import Player, random_hand, Card, Suit, Rank, Dealer
+from deck.pkr import Player, random_hand, Card, Suit, Rank, Dealer
 import pytest
 def test_player_exists() -> None:
     player = Player()
@@ -98,11 +98,12 @@ def test_player_cannot_go_into_debt() -> None:
         p.bet(101)
 
 def test_player_can_pay() -> None:
-    p = Player()
+    p1 = Player()
+    p2 = Player()
     dealer = Dealer()
-    round = dealer.start_round()
+    round = dealer.start_round([p1, p2])
     small_blind = round.get_blind('small')
-    pay_blind = p.pay(small_blind)
+    pay_blind = p1.pay(small_blind)
     assert pay_blind == small_blind
 
 
@@ -119,3 +120,12 @@ def test_player_send_action() -> None:
     p1, p2 = dealer.deals([p1, p2])
     action = p1.decide_action()
     assert action in ['CALL', 'BET', 'FOLD', 'RAISE']
+
+def test_player_has_name() -> None:
+    p1 = Player()
+    assert p1.name is not None
+
+def test_different_players_have_different_names() -> None:
+    p1 = Player()
+    p2 = Player()
+    assert p1.name != p2.name

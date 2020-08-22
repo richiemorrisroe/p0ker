@@ -1,4 +1,5 @@
-from pkr import Card, Suit, Rank, Hand,  make_straight
+from deck.pkr import Card, Suit, Rank, Hand,  make_straight
+from deck.stats import generate_hands
 def test_score_full_house() -> None:
     full_house = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
                        Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
@@ -39,3 +40,9 @@ def test_score_twopair() -> None:
                     Card(Rank(5), Suit(3))])
     score, name = twopair.score()
     assert name == 'TWO-PAIR'
+
+def test_all_hands_can_be_scored() -> None:
+    n = 1000
+    manyhands = generate_hands(n)
+    scores = [hand.score() for hand in manyhands]
+    assert len(scores) == n

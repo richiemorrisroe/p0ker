@@ -1,4 +1,4 @@
-from pkr import Dealer, Deck, Player, deal_cards, random_choice, Round
+from deck.pkr import Dealer, Deck, Player, deal_cards, random_choice, Round
 import pytest
 def test_dealer_is_dealer() -> None:
     dealer = Dealer()
@@ -10,9 +10,11 @@ def test_dealer_has_deck() -> None:
 
 def test_dealer_pot_is_zero() -> None:
     dealer = Dealer()
-    round = dealer.start_round()
+    p1 = Player()
+    p2 = Player()
+    round = dealer.start_round([p1, p2])
     pot = round.get_pot_value()
-    assert pot == 0
+    assert pot == 300
 
 def test_dealer_deal_cards() -> None:
     p1 = Player()
@@ -46,16 +48,14 @@ def test_dealer_discard_pile_update() -> None:
 
 
 
+
 def test_dealer_ask_for_action() -> None:
     dealer = Dealer()
     p1 = Player()
     p2 = Player()
     p3 = Player()
     list_players = [p1, p2, p3]
-    round = dealer.start_round()
-    p1, p2, p3 = round.get_blinds(list_players)
-    p1, p2, p3 = dealer.deals([p1, p2, p3])
-    
+    round = dealer.start_round(list_players)
     p1_action = p1.decide_action(dealer)
     p2_action = p2.decide_action(dealer)
     p3_action = p3.decide_action(dealer)
@@ -87,5 +87,7 @@ def test_dealer_update_cards_two_player() -> None:
     
 def test_dealer_keeps_track_of_completed_rounds() -> None:
     dealer = Dealer()
-    dealer.start_round()
+    p1 = Player()
+    p2 = Player()
+    dealer.start_round([p1, p2])
     assert dealer.round_count is not None
