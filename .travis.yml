@@ -10,7 +10,7 @@ python:
   - "nightly"  # nightly build
 # command to install dependencies
 install:
-  pip install -r requirements.txt
+  # pip install -r requirements.txt
    # if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
   #     wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
   #   else
