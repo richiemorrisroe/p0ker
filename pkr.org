@@ -907,6 +907,19 @@ class Hand:
     def __iter__(self):
         self.pos = 0
         return iter(self.cards)
+
+    def __eq__(self, other):
+        eq_cnt  = 0
+        for s, o in zip(self.cards, other.cards):
+            if s == o:
+                eq_cnt += 1
+            else:
+                pass
+        if eq_cnt == len(self.cards):
+            return True
+        else:
+            return False
+            
     
     def __str__(self):
         result = ",".join(str(card) for card in self.cards)
@@ -2149,10 +2162,33 @@ def test_player_can_have_predetermined_hand() -> None:
         p2 = Player(hand = twopair)
         dealer = Dealer()
         round = dealer.start_round([p1, p2])
-        state = dealer.get_state(round)
-        p1_action = p1.send_action(state)
-        p2_action = p2.send_action(state)
-        assert p1_action['action'] and p2_action['action'] == 'CALL'
+        assert p1.hand == full_house # and p2.hand == twopair
+
+def test_player_hand_has_class_hand() -> None:
+    full_house = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+                       Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
+                       Card(Rank(8),Suit(2))])
+    p1 = Player(hand=full_house)
+    p2 = Player()
+    dealer = Dealer()
+    round = dealer.start_round([p1, p2])
+    assert isinstance(p1.hand, Hand) and isinstance(p2.hand, Hand)
+
+def test_player_calls_if_has_good_hand() -> None:
+    full_house = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+                       Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
+                       Card(Rank(8),Suit(2))])
+    twopair = Hand([Card(Rank(8),Suit(1)), Card(Rank(8), Suit(2)),
+                    Card(Rank(2), Suit(1) ), Card(Rank(2), Suit(2)),
+                    Card( Rank(5), Suit(3))])
+    p1 = Player(hand = full_house)
+    p2 = Player(hand = twopair)
+    dealer = Dealer()
+    round = dealer.start_round([p1, p2])
+    state = dealer.get_state(round)
+    p1_action = p1.send_action(state)
+    p2_action = p2.send_action(state)
+    assert p1_action['action'] and p2_action['action'] == 'CALL'
 
 
 # def test_round_adds_player_state() -> None:

@@ -94,6 +94,19 @@ class Hand:
     def __iter__(self):
         self.pos = 0
         return iter(self.cards)
+
+    def __eq__(self, other):
+        eq_cnt  = 0
+        for s, o in zip(self.cards, other.cards):
+            if s == o:
+                eq_cnt += 1
+            else:
+                pass
+        if eq_cnt == len(self.cards):
+            return True
+        else:
+            return False
+            
     
     def __str__(self):
         result = ",".join(str(card) for card in self.cards)
