@@ -1,4 +1,4 @@
-from deck.pkr import Player, random_hand, Card, Suit, Rank, Dealer
+from deck.pkr import Player, random_hand, Card, Suit, Rank, Dealer, Hand, Round
 import pytest
 def test_player_exists() -> None:
     player = Player()
@@ -89,8 +89,11 @@ def test_player_stash_default_correct() -> None:
 def test_player_decide_action():
     hand = random_hand()
     player = Player(hand=hand)
+    p2 = Player()
     dealer = Dealer()
-    assert player.decide_action(dealer) is not None
+    round = dealer.start_round([player, p2])
+    state = dealer.get_state(round)
+    assert player.decide_action(state) is not None
 
 def test_player_cannot_go_into_debt() -> None:
     p = Player(stash=100)
@@ -119,7 +122,7 @@ def test_player_send_action() -> None:
     dealer = Dealer()
     p1, p2 = dealer.deals([p1, p2])
     action = p1.decide_action()
-    assert action in ['CALL', 'BET', 'FOLD', 'RAISE']
+    assert action['action'] in ['CALL', 'BET', 'FOLD', 'RAISE']
 
 def test_player_has_name() -> None:
     p1 = Player()
@@ -129,3 +132,63 @@ def test_different_players_have_different_names() -> None:
     p1 = Player()
     p2 = Player()
     assert p1.name != p2.name
+
+def test_player_action_response_is_dict() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    round  = dealer.start_round([p1, p2, p3])
+    state = dealer.update_state(round)
+    action = p1.send_action(state)
+    assert isinstance(action, dict)
+
+def test_player_can_have_predetermined_hand() -> None:
+        full_house = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+                       Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
+                       Card(Rank(8),Suit(2))])
+        twopair = Hand([Card(Rank(8),Suit(1)), Card(Rank(8), Suit(2)),
+            Card(Rank(2), Suit(1) ), Card(Rank(2), Suit(2)),
+            Card( Rank(5), Suit(3))])
+        p1 = Player(hand = full_house)
+        p2 = Player(hand = twopair)
+        dealer = Dealer()
+        round = dealer.start_round([p1, p2])
+        assert p1.hand == full_house # and p2.hand == twopair
+
+def test_player_hand_has_class_hand() -> None:
+    full_house = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+                       Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
+                       Card(Rank(8),Suit(2))])
+    p1 = Player(hand=full_house)
+    p2 = Player()
+    dealer = Dealer()
+    round = dealer.start_round([p1, p2])
+    assert isinstance(p1.hand, Hand) and isinstance(p2.hand, Hand)
+
+def test_player_calls_if_has_good_hand() -> None:
+    full_house = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+                       Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
+                       Card(Rank(8),Suit(2))])
+    twopair = Hand([Card(Rank(8),Suit(1)), Card(Rank(8), Suit(2)),
+                    Card(Rank(2), Suit(1) ), Card(Rank(2), Suit(2)),
+                    Card( Rank(5), Suit(3))])
+    p1 = Player(hand = full_house)
+    p2 = Player(hand = twopair)
+    dealer = Dealer()
+    round = dealer.start_round([p1, p2])
+    state = dealer.get_state(round)
+    p1_action = p1.send_action(state)
+    p2_action = p2.send_action(state)
+    assert p1_action['action'] and p2_action['action'] == 'CALL'
+
+
+# def test_round_adds_player_state() -> None:
+#     dealer = Dealer()
+#     p1 = Player()
+#     p2 = Player()
+#     p3 = Player()
+#     round = dealer.start_round([p1, p2, p3])
+#     state = dealer.get_state(round)
+#     action = p1.decide_action(round)
+#     assert p1.send_action(state) is not None
