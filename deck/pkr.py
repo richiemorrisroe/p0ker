@@ -416,7 +416,6 @@ class Player:
         else:
             bet = 0
             score, name = Hand(self.hand).score()
-            print(f'score is {score}')
             if score > 200:
                 bet = (self.stash * 0.01) * math.log(score)
                 bet = check_bet(bet, self.stash)
@@ -726,10 +725,9 @@ def discard_cards(hand:Hand):
         for card in hand:
 
             old_score = this_score
-            print(f'card is {card}')
+
             new_hand = Hand([c for c in hand if c != card])
             score_new, _ = new_hand.score()
-            print(f'new_hand is {new_hand}; new_score is {score_new}; old_score is {old_score}')
             if old_score > score_new:
                 keep.append(card)
             if old_score == score_new:
