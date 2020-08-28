@@ -1340,10 +1340,11 @@ class Dealer:
     def compare(self, players):
         scores = {}
         for player in players:
-            score, sname = players.hand.score()
-            scores[player] = score
-            maxscore = max(scores.items)
-        return maxscore
+            score, sname = player.hand.score()
+            scores[player.name] = score
+        print(scores)
+        # maxscore = max(scores.items())
+        return scores
 
     def start_round(self, players:List[Player]=None):
         r = Round(self.ante, players)
@@ -2299,6 +2300,12 @@ def test_dealer_keeps_track_of_completed_rounds() -> None:
     assert dealer.round_count is not None
 
 
+def test_dealer_can_compare_players() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    round = dealer.start_round([p1, p2])
+    assert dealer.compare([p1, p2]) is not None
 
 #+end_src
 

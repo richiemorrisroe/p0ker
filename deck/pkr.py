@@ -527,10 +527,11 @@ class Dealer:
     def compare(self, players):
         scores = {}
         for player in players:
-            score, sname = players.hand.score()
-            scores[player] = score
-            maxscore = max(scores.items)
-        return maxscore
+            score, sname = player.hand.score()
+            scores[player.name] = score
+        print(scores)
+        # maxscore = max(scores.items())
+        return scores
 
     def start_round(self, players:List[Player]=None):
         r = Round(self.ante, players)
