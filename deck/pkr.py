@@ -355,12 +355,24 @@ class Deck:
         
     
 
+class PlayerNamer:
+    def __init__(self, names=None):
+        if not names:
+            self.names=["Liam","Emma","Noah",
+                   "Olivia","William","Ava",
+                   "James","Isabella",
+                   "Oliver","Sophia"]
+        else:
+            self.names = names
+
+    def get_name(self) -> str:
+        length_names = len(self.names)
+        rand_choice = random_choice(0, length_names-1)
+        name = self.names.pop(rand_choice)
+        return name
     
 class Player:
-    def __init__(self, hand=None, stash=None, names=["Liam","Emma","Noah",
-                                                     "Olivia","William","Ava",
-                                                     "James","Isabella",
-                                                     "Oliver","Sophia"]):
+    def __init__(self, hand=None, stash=None):
         if hand is None:
             self.hand = []
         else:
@@ -372,12 +384,11 @@ class Player:
         self.score = 0
         self.minbet = 10
         self.randnum = random.randint(0, 100)
+        
         ##this guarentees unique names as the names list is shared
         ##between player objects. Normally this would be a bug,
         ##it's a little tricksy
-        length_names = len(names)
-        rand_choice = random_choice(0, length_names-1)
-        self.name = names[rand_choice]
+        
         
     def __repr__(self):
         fstring = "Player(stash = {stash}, score={score}, hand = {hand})"
@@ -490,10 +501,25 @@ class Dealer:
         self.deck = deck
         self.round = None
         self.discard_pile = []
+        self.round_count = None
+        self.player_namer = PlayerNamer()
+        
+        
+        
+    def start_game(self, players:List[Player]) -> List[Player]:
+        player_list = []
         self.round_count = 0
-        
-        
+        for player in players:
+            player = self.give_name(player)
+            player_list.append(player)
+        return player_list
 
+        
+    def give_name(self, player):
+        name = self.player_namer.get_name()
+        player.name = name
+        return player
+        
     def __repr__(self):
         fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
         return fstring.format(name=self.name,
@@ -511,7 +537,6 @@ class Dealer:
             for player in players:
                 card = deck.deal(num_cards=1)
                 player.add_card(card)
-                print('deck_length:{deck_len}'.format(deck_len=len(deck)))
         return players
         
 

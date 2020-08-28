@@ -125,12 +125,17 @@ def test_player_send_action() -> None:
     assert action['action'] in ['CALL', 'BET', 'FOLD', 'RAISE']
 
 def test_player_has_name() -> None:
+    dealer = Dealer()
     p1 = Player()
+    p2 = Player()
+    list_players = dealer.start_game([p1, p2])
     assert p1.name is not None
 
 def test_different_players_have_different_names() -> None:
+    dealer = Dealer()
     p1 = Player()
     p2 = Player()
+    list_players = dealer.start_game([p1, p2])
     assert p1.name != p2.name
 
 def test_player_action_response_is_dict() -> None:

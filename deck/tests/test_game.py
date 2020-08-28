@@ -90,7 +90,8 @@ def test_dealer_keeps_track_of_completed_rounds() -> None:
     dealer = Dealer()
     p1 = Player()
     p2 = Player()
-    dealer.start_round([p1, p2])
+    list_players = dealer.start_game([p1, p2])
+    round = dealer.start_round(list_players)
     assert dealer.round_count is not None
 
 
@@ -98,5 +99,6 @@ def test_dealer_can_compare_players() -> None:
     dealer = Dealer()
     p1 = Player()
     p2 = Player()
-    round = dealer.start_round([p1, p2])
+    list_players = dealer.start_game([p1, p2])
+    round = dealer.start_round(list_players)
     assert dealer.compare([p1, p2]) is not None
