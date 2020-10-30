@@ -1524,7 +1524,7 @@ def make_flush(suit: Optional[Suit] = None) -> Hand:
     hand = []
     if not suit:
         suit = random_suit()
-    random_ranks = random.sample(set(Rank), 5)
+    random_ranks = random.sample(list(Rank), 5)
     for rank in random_ranks:
         hand.append(Card(rank, suit))
     return Hand(hand)
@@ -1554,7 +1554,7 @@ def discard_cards(hand:Hand):
         keep = hand.cards
         discard = []
     if handname == 'NOTHING':
-        three_cards = random.sample(set(hand), 3)
+        three_cards = random.sample(list(hand), 3)
         keep = [card for card in hand if card not in three_cards]
         discard = [card for card in hand if card in three_cards]
     else:
