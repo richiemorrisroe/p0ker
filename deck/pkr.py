@@ -5,7 +5,7 @@ import random as random
 from random import shuffle
 import math as math
 import random as random
-from typing import List,  Dict, Tuple, Optional
+from typing import List,  Dict, Tuple, Optional, Set
 
 
 class Suit(Enum):
@@ -76,7 +76,7 @@ class Card:
 
 class Hand:
     """A hand holds cards from a particular deck"""
-    def __init__(self, cards:List[Card]):
+    def __init__(self, cards:Set[Card]):
         all_cards = [x for x in cards if isinstance(x, Card)]
         cards_set = set(cards)
         if len(all_cards) != len(cards):
@@ -222,6 +222,12 @@ class Hand:
         name of the hand and the score associated with this hand"""
         hand = Hand(self.cards)
         scores = hand.get_scores()
+        print(len(hand))
+        if len(hand)==0:
+            handscore = 0
+            scorename = 'EMPTY'
+            return handscore, scorename
+            
         suits, ranks = hand.split_cards()
         flush = hand.is_flush()
         straight = hand.is_straight()
@@ -362,7 +368,7 @@ class Player:
                                                      "James","Isabella",
                                                      "Oliver","Sophia"]):
         if hand is None:
-            self.hand = []
+            self.hand = Hand([])
         else:
             self.hand = Hand(hand)
         if stash is None:
@@ -476,10 +482,8 @@ class Player:
         return amount
 
     def add_card(self, card:Card) -> None:
-        if not isinstance(self.hand, Hand):
-            self.hand = Hand(self.hand)
-        self.hand.add_card(card)
-        return None
+       self.hand.add_card(card)
+       return None
 
 
 class Dealer:
@@ -642,7 +646,7 @@ def deal_cards(dealer:Dealer, players:List[Player]) -> Tuple[Dealer, List[Player
     for i in range(0, 5):
         for player in players:
             card = dealer.deck.deal(num_cards=1)
-            player.hand.append(card)
+            player.add_card(card)
     return dealer, players
 
 
@@ -686,7 +690,7 @@ def make_flush(suit: Optional[Suit] = None) -> Hand:
     hand = []
     if not suit:
         suit = random_suit()
-    random_ranks = random.sample(set(Rank), 5)
+    random_ranks = random.sample(list(Rank), 5)
     for rank in random_ranks:
         hand.append(Card(rank, suit))
     return Hand(hand)
@@ -702,7 +706,7 @@ def print_source(function):
 
 
 
-def discard_cards(hand:Hand):
+def discard_cards(hand:Hand)-> Tuple[List[Card], List[Card]]:
     """Discard cards that do not add to the value of the hand. Ignores the
       possibility of straights or flushes. 
       Keeps any pairs etc, otherwise
@@ -710,25 +714,25 @@ def discard_cards(hand:Hand):
       In any case, will discard no more than three cards."""
     # if not isinstance(hand, Hand):
     #     hand = Hand(hand)
+    if len(hand) <= 3:
+        keep, discard = hand, []
+        return keep, discard
     suits, ranks = hand.split_cards()
     this_score, handname = hand.score()
     if handname == 'STRAIGHT' or handname == 'FLUSH' or handname == 'STRAIGHT-FLUSH':
         keep = hand.cards
         discard = []
     if handname == 'NOTHING':
-        three_cards = random.sample(set(hand), 3)
+        three_cards = random.sample(list(hand), 3)
         keep = [card for card in hand if card not in three_cards]
         discard = [card for card in hand if card in three_cards]
     else:
         keep = []
         discard = []
         for card in hand:
-
             old_score = this_score
-            print(f'card is {card}')
             new_hand = Hand([c for c in hand if c != card])
             score_new, _ = new_hand.score()
-            print(f'new_hand is {new_hand}; new_score is {score_new}; old_score is {old_score}')
             if old_score > score_new:
                 keep.append(card)
             if old_score == score_new:
@@ -745,7 +749,7 @@ def replenish_cards(deck, player):
       until they have five cards again."""
     while len(player.hand) < 5:
         card = deck.deal(num_cards=1)
-        player.hand.append(card)
+        player.add_card(card)
         if len(player.hand) == 5:
             pass
     return deck, player
