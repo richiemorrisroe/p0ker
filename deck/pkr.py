@@ -500,6 +500,7 @@ class Dealer:
         
 
     def __repr__(self):
+        pot = self.get_pot_value()
         fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
         return fstring.format(name=self.name,
                               ante=self.ante,
@@ -526,6 +527,10 @@ class Dealer:
         deck, player = replenish_cards(self.deck, player)
         self.deck = deck
         return player
+
+    def take_action(self, player):
+        action = player.send_action(self.round.update_state())
+        self.round.set_action(action)
 
     
     def compare(self, players):
@@ -586,6 +591,7 @@ class Round():
         self.ante = ante
         self.num_players = len(players)
         self.min_bet = ante
+        self.actions = []
 
     def add_to_pot(self, bet):
         self.pot += bet
@@ -599,6 +605,12 @@ class Round():
 
     def set_position(self, position):
         self.position = position
+
+    def get_actions(self):
+        return self.actions
+
+    def set_action(self, action):
+        self.actions.append(action)
 
     def get_blind(self, blind_type):
         if blind_type == 'small':
@@ -630,11 +642,13 @@ class Round():
         potval = self.get_pot_value()
         position = self.get_position()
         min_bet = self.get_minimum_bet()
+        actions = self.get_actions()
         return {'small_blind' : sblind,
                 'big_blind': lblind,
                 'pot_value' : potval,
                 'position': position,
-                'min_bet' : min_bet}
+                'min_bet' : min_bet,
+                'actions' : actions}
 
 
 
