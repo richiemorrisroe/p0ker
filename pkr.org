@@ -818,7 +818,7 @@ import random as random
 from random import shuffle
 import math as math
 import random as random
-from typing import List,  Dict, Tuple, Optional, Set
+from typing import List,  Dict, Tuple, Optional, Set, Any
 
 
 class Suit(Enum):
@@ -1342,7 +1342,9 @@ class Dealer:
         return player
 
     def take_action(self, player):
-        action = player.send_action(self.round.update_state())
+        state = self.round.update_state()
+        print(f"state is:{state}")
+        action = player.send_action(state)
         self.round.set_action(action)
 
     
@@ -1424,6 +1426,7 @@ class Round():
 
     def set_action(self, action):
         self.actions.append(action)
+        self.update_state()
 
     def get_blind(self, blind_type):
         if blind_type == 'small':
@@ -1449,7 +1452,7 @@ class Round():
             self.min_bet = self.ante
         return(self.min_bet)
     
-    def update_state(self):
+    def update_state(self)-> Dict[str, Any]:
         sblind = self.get_blind('small')
         lblind = self.get_blind('big')
         potval = self.get_pot_value()
@@ -1867,6 +1870,7 @@ def test_deck_shuffle() -> None:
 
 
 #+BEGIN_SRC python :tangle deck/tests/test_card_functions.py
+
 from deck.pkr import (Card, Player, Suit, Rank,  Deck, Hand, deal_cards,
                  random_hand, anyrep,
                   make_straight,
@@ -2266,19 +2270,28 @@ def test_dealer_discard_pile_update() -> None:
     assert len(d.discard_pile) == len_discard
 
 
-
-
-def test_dealer_updates_state_after_action() -> None:
-    dealer = Dealer()
+def test_round_state_gets_updated() -> None:
+    d = Dealer()
     p1 = Player()
     p2 = Player()
-    p3 = Player()
-    list_players = [p1, p2, p3]
-    round = dealer.start_round(list_players)
-    state = round.update_state()
-    p1_action = p1.decide_action(state)
-    dealer.take_action(p1)
-    assert dealer.get_state(round) != state
+    lp = d.start_round([p1, p2])
+    state = d.get_state(round)
+    from pprint import pprint
+    pprint(state)
+    assert state is None
+
+
+# def test_dealer_updates_state_after_action() -> None:
+#     dealer = Dealer()
+#     p1 = Player()
+#     p2 = Player()
+#     p3 = Player()
+#     list_players = [p1, p2, p3]
+#     round = dealer.start_round(list_players)
+#     state = round.update_state()
+#     p1_action = p1.decide_action(state)
+#     dealer.take_action(p1)
+#     assert dealer.get_state(round) != state
 
 
 

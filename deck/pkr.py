@@ -5,7 +5,7 @@ import random as random
 from random import shuffle
 import math as math
 import random as random
-from typing import List,  Dict, Tuple, Optional, Set
+from typing import List,  Dict, Tuple, Optional, Set, Any
 
 
 class Suit(Enum):
@@ -529,7 +529,9 @@ class Dealer:
         return player
 
     def take_action(self, player):
-        action = player.send_action(self.round.update_state())
+        state = self.round.update_state()
+        print(f"state is:{state}")
+        action = player.send_action(state)
         self.round.set_action(action)
 
     
@@ -611,6 +613,7 @@ class Round():
 
     def set_action(self, action):
         self.actions.append(action)
+        self.update_state()
 
     def get_blind(self, blind_type):
         if blind_type == 'small':
@@ -636,7 +639,7 @@ class Round():
             self.min_bet = self.ante
         return(self.min_bet)
     
-    def update_state(self):
+    def update_state(self)-> Dict[str, Any]:
         sblind = self.get_blind('small')
         lblind = self.get_blind('big')
         potval = self.get_pot_value()
