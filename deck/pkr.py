@@ -340,10 +340,10 @@ class Dealer:
             maxscore = max(scores.items)
         return maxscore
 
-    def start_round(self):
+    def start_round(self, players:List[Player]) -> List[Player]:
         r = Round(self.ante)
         self.round = r
-        return(1)
+        return players
 
 
     def take_discards(self, cards:List[Card]) -> None:

@@ -11,7 +11,8 @@ def test_dealer_has_deck() -> None:
 
 def test_dealer_pot_is_zero() -> None:
     dealer = Dealer()
-    dealer.start_round()
+    p = Player()
+    dealer.start_round([p])
     pot = dealer.get_pot_value()
     assert pot == 0
 
@@ -45,7 +46,8 @@ def test_dealer_discard_pile_update() -> None:
 
 def test_dealer_set_blind() -> None:
     dealer = Dealer()
-    dealer.start_round()
+    p = Player()
+    dealer.start_round([p])
     small_blind = dealer.get_blind('small')
     big_blind = dealer.get_blind('big')
     assert big_blind > small_blind
@@ -56,7 +58,7 @@ def test_dealer_get_blind() -> None:
     p2 = Player()
     p3 = Player()
     list_players = [p1, p2, p3]
-    dealer.start_round()
+    dealer.start_round(list_players)
     dealer.get_blinds(list_players)
     assert dealer.get_pot_value() == 300
 
@@ -66,7 +68,7 @@ def test_dealer_ask_for_action() -> None:
     p2 = Player()
     p3 = Player()
     list_players = [p1, p2, p3]
-    dealer.start_round()
+    dealer.start_round(list_players)
     p1, p2, p3 = dealer.get_blinds(list_players)
     p1, p2, p3 = dealer.deals([p1, p2, p3])
     
@@ -78,19 +80,22 @@ def test_dealer_ask_for_action() -> None:
 
 def test_dealer_has_state() -> None:
     dealer = Dealer()
-    dealer.start_round()
+    p = Player()
+    dealer.start_round([p])
     state = dealer.get_state()
     assert state is not None
 
 def test_dealer_state_is_dict() -> None:
     dealer = Dealer()
-    dealer.start_round()
+    p = Player()
+    dealer.start_round([p])
     state = dealer.get_state()
     assert isinstance(state, dict)
 
 def test_dealer_state_has_pot_value() -> None:
     dealer = Dealer()
-    dealer.start_round()
+    p = Player()
+    dealer.start_round([p])
     state = dealer.get_state()
     assert state['pot_value'] is not None
 
@@ -116,7 +121,7 @@ def test_dealer_pot_value_state() -> None:
     p2 = Player()
     p3 = Player()
     list_players = [p1, p2, p3]
-    dealer.start_round()
+    dealer.start_round(list_players)
     dealer.get_blinds(list_players)
     state = dealer.get_state()
     assert state['pot_value'] == 300
@@ -126,7 +131,7 @@ def test_dealer_state_has_player_pos() -> None:
     p1 = Player()
     p2 = Player()
     p3 = Player()
-    dealer.start_round()
+    dealer.start_round([p1, p2, p3])
     state = dealer.get_state()
     assert state['position'] is not None
 
