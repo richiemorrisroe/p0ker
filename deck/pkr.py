@@ -486,6 +486,75 @@ class Player:
        return None
 
 
+class Round():
+    def __init__(self, ante, players:List[Player]) -> None:
+        self.pot = 0
+        self.position = 0
+        self.ante = ante
+        self.num_players = len(players)
+        self.min_bet = ante
+        self.actions = []
+        
+
+    def add_to_pot(self, bet) -> None:
+        self.pot += bet
+
+        
+    def get_pot_value(self):
+        return self.pot
+
+    def get_position(self):
+        return(self.position)
+
+    def set_position(self, position) -> None:
+        self.position = position
+
+    def get_actions(self):
+        return self.actions
+
+    def set_action(self, action) -> None:
+        self.actions.append(action)
+        self.update_state()
+
+    def get_blind(self, blind_type):
+        if blind_type == 'small':
+            return self.ante
+        if blind_type == 'big':
+            return self.ante * 2
+        else:
+            raise NotImplementedError
+
+        
+    def get_blinds(self, players:List[Player]) -> List[Player]:
+        small_blind_pos = 0
+        big_blind_pos = 1
+        small_blind = self.get_blind('small')
+        big_blind = self.get_blind('big')
+        sb = players[small_blind_pos].pay(small_blind)
+        bb = players[big_blind_pos].pay(big_blind)
+        self.add_to_pot(bb+sb)
+        return players
+
+    def get_minimum_bet(self):
+        if not self.min_bet:
+            self.min_bet = self.ante
+        return(self.min_bet)
+    
+    def update_state(self)-> Dict[str, Any]:
+        sblind = self.get_blind('small')
+        lblind = self.get_blind('big')
+        potval = self.get_pot_value()
+        position = self.get_position()
+        min_bet = self.get_minimum_bet()
+        actions = self.get_actions()
+        return {'small_blind' : sblind,
+                'big_blind': lblind,
+                'pot_value' : potval,
+                'position': position,
+                'min_bet' : min_bet,
+                'actions' : actions}
+
+
 class Dealer:
     def __init__(self, name: str="poker", ante: int=100) -> None:
         self.name = name
@@ -580,78 +649,12 @@ class Dealer:
     def update_state(self, round):
         return(round.update_state())
 
-    def get_state(self, round):
-        return self.update_state(round)
+    def get_state(self, Round:Round):
+        return self.update_state(Round)
 
 
 
 
-class Round():
-    def __init__(self, ante, players:List[Player]) -> None:
-        self.pot = 0
-        self.position = 0
-        self.ante = ante
-        self.num_players = len(players)
-        self.min_bet = ante
-        self.actions = []
-
-    def add_to_pot(self, bet) -> None:
-        self.pot += bet
-
-        
-    def get_pot_value(self):
-        return self.pot
-
-    def get_position(self):
-        return(self.position)
-
-    def set_position(self, position) -> None:
-        self.position = position
-
-    def get_actions(self):
-        return self.actions
-
-    def set_action(self, action) -> None:
-        self.actions.append(action)
-        self.update_state()
-
-    def get_blind(self, blind_type):
-        if blind_type == 'small':
-            return self.ante
-        if blind_type == 'big':
-            return self.ante * 2
-        else:
-            raise NotImplementedError
-
-        
-    def get_blinds(self, players:List[Player]) -> List[Player]:
-        small_blind_pos = 0
-        big_blind_pos = 1
-        small_blind = self.get_blind('small')
-        big_blind = self.get_blind('big')
-        sb = players[small_blind_pos].pay(small_blind)
-        bb = players[big_blind_pos].pay(big_blind)
-        self.add_to_pot(bb+sb)
-        return players
-
-    def get_minimum_bet(self):
-        if not self.min_bet:
-            self.min_bet = self.ante
-        return(self.min_bet)
-    
-    def update_state(self)-> Dict[str, Any]:
-        sblind = self.get_blind('small')
-        lblind = self.get_blind('big')
-        potval = self.get_pot_value()
-        position = self.get_position()
-        min_bet = self.get_minimum_bet()
-        actions = self.get_actions()
-        return {'small_blind' : sblind,
-                'big_blind': lblind,
-                'pot_value' : potval,
-                'position': position,
-                'min_bet' : min_bet,
-                'actions' : actions}
 
 
 

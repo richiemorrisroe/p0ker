@@ -1,7 +1,7 @@
 # type: ignore 
 import pytest
 
-from deck.pkr import Card, Deck, Player, Suit, Rank, random_hand, Hand, deal_cards
+from deck.pkr import Card, Deck, Player, Suit, Rank, random_hand, Hand, deal_cards, Round
 
 
 def test_deck_length() -> None:

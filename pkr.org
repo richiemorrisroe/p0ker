@@ -1299,6 +1299,75 @@ class Player:
        return None
 
 
+class Round():
+    def __init__(self, ante, players:List[Player]) -> None:
+        self.pot = 0
+        self.position = 0
+        self.ante = ante
+        self.num_players = len(players)
+        self.min_bet = ante
+        self.actions = []
+        
+
+    def add_to_pot(self, bet) -> None:
+        self.pot += bet
+
+        
+    def get_pot_value(self):
+        return self.pot
+
+    def get_position(self):
+        return(self.position)
+
+    def set_position(self, position) -> None:
+        self.position = position
+
+    def get_actions(self):
+        return self.actions
+
+    def set_action(self, action) -> None:
+        self.actions.append(action)
+        self.update_state()
+
+    def get_blind(self, blind_type):
+        if blind_type == 'small':
+            return self.ante
+        if blind_type == 'big':
+            return self.ante * 2
+        else:
+            raise NotImplementedError
+
+        
+    def get_blinds(self, players:List[Player]) -> List[Player]:
+        small_blind_pos = 0
+        big_blind_pos = 1
+        small_blind = self.get_blind('small')
+        big_blind = self.get_blind('big')
+        sb = players[small_blind_pos].pay(small_blind)
+        bb = players[big_blind_pos].pay(big_blind)
+        self.add_to_pot(bb+sb)
+        return players
+
+    def get_minimum_bet(self):
+        if not self.min_bet:
+            self.min_bet = self.ante
+        return(self.min_bet)
+    
+    def update_state(self)-> Dict[str, Any]:
+        sblind = self.get_blind('small')
+        lblind = self.get_blind('big')
+        potval = self.get_pot_value()
+        position = self.get_position()
+        min_bet = self.get_minimum_bet()
+        actions = self.get_actions()
+        return {'small_blind' : sblind,
+                'big_blind': lblind,
+                'pot_value' : potval,
+                'position': position,
+                'min_bet' : min_bet,
+                'actions' : actions}
+
+
 class Dealer:
     def __init__(self, name: str="poker", ante: int=100) -> None:
         self.name = name
@@ -1393,78 +1462,12 @@ class Dealer:
     def update_state(self, round):
         return(round.update_state())
 
-    def get_state(self, round):
-        return self.update_state(round)
+    def get_state(self, Round:Round):
+        return self.update_state(Round)
 
 
 
 
-class Round():
-    def __init__(self, ante, players:List[Player]) -> None:
-        self.pot = 0
-        self.position = 0
-        self.ante = ante
-        self.num_players = len(players)
-        self.min_bet = ante
-        self.actions = []
-
-    def add_to_pot(self, bet) -> None:
-        self.pot += bet
-
-        
-    def get_pot_value(self):
-        return self.pot
-
-    def get_position(self):
-        return(self.position)
-
-    def set_position(self, position) -> None:
-        self.position = position
-
-    def get_actions(self):
-        return self.actions
-
-    def set_action(self, action) -> None:
-        self.actions.append(action)
-        self.update_state()
-
-    def get_blind(self, blind_type):
-        if blind_type == 'small':
-            return self.ante
-        if blind_type == 'big':
-            return self.ante * 2
-        else:
-            raise NotImplementedError
-
-        
-    def get_blinds(self, players:List[Player]) -> List[Player]:
-        small_blind_pos = 0
-        big_blind_pos = 1
-        small_blind = self.get_blind('small')
-        big_blind = self.get_blind('big')
-        sb = players[small_blind_pos].pay(small_blind)
-        bb = players[big_blind_pos].pay(big_blind)
-        self.add_to_pot(bb+sb)
-        return players
-
-    def get_minimum_bet(self):
-        if not self.min_bet:
-            self.min_bet = self.ante
-        return(self.min_bet)
-    
-    def update_state(self)-> Dict[str, Any]:
-        sblind = self.get_blind('small')
-        lblind = self.get_blind('big')
-        potval = self.get_pot_value()
-        position = self.get_position()
-        min_bet = self.get_minimum_bet()
-        actions = self.get_actions()
-        return {'small_blind' : sblind,
-                'big_blind': lblind,
-                'pot_value' : potval,
-                'position': position,
-                'min_bet' : min_bet,
-                'actions' : actions}
 
 
 
@@ -1623,7 +1626,7 @@ def score_hand_distribution(hands:List[Hand]):
 
 
 #+begin_src python :tangle deck/tests/test_stats.py
-from deck.pkr import random_hand
+from deck.pkr import random_hand, Round
 from deck.stats import score_hand_distribution, generate_hands
 
 def test_generate_hands_returns_n_hands() -> None:
@@ -1655,7 +1658,7 @@ def test_score_hand_dist_returns_scores() -> None:
 #+BEGIN_SRC python :tangle deck/tests/test_cards.py
 # type: ignore 
 import pytest
-from deck.pkr import Rank, Suit, Card
+from deck.pkr import Rank, Suit, Card, Round
 
 
 def generate_rank(num) -> Rank:
@@ -1737,11 +1740,54 @@ pytest --verbosity=1 deck
 pytest --help #for far too much information
 #+END_SRC
 
+#+begin_src python :tangle deck/tests/test_hypothesis.py
+import deck.pkr
+from deck.pkr import Hand, Card, Player, Round
+from hypothesis import given, assume, strategies as st
+from typing import List
+
+
+@given(rank=st.sampled_from(deck.pkr.Rank), suit=st.sampled_from(deck.pkr.Suit))
+def test_fuzz_Card(rank, suit) -> None:
+    deck.pkr.Card(rank=rank, suit=suit)
+
+@given(cards=st.sets(st.builds(Card)))
+def test_fuzz_Hand(cards) -> None:
+    assume(len(cards)<=5)
+    deck.pkr.Hand(cards=cards)
+
+@given(hand=st.builds(Hand))
+def test_fuzz_discard_cards(hand: Hand) -> None:
+    assume(len(hand)<=5)
+    deck.pkr.discard_cards(hand=hand)
+
+@given(hand=st.builds(Hand))
+def test_fuzz_score_hand(hand) -> None:
+    assume(len(hand)<=5)
+    hand.score()
+
+@given(name=st.just("poker"), ante=st.just(100))
+def test_fuzz_Dealer(name, ante) -> None:
+    deck.pkr.Dealer(name=name, ante=ante)
+
+# @given(name=st.just("poker"), ante=st.just(100), players=st.integers(1, 10))
+# def test_fuzz_Dealer_start_game(name, ante, players):
+#     dealer = deck.pkr.Dealer(name=name, ante=ante)
+#     players = dealer.start_game(integers)
+
+@given(name=st.just("poker"), ante=st.just(100), players=st.lists(st.builds(Player)))
+def test_fuzz_Dealer_start_round(name, ante, players: List[Player]) -> None:
+    dealer = deck.pkr.Dealer(name=name, ante=ante)
+    assume(len(players)>1 and len(players)<10)
+    players = dealer.start_round(players)
+
+#+end_src
+
 #+BEGIN_SRC python :tangle deck/tests/test_hand.py
 # type: ignore 
 import pytest
 from deck.pkr import (Card, Suit, Rank, Hand, random_suit, random_rank, random_card,
-                 random_hand)
+                 random_hand, Round)
 ace_spades = Card(Rank(14), Suit(1))
 king_clubs = Card(Rank(13), Suit(2))
 hand = Hand([ace_spades, king_clubs])
@@ -1816,7 +1862,7 @@ def test_get_rank_type() -> None:
 # type: ignore 
 import pytest
 
-from deck.pkr import Card, Deck, Player, Suit, Rank, random_hand, Hand, deal_cards
+from deck.pkr import Card, Deck, Player, Suit, Rank, random_hand, Hand, deal_cards, Round
 
 
 def test_deck_length() -> None:
@@ -1877,7 +1923,7 @@ def test_deck_shuffle() -> None:
 from deck.pkr import (Card, Player, Suit, Rank,  Deck, Hand, deal_cards,
                  random_hand, anyrep,
                   make_straight,
-                  make_flush, discard_cards, Dealer)
+                  make_flush, discard_cards, Dealer, Round)
 def test_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
@@ -1977,7 +2023,7 @@ def test_discard_cards_flush() -> None:
 #+END_SRC
 
 #+begin_src python :tangle deck/tests/test_score_hand.py
-from deck.pkr import Card, Suit, Rank, Hand,  make_straight
+from deck.pkr import Card, Suit, Rank, Hand,  make_straight, Round
 from deck.stats import generate_hands
 def test_score_full_house() -> None:
     full_house = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
@@ -2281,10 +2327,10 @@ def test_round_state_gets_updated() -> None:
     p1 = Player()
     p2 = Player()
     lp = d.start_round([p1, p2])
-    state = d.get_state(round)
+    state = d.get_state(lp)
     from pprint import pprint
     pprint(state)
-    assert state is None
+    assert state is not None
 
 
 # def test_dealer_updates_state_after_action() -> None:

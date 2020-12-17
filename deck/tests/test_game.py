@@ -47,10 +47,10 @@ def test_round_state_gets_updated() -> None:
     p1 = Player()
     p2 = Player()
     lp = d.start_round([p1, p2])
-    state = d.get_state(round)
+    state = d.get_state(lp)
     from pprint import pprint
     pprint(state)
-    assert state is None
+    assert state is not None
 
 
 # def test_dealer_updates_state_after_action() -> None:
