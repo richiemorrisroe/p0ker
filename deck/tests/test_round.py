@@ -126,4 +126,12 @@ def test_round_has_minimum_bet_greater_than_zero() -> None:
     p2 = Player()
     p3 = Player()
     round  = dealer.start_round([p1, p2, p3])
-    assert dealer.get_state(round)['min_bet'] > 0
+    assert dealer.get_state(round)['min_bet'] > 0 
+
+
+def test_round_minimum_bet_equal_to_sum_of_bets() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    round  = dealer.start_round([p1, p2, p3])

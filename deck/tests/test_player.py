@@ -86,7 +86,7 @@ def test_player_stash_default_correct() -> None:
     player = Player(hand=hand)
     assert player.stash == 5000
 
-def test_player_decide_action():
+def test_player_decide_action() -> None:
     hand = random_hand()
     player = Player(hand=hand)
     p2 = Player()
@@ -186,6 +186,7 @@ def test_player_calls_if_has_good_hand() -> None:
     p1_action = p1.send_action(state)
     p2_action = p2.send_action(state)
     assert p1_action['action'] and p2_action['action'] == 'CALL'
+
 
 
 # def test_round_adds_player_state() -> None:

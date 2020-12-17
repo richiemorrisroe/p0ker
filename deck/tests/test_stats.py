@@ -1,4 +1,4 @@
-from deck.pkr import random_hand
+from deck.pkr import random_hand, Round
 from deck.stats import score_hand_distribution, generate_hands
 
 def test_generate_hands_returns_n_hands() -> None:

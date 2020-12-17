@@ -1,7 +1,7 @@
 # type: ignore 
 import pytest
 from deck.pkr import (Card, Suit, Rank, Hand, random_suit, random_rank, random_card,
-                 random_hand)
+                 random_hand, Round)
 ace_spades = Card(Rank(14), Suit(1))
 king_clubs = Card(Rank(13), Suit(2))
 hand = Hand([ace_spades, king_clubs])
@@ -13,7 +13,7 @@ def test_repr_hand() -> None:
 
 
 
-def test_fake_hand():
+def test_fake_hand() -> None:
     with pytest.raises(ValueError):
         hand_wrong = Hand(fake_hand)
 

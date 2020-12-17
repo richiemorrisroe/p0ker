@@ -1,7 +1,7 @@
 from deck.pkr import (Card, Player, Suit, Rank,  Deck, Hand, deal_cards,
                  random_hand, anyrep,
                   make_straight,
-                  make_flush, discard_cards, Dealer)
+                  make_flush, discard_cards, Dealer, Round)
 def test_deal_cards() -> None:
     p1 = Player()
     p2 = Player()

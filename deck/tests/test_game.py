@@ -42,9 +42,28 @@ def test_dealer_discard_pile_update() -> None:
     assert len(d.discard_pile) == len_discard
 
 
+def test_round_state_gets_updated() -> None:
+    d = Dealer()
+    p1 = Player()
+    p2 = Player()
+    lp = d.start_round([p1, p2])
+    state = d.get_state(lp)
+    from pprint import pprint
+    pprint(state)
+    assert state is not None
 
 
-
+# def test_dealer_updates_state_after_action() -> None:
+#     dealer = Dealer()
+#     p1 = Player()
+#     p2 = Player()
+#     p3 = Player()
+#     list_players = [p1, p2, p3]
+#     round = dealer.start_round(list_players)
+#     state = round.update_state()
+#     p1_action = p1.decide_action(state)
+#     dealer.take_action(p1)
+#     assert dealer.get_state(round) != state
 
 
 
