@@ -12,20 +12,20 @@ def generate_suit(num) -> Suit:
     s = Suit(num)
     return s
 
-def test_suit_min():
+def test_suit_min() -> None:
     with pytest.raises(ValueError):
         suit = generate_suit(0)
 
-def test_suit_max():
+def test_suit_max() -> None:
     with pytest.raises(ValueError):
         suit = generate_suit(5)
 
 
-def test_rank_min():
+def test_rank_min() -> None:
     with pytest.raises(ValueError):
         rank = generate_rank(1)
 
-def test_rank_max():
+def test_rank_max() -> None:
     with pytest.raises(ValueError):
         rank = generate_rank(15)
 

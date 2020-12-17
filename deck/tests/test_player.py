@@ -86,7 +86,7 @@ def test_player_stash_default_correct() -> None:
     player = Player(hand=hand)
     assert player.stash == 5000
 
-def test_player_decide_action():
+def test_player_decide_action() -> None:
     hand = random_hand()
     player = Player(hand=hand)
     p2 = Player()

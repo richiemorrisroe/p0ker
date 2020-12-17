@@ -5,7 +5,7 @@ import random as random
 from random import shuffle
 import math as math
 import random as random
-from typing import List,  Dict, Tuple, Optional, Set, Any
+from typing import Union, List,  Dict, Tuple, Optional, Set, Any
 
 
 class Suit(Enum):
@@ -35,33 +35,33 @@ class Rank(IntEnum):
 
 class Card:
     """A playing card in the space (2,14) rank and one of four suits"""
-    def __init__(self, rank:Rank, suit:Suit):
+    def __init__(self, rank:Rank, suit:Suit) -> None:
         assert isinstance(rank, Rank)
         assert isinstance(suit, Suit)
         self.rank = rank
         self.suit = suit
 
-    def __str__(self):
+    def __str__(self) -> str:
         pstring = "{rank} of {suit}"
         return pstring.format(rank=self.rank.name, suit=self.suit.name)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         pstring = "Card({rank}, {suit})"
         return pstring.format(rank=self.rank, suit=self.suit)
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if self.suit == other.suit and self.rank == other.rank:
             return True
         else:
             return False
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.rank, self.suit))
 
-    def __len__(self):
+    def __len__(self) -> int:
         return 1
     
-    def __gt__(self, other):
+    def __gt__(self, other) -> Optional[bool]:
         if self.rank > other.rank:
             return True
         if self.rank < other.rank:
@@ -76,7 +76,7 @@ class Card:
 
 class Hand:
     """A hand holds cards from a particular deck"""
-    def __init__(self, cards:Set[Card]):
+    def __init__(self, cards:Set[Card]) -> None:
         all_cards = [x for x in cards if isinstance(x, Card)]
         cards_set = set(cards)
         if len(all_cards) != len(cards):
@@ -88,14 +88,14 @@ class Hand:
             self.cards = cards
             self.pos = 0
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.cards)
 
     def __iter__(self):
         self.pos = 0
         return iter(self.cards)
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         eq_cnt  = 0
         for s, o in zip(self.cards, other.cards):
             if s == o:
@@ -108,11 +108,11 @@ class Hand:
             return False
             
     
-    def __str__(self):
+    def __str__(self) -> str:
         result = ",".join(str(card) for card in self.cards)
         return result
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         result = ",".join(repr(card) for card in self.cards)
         return(result)
 
@@ -217,7 +217,7 @@ class Hand:
                 res[k] = v
         return res
 
-    def score(self):
+    def score(self) -> Tuple[int, str]:
         """Return the score of a particular hand. Returns a tuple with the
         name of the hand and the score associated with this hand"""
         hand = Hand(self.cards)
@@ -321,22 +321,22 @@ def random_hand() -> Hand:
 
 class Deck:
     """An object representing a deck of playing cards"""
-    def __init__(self):
+    def __init__(self) -> None:
         deck = [Card(rank, suit) for suit in Suit for rank in Rank]
         random.shuffle(deck)
         self._cards = deck
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._cards)
 
     def __getitem__(self, position):
         return self._cards[position]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         fstring = "Cards remaining: {left}"
         return fstring.format(left=len(self._cards))
 
-    def shuffle(self):
+    def shuffle(self) -> None:
         shuffle(self._cards)
 
     def deal(self, num_cards):
@@ -363,10 +363,10 @@ class Deck:
 
     
 class Player:
-    def __init__(self, hand=None, stash=None, names=["Liam","Emma","Noah",
+    def __init__(self, hand=None, stash=None, names: List[str]=["Liam","Emma","Noah",
                                                      "Olivia","William","Ava",
                                                      "James","Isabella",
-                                                     "Oliver","Sophia"]):
+                                                     "Oliver","Sophia"]) -> None:
         if hand is None:
             self.hand = Hand([])
         else:
@@ -385,13 +385,13 @@ class Player:
         rand_choice = random_choice(0, length_names-1)
         self.name = names[rand_choice]
         
-    def __repr__(self):
+    def __repr__(self) -> str:
         fstring = "Player(stash = {stash}, score={score}, hand = {hand})"
         return fstring.format(stash=self.stash,
                               score=self.score,
                               hand=self.hand)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return(1)
     
     def scores(self) -> float:
@@ -402,7 +402,7 @@ class Player:
         else:
             return self.score
 
-    def discard(self):
+    def discard(self) -> List[Card]:
         self.hand, discard = discard_cards(self.hand)
         return discard
     
@@ -450,7 +450,7 @@ class Player:
             else:
                 return True
 
-    def fold(self, state=None) -> bool:
+    def fold(self, state: Optional[Dict[str, int]]=None) -> bool:
         if not state:
          state =    {'min_bet' : 100}
         if not self.score:
@@ -462,7 +462,7 @@ class Player:
 
 
 
-    def decide_action(self, state=None):
+    def decide_action(self, state=None) -> Dict[str, Union[int, str]]:
         is_call = self.call()
         is_fold = self.fold(state)
         if is_fold:
@@ -487,7 +487,7 @@ class Player:
 
 
 class Dealer:
-    def __init__(self, name="poker", ante=100):
+    def __init__(self, name: str="poker", ante: int=100) -> None:
         self.name = name
         self.ante = ante
         self.maxdrop = 3
@@ -499,7 +499,7 @@ class Dealer:
         
         
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         pot = self.get_pot_value()
         fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
         return fstring.format(name=self.name,
@@ -528,7 +528,7 @@ class Dealer:
         self.deck = deck
         return player
 
-    def take_action(self, player):
+    def take_action(self, player) -> None:
         state = self.round.update_state()
         print(f"state is:{state}")
         action = player.send_action(state)
@@ -543,14 +543,14 @@ class Dealer:
             maxscore = max(scores.items)
         return maxscore
 
-    def start_round(self, players:List[Player]=None):
+    def start_round(self, players:List[Player]=None) -> Round:
         r = Round(self.ante, players)
         self.round = r
         players = self.round.get_blinds(players)
         players = self.deals(players)
         return(r)
 
-    def end_round(self, players:List[Player]):
+    def end_round(self, players:List[Player]) -> None:
         self.round_count += 1
         
 
@@ -574,7 +574,7 @@ class Dealer:
     def get_position(self):
         return(self.round.position)
 
-    def set_position(self, position):
+    def set_position(self, position) -> None:
         self.round.position = position
 
     def update_state(self, round):
@@ -587,7 +587,7 @@ class Dealer:
 
 
 class Round():
-    def __init__(self, ante, players:List[Player]):
+    def __init__(self, ante, players:List[Player]) -> None:
         self.pot = 0
         self.position = 0
         self.ante = ante
@@ -595,7 +595,7 @@ class Round():
         self.min_bet = ante
         self.actions = []
 
-    def add_to_pot(self, bet):
+    def add_to_pot(self, bet) -> None:
         self.pot += bet
 
         
@@ -605,13 +605,13 @@ class Round():
     def get_position(self):
         return(self.position)
 
-    def set_position(self, position):
+    def set_position(self, position) -> None:
         self.position = position
 
     def get_actions(self):
         return self.actions
 
-    def set_action(self, action):
+    def set_action(self, action) -> None:
         self.actions.append(action)
         self.update_state()
 
@@ -674,7 +674,7 @@ def deal_cards(dealer:Dealer, players:List[Player]) -> Tuple[Dealer, List[Player
 
 
 
-def anyrep(ranks):
+def anyrep(ranks) -> bool:
     """Check if there are any repeated elements in either 
       a selection of suits or ranks.
       Return True if there are, False otherwise.
@@ -715,7 +715,7 @@ def make_flush(suit: Optional[Suit] = None) -> Hand:
 
 
 
-def print_source(function):
+def print_source(function) -> None:
     import inspect
     import pprint
     pprint.pprint(inspect.getsource(function))

@@ -13,7 +13,7 @@ def test_repr_hand() -> None:
 
 
 
-def test_fake_hand():
+def test_fake_hand() -> None:
     with pytest.raises(ValueError):
         hand_wrong = Hand(fake_hand)
 
