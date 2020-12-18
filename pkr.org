@@ -878,6 +878,8 @@ class Card:
         return 1
 
     def __gt__(self, other) -> Optional[bool]:
+        if self.rank == other.rank:
+            return False
         if self.rank > other.rank:
             return True
         if self.rank < other.rank:
@@ -902,7 +904,7 @@ class Hand:
         if len(all_cards) != len(cards_set):
             raise ValueError("all cards must be unique")
         else:
-            self.cards = cards
+            self.cards = set(cards)
             self.pos = 0
 
     def __len__(self) -> int:
@@ -943,7 +945,7 @@ class Hand:
         if len(self) >= 5:
             pass
         else:
-            self.cards.append(card)
+            self.cards.add(card)
 
     def count(self, suit_or_rank=None):
         """Take either a list of suits of ranks and returns
@@ -1312,7 +1314,7 @@ class Round:
         self.ante = ante
         self.num_players = len(players)
         self.min_bet = ante
-        self.actions = []
+        self.actions:List[Any] = []
 
     def add_to_pot(self, bet) -> None:
         self.pot += bet
@@ -1381,7 +1383,7 @@ class Dealer:
         deck = Deck()
         self.deck = deck
         self.round = None
-        self.discard_pile = []
+        self.discard_pile:List[Card] = []
         self.round_count = None
         self.player_namer = PlayerNamer()
 
@@ -1966,9 +1968,10 @@ def test_make_straight_is_straight() -> None:
 
 
 def test_straight_has_consecutive_numbers() -> None:
-    straight = make_straight(start=5)
+    straight = Hand(make_straight(start=5))
     suits, ranks = straight.split_cards()
     ranks_int = [int(rank) for rank in ranks]
+    ranks_int.sort()
     assert ranks_int == [5, 6, 7, 8, 9]
 
 def test_is_flush_correct() -> None:
