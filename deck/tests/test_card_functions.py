@@ -58,9 +58,10 @@ def test_make_straight_is_straight() -> None:
 
 
 def test_straight_has_consecutive_numbers() -> None:
-    straight = make_straight(start=5)
+    straight = Hand(make_straight(start=5))
     suits, ranks = straight.split_cards()
     ranks_int = [int(rank) for rank in ranks]
+    ranks_int.sort()
     assert ranks_int == [5, 6, 7, 8, 9]
 
 def test_is_flush_correct() -> None:

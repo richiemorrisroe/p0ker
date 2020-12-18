@@ -65,6 +65,8 @@ class Card:
         return 1
 
     def __gt__(self, other) -> Optional[bool]:
+        if self.rank == other.rank:
+            return False
         if self.rank > other.rank:
             return True
         if self.rank < other.rank:
@@ -89,7 +91,7 @@ class Hand:
         if len(all_cards) != len(cards_set):
             raise ValueError("all cards must be unique")
         else:
-            self.cards = cards
+            self.cards = set(cards)
             self.pos = 0
 
     def __len__(self) -> int:
@@ -130,7 +132,7 @@ class Hand:
         if len(self) >= 5:
             pass
         else:
-            self.cards.append(card)
+            self.cards.add(card)
 
     def count(self, suit_or_rank=None):
         """Take either a list of suits of ranks and returns
@@ -499,7 +501,7 @@ class Round:
         self.ante = ante
         self.num_players = len(players)
         self.min_bet = ante
-        self.actions = []
+        self.actions:List[Any] = []
 
     def add_to_pot(self, bet) -> None:
         self.pot += bet
@@ -568,7 +570,7 @@ class Dealer:
         deck = Deck()
         self.deck = deck
         self.round = None
-        self.discard_pile = []
+        self.discard_pile:List[Card] = []
         self.round_count = None
         self.player_namer = PlayerNamer()
 
