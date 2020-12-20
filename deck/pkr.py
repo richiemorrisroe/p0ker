@@ -1,10 +1,9 @@
 from enum import Enum, IntEnum
-import random as random
+import random
 
 
 from random import shuffle
-import math as math
-import random as random
+import math
 from typing import Union, List, Dict, Tuple, Optional, Set, Any
 
 
@@ -53,10 +52,8 @@ class Card:
         return pstring.format(rank=self.rank, suit=self.suit)
 
     def __eq__(self, other) -> bool:
-        if self.suit == other.suit and self.rank == other.rank:
-            return True
-        else:
-            return False
+        return bool(self.suit == other.suit and self.rank == other.rank)
+
 
     def __hash__(self) -> int:
         return hash((self.rank, self.suit))
@@ -569,7 +566,7 @@ class Dealer:
         self.maxdrop = 3
         deck = Deck()
         self.deck = deck
-        self.round = None
+        self.round:Optional[Round] = None
         self.discard_pile:List[Card] = []
         self.round_count = None
         self.player_namer = PlayerNamer()
@@ -627,7 +624,7 @@ class Dealer:
         # maxscore = max(scores.items())
         return scores
 
-    def start_round(self, players: List[Player] = None) -> Round:
+    def start_round(self, players: List[Player]) -> Round:
         r = Round(self.ante, players)
         self.round = r
         players = self.round.get_blinds(players)
