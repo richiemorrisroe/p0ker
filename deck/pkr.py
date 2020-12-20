@@ -269,6 +269,9 @@ class Hand:
             suits.append(card.get_suit())
         return suits
 
+def get_ranks_from_repeated_cards(reps) -> Rank:
+    result = tuple(reps.keys())
+    return result
 
 def random_choice(upper: int, lower: int) -> int:
     """Choose an int between upper and lower, uniformly at random"""
