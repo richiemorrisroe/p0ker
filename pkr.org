@@ -1060,10 +1060,11 @@ class Hand:
         if len(pairs) == 0 and not flush and not straight:
             handscore = scores["NOTHING"]
             scorename = "NOTHING"
-        
+        if len(pairs) > 0:
+            handscore, scorename = self.check_for_kind_of_pair(pairs, scores)
         return handscore, scorename
 
-    def check_for_kind_of_pair(pairs):
+    def check_for_kind_of_pair(self, pairs, scores):
             if len(pairs) >= 1:
                 vals = pairs.values()
                 if max(vals) == 2 and len(pairs) == 1:
