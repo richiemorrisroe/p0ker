@@ -232,6 +232,9 @@ class Hand:
         flush = hand.is_flush()
         straight = hand.is_straight()
         pairs = hand.find_repeated_cards()
+        max_pair_rank = get_ranks_from_repeated_cards(pairs)
+        if not max_pair_rank:
+            max_pair_rank = 0
         if straight and not flush:
             handscore = scores["STRAIGHT"]
             scorename = "STRAIGHT"
@@ -244,24 +247,28 @@ class Hand:
         if len(pairs) == 0 and not flush and not straight:
             handscore = scores["NOTHING"]
             scorename = "NOTHING"
-        if len(pairs) >= 1:
-            vals = pairs.values()
-            if max(vals) == 2 and len(pairs) == 1:
-                handscore = scores["PAIR"]
-                scorename = "PAIR"
-            if max(vals) == 2 and len(pairs) == 2:
-                handscore = scores["TWO-PAIR"]
-                scorename = "TWO-PAIR"
-            if max(vals) == 3 and len(pairs) == 1:
-                handscore = scores["THREE-OF-A-KIND"]
-                scorename = "THREE-OF-A-KIND"
-            if max(vals) == 3 and len(pairs) == 2:
-                handscore = scores["FULL-HOUSE"]
-                scorename = "FULL-HOUSE"
-            if max(vals) == 4:
-                handscore = scores["FOUR-OF-A-KIND"]
-                scorename = "FOUR-OF-A-KIND"
+        
         return handscore, scorename
+
+    def check_for_kind_of_pair(pairs):
+            if len(pairs) >= 1:
+                vals = pairs.values()
+                if max(vals) == 2 and len(pairs) == 1:
+                    handscore = scores["PAIR"]
+                    scorename = "PAIR"
+                if max(vals) == 2 and len(pairs) == 2:
+                    handscore = scores["TWO-PAIR"]
+                    scorename = "TWO-PAIR"
+                if max(vals) == 3 and len(pairs) == 1:
+                    handscore = scores["THREE-OF-A-KIND"]
+                    scorename = "THREE-OF-A-KIND"
+                if max(vals) == 3 and len(pairs) == 2:
+                    handscore = scores["FULL-HOUSE"]
+                    scorename = "FULL-HOUSE"
+                if max(vals) == 4:
+                    handscore = scores["FOUR-OF-A-KIND"]
+                    scorename = "FOUR-OF-A-KIND"
+            return handscore, scorename
 
     def get_suits(self) -> List[Suit]:
         suits = []
