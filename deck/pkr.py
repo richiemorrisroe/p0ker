@@ -214,6 +214,7 @@ class Hand:
         counts = self.count("ranks")
         for k, v in counts.items():
             if v >= 2:
+                #has at least two of this rank=pair
                 res[k] = v
         return res
 

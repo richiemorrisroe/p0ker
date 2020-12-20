@@ -52,6 +52,14 @@ def test_repeated_cards() -> None:
     reps = hand.find_repeated_cards()
     assert len(reps)==2
 
+def test_repeated_cards_ace_pair() -> None:
+    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+            Card(Rank(11), Suit(3)), Card(Rank(8),Suit(1)),
+            Card(Rank(7),Suit(2))])
+    reps = hand.find_repeated_cards()
+    assert len(reps)==1
+    assert isinstance(list(reps.keys()).pop(), Rank)
+
 def test_make_straight_is_straight() -> None:
     straight = make_straight(start=5)
     assert straight.is_straight()
