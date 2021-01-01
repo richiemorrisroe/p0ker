@@ -232,8 +232,9 @@ class Hand:
         flush = hand.is_flush()
         straight = hand.is_straight()
         pairs = hand.find_repeated_cards()
-        max_pair_rank = get_ranks_from_repeated_cards(pairs)
-        if not max_pair_rank:
+        ranks = get_ranks_from_repeated_cards(pairs)
+        ranks_int = convert_rank_enum_to_integer(ranks)
+        if not ranks_int:
             max_pair_rank = 0
         if straight and not flush:
             handscore = scores["STRAIGHT"]
