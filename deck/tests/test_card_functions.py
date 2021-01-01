@@ -2,7 +2,8 @@ from deck.pkr import (Card, Player, Suit, Rank,  Deck, Hand, deal_cards,
                       random_hand, anyrep,
                       make_straight,
                       make_flush, discard_cards, Dealer, Round,
-                      get_ranks_from_repeated_cards)
+                      get_ranks_from_repeated_cards,
+                      convert_rank_enum_to_integer)
 def test_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
@@ -98,7 +99,15 @@ def test_hand_get_rank_from_repeated_cards_multiple_ranks_twopair() -> None:
     reps = twopair.find_repeated_cards()
     assert max(get_ranks_from_repeated_cards(reps)) == 8
 
+def test_hand_convert_rank_to_int() -> None:
+    twopair = Hand([Card(Rank(8), Suit(1)), Card(Rank(8), Suit(2)),
+                    Card(Rank(2), Suit(1)), Card( Rank(2), Suit(2)),
+                    Card(Rank(5), Suit(3))])
 
+    reps = twopair.find_repeated_cards()
+    assert convert_rank_enum_to_integer(reps) is not None
+    assert len(convert_rank_enum_to_integer(reps)) == 2
+    assert list(convert_rank_enum_to_integer(reps).values()) == [8, 2]
 
 def test_make_straight_is_straight() -> None:
     straight = make_straight(start=5)

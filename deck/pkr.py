@@ -228,7 +228,7 @@ class Hand:
             scorename = "EMPTY"
             return handscore, scorename
 
-        suits, ranks = hand.split_cards()
+        # suits, ranks = hand.split_cards()
         flush = hand.is_flush()
         straight = hand.is_straight()
         pairs = hand.find_repeated_cards()
@@ -280,6 +280,11 @@ class Hand:
 def get_ranks_from_repeated_cards(reps) -> Rank:
     result = tuple(reps.keys())
     return result
+
+def convert_rank_enum_to_integer(ranks) -> Dict[Rank, int]:
+    rank_ints = {rank:int(rank) for rank in ranks}
+    return rank_ints
+
 
 def random_choice(upper: int, lower: int) -> int:
     """Choose an int between upper and lower, uniformly at random"""
