@@ -611,7 +611,6 @@ class Dealer:
 
     def take_action(self, player) -> None:
         state = self.round.update_state()
-        print(f"state is:{state}")
         action = player.send_action(state)
         self.round.set_action(action)
 
