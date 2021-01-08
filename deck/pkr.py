@@ -222,7 +222,6 @@ class Hand:
         name of the hand and the score associated with this hand"""
         hand = Hand(self.cards)
         scores = hand.get_scores()
-        print(len(hand))
         if len(hand) == 0:
             handscore = 0
             scorename = "EMPTY"
