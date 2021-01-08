@@ -87,5 +87,6 @@ dependencies:
     - pywatchman==1.4.1
     - pyyaml==5.3.1
     - regex==2020.10.28
+    - tox-gh-actions==2.3.0
     - typing-inspect==0.6.0
 prefix: /home/richie/miniconda3/envs/pkr
