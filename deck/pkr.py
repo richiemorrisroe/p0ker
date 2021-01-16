@@ -68,6 +68,8 @@ class Card:
             return True
         if self.rank < other.rank:
             return False
+        else:
+            return False
 
     def get_suit(self):
         return self.suit
@@ -566,9 +568,9 @@ class Dealer:
         self.maxdrop = 3
         deck = Deck()
         self.deck = deck
-        self.round:Optional[Round] = None
+        self.round:Round = Round(self.ante, [])
         self.discard_pile:List[Card] = []
-        self.round_count = None
+        self.round_count = -1
         self.player_namer = PlayerNamer()
 
     def start_game(self, players: List[Player]) -> List[Player]:
@@ -687,11 +689,11 @@ def anyrep(ranks) -> bool:
 
 def make_straight(start: int) -> Hand:
     """This can produce a straight flush, of suit random_suit and starting at Rank start"""
-    hand = []
+    hand = set()
     if not start:
         start = 7
     for rank in range(start, start + 5):
-        hand.append(Card(Rank(rank), random_suit()))
+        hand.add(Card(Rank(rank), random_suit()))
     return Hand(hand)
 
 
