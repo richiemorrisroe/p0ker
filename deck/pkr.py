@@ -1,6 +1,7 @@
 from enum import Enum, IntEnum
 import random
 
+from collections import OrderedDict
 
 from random import shuffle
 import math
@@ -81,17 +82,17 @@ class Card:
 class Hand:
     """A hand holds cards from a particular deck"""
 
-    def __init__(self, cards: Set[Card]) -> None:
-        all_cards = [x for x in cards if isinstance(x, Card)]
-        cards_set = set(cards)
-        if len(all_cards) != len(cards):
-            raise ValueError("all cards must be of class Card")
+    def __init__(self, cards:Set[Card]) -> None:
+        # all_cards = [x for x in cards if isinstance(x, Card)]
+        # cards_set = set(cards)
+        # if len(all_cards) != len(cards):
+        #     raise ValueError("all cards must be of class Card")
 
-        if len(all_cards) != len(cards_set):
-            raise ValueError("all cards must be unique")
-        else:
-            self.cards = set(cards)
-            self.pos = 0
+        # if len(all_cards) != len(cards_set):
+        #     raise ValueError("all cards must be unique")
+        # else:
+        self.cards = list(cards)
+        self.pos = 0
 
     def __len__(self) -> int:
         return len(self.cards)
@@ -131,7 +132,7 @@ class Hand:
         if len(self) >= 5:
             pass
         else:
-            self.cards.add(card)
+            self.cards.append(card)
 
     def count(self, suit_or_rank=None):
         """Take either a list of suits of ranks and returns
@@ -221,18 +222,16 @@ class Hand:
     def score(self) -> Tuple[int, str]:
         """Return the score of a particular hand. Returns a tuple with the
         name of the hand and the score associated with this hand"""
-        hand = Hand(self.cards)
-        scores = hand.get_scores()
-        print(len(hand))
-        if len(hand) == 0:
+        scores = self.get_scores()
+        if len(self) == 0:
             handscore = 0
             scorename = "EMPTY"
             return handscore, scorename
 
-        suits, ranks = hand.split_cards()
-        flush = hand.is_flush()
-        straight = hand.is_straight()
-        pairs = hand.find_repeated_cards()
+        suits, ranks = self.split_cards()
+        flush = self.is_flush()
+        straight = self.is_straight()
+        pairs = self.find_repeated_cards()
         if straight and not flush:
             handscore = scores["STRAIGHT"]
             scorename = "STRAIGHT"
@@ -699,12 +698,12 @@ def make_straight(start: int) -> Hand:
 
 def make_flush(suit: Optional[Suit] = None) -> Hand:
     """This can produce a flush, of suit random_suit and with a random_ranks"""
-    hand = []
+    hand = set()
     if not suit:
         suit = random_suit()
     random_ranks = random.sample(list(Rank), 5)
     for rank in random_ranks:
-        hand.append(Card(rank, suit))
+        hand.add(Card(rank, suit))
     return Hand(hand)
 
 
@@ -724,7 +723,8 @@ def discard_cards(hand: Hand) -> Tuple[List[Card], List[Card]]:
     # if not isinstance(hand, Hand):
     #     hand = Hand(hand)
     if len(hand) <= 3:
-        keep, discard = hand, []
+        keep:List[Card] = hand.cards
+        discard = []
         return keep, discard
     suits, ranks = hand.split_cards()
     this_score, handname = hand.score()

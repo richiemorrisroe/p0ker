@@ -149,12 +149,12 @@ def test_player_action_response_is_dict() -> None:
     assert isinstance(action, dict)
 
 def test_player_can_have_predetermined_hand() -> None:
-        full_house = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+        full_house = Hand(set([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
                        Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
-                       Card(Rank(8),Suit(2))])
-        twopair = Hand([Card(Rank(8),Suit(1)), Card(Rank(8), Suit(2)),
+                       Card(Rank(8),Suit(2))]))
+        twopair = Hand(set([Card(Rank(8),Suit(1)), Card(Rank(8), Suit(2)),
             Card(Rank(2), Suit(1) ), Card(Rank(2), Suit(2)),
-            Card( Rank(5), Suit(3))])
+            Card( Rank(5), Suit(3))]))
         p1 = Player(hand = full_house)
         p2 = Player(hand = twopair)
         dealer = Dealer()
