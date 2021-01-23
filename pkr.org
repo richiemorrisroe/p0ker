@@ -1027,7 +1027,7 @@ class Hand:
         counts = self.count("ranks")
         for k, v in counts.items():
             if v >= 2:
-                #has at least two of this rank=pair
+                # has at least two of this rank=pair
                 res[k] = v
         return res
 
@@ -1066,24 +1066,24 @@ class Hand:
         return handscore, scorename
 
     def check_for_kind_of_pair(self, pairs, scores):
-            if len(pairs) >= 1:
-                vals = pairs.values()
-                if max(vals) == 2 and len(pairs) == 1:
-                    handscore = scores["PAIR"]
-                    scorename = "PAIR"
-                if max(vals) == 2 and len(pairs) == 2:
-                    handscore = scores["TWO-PAIR"]
-                    scorename = "TWO-PAIR"
-                if max(vals) == 3 and len(pairs) == 1:
-                    handscore = scores["THREE-OF-A-KIND"]
-                    scorename = "THREE-OF-A-KIND"
-                if max(vals) == 3 and len(pairs) == 2:
-                    handscore = scores["FULL-HOUSE"]
-                    scorename = "FULL-HOUSE"
-                if max(vals) == 4:
-                    handscore = scores["FOUR-OF-A-KIND"]
-                    scorename = "FOUR-OF-A-KIND"
-            return handscore, scorename
+        if len(pairs) >= 1:
+            vals = pairs.values()
+            if max(vals) == 2 and len(pairs) == 1:
+                handscore = scores["PAIR"]
+                scorename = "PAIR"
+            if max(vals) == 2 and len(pairs) == 2:
+                handscore = scores["TWO-PAIR"]
+                scorename = "TWO-PAIR"
+            if max(vals) == 3 and len(pairs) == 1:
+                handscore = scores["THREE-OF-A-KIND"]
+                scorename = "THREE-OF-A-KIND"
+            if max(vals) == 3 and len(pairs) == 2:
+                handscore = scores["FULL-HOUSE"]
+                scorename = "FULL-HOUSE"
+            if max(vals) == 4:
+                handscore = scores["FOUR-OF-A-KIND"]
+                scorename = "FOUR-OF-A-KIND"
+        return handscore, scorename
 
     def get_suits(self) -> List[Suit]:
         suits = []
@@ -1091,12 +1091,14 @@ class Hand:
             suits.append(card.get_suit())
         return suits
 
+
 def get_ranks_from_repeated_cards(reps) -> Rank:
     result = tuple(reps.keys())
     return result
 
+
 def convert_rank_enum_to_integer(ranks) -> Dict[Rank, int]:
-    rank_ints = {rank:int(rank) for rank in ranks}
+    rank_ints = {rank: int(rank) for rank in ranks}
     return rank_ints
 
 
@@ -1603,11 +1605,13 @@ from collections import defaultdict
 
 from .pkr import Hand, random_hand
 
-def generate_hands(n:int) -> List[Hand]:
-    manyhands = [random_hand() for _ in range(n)]
-    return(manyhands)
 
-def score_hand_distribution(hands:List[Hand]):
+def generate_hands(n: int) -> List[Hand]:
+    manyhands = [random_hand() for _ in range(n)]
+    return manyhands
+
+
+def score_hand_distribution(hands: List[Hand]):
     dist = {}
     scores = [hand.score() for hand in hands]
     assert len(scores) == len(hands)
@@ -1616,12 +1620,8 @@ def score_hand_distribution(hands:List[Hand]):
             dist[name] += 1
         except KeyError:
             dist[name] = 1
-            
-    return(dist)
-            
 
-
-
+    return dist
 #+end_src
 
 
@@ -1656,7 +1656,7 @@ def test_score_hand_dist_returns_scores() -> None:
 - We need to create an empty ~__init_file.py~  for /reasons/. 
 
 #+BEGIN_SRC python :tangle deck/tests/test_cards.py
-# type: ignore 
+# type: ignore
 import pytest
 from deck.pkr import Rank, Suit, Card, Round
 
@@ -1670,9 +1670,11 @@ def generate_suit(num) -> Suit:
     s = Suit(num)
     return s
 
+
 def test_suit_min() -> None:
     with pytest.raises(ValueError):
         suit = generate_suit(0)
+
 
 def test_suit_max() -> None:
     with pytest.raises(ValueError):
@@ -1683,6 +1685,7 @@ def test_rank_min() -> None:
     with pytest.raises(ValueError):
         rank = generate_rank(1)
 
+
 def test_rank_max() -> None:
     with pytest.raises(ValueError):
         rank = generate_rank(15)
@@ -1691,45 +1694,51 @@ def test_rank_max() -> None:
 # ace_of_spades = Card(Suit(1), Rank(14))
 # def test_suit_and_rank():
 #     assert (ace_of_spades == Card(Suit(1), Rank(14)))
-    
+
 Ace = Rank(14)
 Deuce = Rank(2)
 
+
 def test_rank_ordering() -> None:
     assert Ace > Deuce
+
 
 def test_wrong_rank_ordering() -> None:
     with pytest.raises(AssertionError):
         assert Deuce > Ace
 
+
 def test_court_cards() -> None:
     assert Rank(13) > Rank(12) > Rank(11)
+
 
 def test_card_equality() -> None:
     c1 = Card(Rank(14), Suit(1))
     c2 = Card(Rank(14), Suit(1))
     assert c1 == c2
 
+
 def test_card_notequal() -> None:
     c1 = Card(Rank(14), Suit(1))
     c2 = Card(Rank(14), Suit(2))
     assert c1 != c2
 
+
 def test_card_wrong_order_fails() -> None:
     with pytest.raises(AssertionError):
         Card(Suit(1), Rank(2))
+
 
 def test_card_greater_than() -> None:
     c1 = Card(Rank(14), Suit(1))
     c2 = Card(Rank(13), Suit(2))
     assert c1 > c2
 
+
 def test_card_less_than() -> None:
     c1 = Card(Rank(14), Suit(1))
     c2 = Card(Rank(13), Suit(2))
-    assert c2  <   c1
-
-
+    assert c2 < c1
 #+END_SRC
 
 After setting the empty file as above, tests can be ran with the
@@ -1751,52 +1760,67 @@ from typing import List
 def test_fuzz_Card(rank, suit) -> None:
     deck.pkr.Card(rank=rank, suit=suit)
 
+
 @given(cards=st.sets(st.builds(Card)))
 def test_fuzz_Hand(cards) -> None:
-    assume(len(cards)<=5)
+    assume(len(cards) <= 5)
     deck.pkr.Hand(cards=cards)
+
 
 @given(hand=st.builds(Hand))
 def test_fuzz_discard_cards(hand: Hand) -> None:
-    assume(len(hand)<=5)
+    assume(len(hand) <= 5)
     deck.pkr.discard_cards(hand=hand)
+
 
 @given(hand=st.builds(Hand))
 def test_fuzz_score_hand(hand) -> None:
-    assume(len(hand)<=5)
+    assume(len(hand) <= 5)
     hand.score()
+
 
 @given(name=st.just("poker"), ante=st.just(100))
 def test_fuzz_Dealer(name, ante) -> None:
     deck.pkr.Dealer(name=name, ante=ante)
+
 
 # @given(name=st.just("poker"), ante=st.just(100), players=st.integers(1, 10))
 # def test_fuzz_Dealer_start_game(name, ante, players):
 #     dealer = deck.pkr.Dealer(name=name, ante=ante)
 #     players = dealer.start_game(integers)
 
+
 @given(name=st.just("poker"), ante=st.just(100), players=st.lists(st.builds(Player)))
 def test_fuzz_Dealer_start_round(name, ante, players: List[Player]) -> None:
     dealer = deck.pkr.Dealer(name=name, ante=ante)
-    assume(len(players)>1 and len(players)<10)
+    assume(len(players) > 1 and len(players) < 10)
     players = dealer.start_round(players)
-
 #+end_src
 
 #+BEGIN_SRC python :tangle deck/tests/test_hand.py
-# type: ignore 
+# type: ignore
 import pytest
-from deck.pkr import (Card, Suit, Rank, Hand, random_suit, random_rank, random_card,
-                 random_hand, Round)
+from deck.pkr import (
+    Card,
+    Suit,
+    Rank,
+    Hand,
+    random_suit,
+    random_rank,
+    random_card,
+    random_hand,
+    Round,
+)
+
 ace_spades = Card(Rank(14), Suit(1))
 king_clubs = Card(Rank(13), Suit(2))
 hand = Hand([ace_spades, king_clubs])
 fake_hand = [1, 2, 3]
 
+
 def test_repr_hand() -> None:
     hand = random_hand()
     assert isinstance(repr(hand), str)
-
 
 
 def test_fake_hand() -> None:
@@ -1822,56 +1846,70 @@ def test_random_rank() -> None:
 def test_random_card() -> None:
     assert isinstance(random_card(), Card)
 
+
 def test_random_card_suit() -> None:
     c = random_card()
     assert isinstance(c.get_suit(), Suit)
-    
+
 
 def test_random_hand() -> None:
     rhand = random_hand()
     assert isinstance(rhand, Hand)
 
+
 def test_get_suit() -> None:
     c = Card(Rank(2), Suit(1))
     assert c.get_suit() == Suit(1)
+
 
 def test_get_rank() -> None:
     c = Card(Rank(2), Suit(1))
     assert c.get_rank() == Rank(2)
 
+
 def test_get_suit_type() -> None:
     c = random_card()
     assert isinstance(c.get_suit(), Suit)
 
+
 def test_get_rank_type() -> None:
     c = random_card()
-    assert isinstance(c.get_rank(), Rank)    
+    assert isinstance(c.get_rank(), Rank)
+
 
 # def test_hand_get_suits() -> None:
 #     rhand = random_hand()
 #     suits = rhand.get_suits()
 #     assert suits is None
-
-
-
 #+END_SRC
 
 
 
 #+BEGIN_SRC python :tangle deck/tests/test_deck.py
-# type: ignore 
+# type: ignore
 import pytest
 
-from deck.pkr import Card, Deck, Player, Suit, Rank, random_hand, Hand, deal_cards, Round
+from deck.pkr import (
+    Card,
+    Deck,
+    Player,
+    Suit,
+    Rank,
+    random_hand,
+    Hand,
+    deal_cards,
+    Round,
+)
 
 
 def test_deck_length() -> None:
     deck = Deck()
     assert len(deck) == 52
 
+
 def test_deck_deal() -> None:
     deck = Deck()
-    card = deck.deal(num_cards = 1)
+    card = deck.deal(num_cards=1)
     assert isinstance(card, Card)
 
 
@@ -1879,53 +1917,71 @@ def test_deck_getitem() -> None:
     first_card = Deck()[0]
     assert isinstance(first_card, Card)
 
+
 def test_deck_deal_hand() -> None:
     d = Deck()
     hand = d.deal(num_cards=5)
-    assert len(hand)==5
+    assert len(hand) == 5
 
 
 def test_hand_uniqueness() -> None:
     rhand = random_hand()
     assert len(set(rhand.cards)) == len(rhand.cards)
 
+
 def test_deck_length_after_dealing() -> None:
     d = Deck()
     cards = d.deal(num_cards=2)
     assert len(d) + len(cards) == 52
+
 
 def test_negative_number_deal() -> None:
     d = Deck()
     with pytest.raises(ValueError):
         d.deal(-1)
 
+
 def test_hand_rejects_invalid_card_combinations() -> None:
     invalid_hand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(1))]
     with pytest.raises(ValueError):
         Hand(invalid_hand)
+
 
 def test_deck_deal_one_card() -> None:
     d = Deck()
     cards = d.deal(num_cards=1)
     assert len(d) + len(cards) == 52
 
+
 def test_deck_shuffle() -> None:
     d = Deck()
     len1 = len(d)
     d.shuffle()
     assert len(d) == len1
-
-
 #+END_SRC
 
 
 #+BEGIN_SRC python :tangle deck/tests/test_card_functions.py
-from deck.pkr import (Card, Player, Suit, Rank,  Deck, Hand, deal_cards,
-                      random_hand, anyrep,
-                      make_straight,
-                      make_flush, discard_cards, Dealer, Round,
-                      get_ranks_from_repeated_cards,
-                      convert_rank_enum_to_integer)
+from deck.pkr import (
+    Card,
+    Player,
+    Suit,
+    Rank,
+    Deck,
+    Hand,
+    deal_cards,
+    random_hand,
+    anyrep,
+    make_straight,
+    make_flush,
+    discard_cards,
+    Dealer,
+    Round,
+    get_ranks_from_repeated_cards,
+    convert_rank_enum_to_integer,
+)
+
+
 def test_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
@@ -1934,7 +1990,8 @@ def test_deal_cards() -> None:
     cards_in_hand = 5
     d, p = deal_cards(d, list_players)
     p1, p2 = p
-    assert len(p1.hand)==5 and len(p2.hand) == 5
+    assert len(p1.hand) == 5 and len(p2.hand) == 5
+
 
 # def test_game_deal_cards() -> None:
 #     game = Game()
@@ -1945,91 +2002,156 @@ def test_deal_cards() -> None:
 #     p1, p2 = players
 #     assert len(game.deck) + len(p1.hand) + len(p2.hand) == 52
 
+
 def test_split_cards() -> None:
-    rhand = random_hand() 
+    rhand = random_hand()
     suits, ranks = rhand.split_cards()
     assert len(ranks) and len(suits) == 5
 
+
 def test_split_cards_suits() -> None:
-    rhand = random_hand() 
+    rhand = random_hand()
     suits, ranks = rhand.split_cards()
     assert isinstance(suits[0], Suit)
 
+
 def test_split_cards_ranks() -> None:
-    rhand = random_hand() 
+    rhand = random_hand()
     suits, ranks = rhand.split_cards()
     assert isinstance(ranks[0], Rank)
 
-    
+
 def test_count() -> None:
-    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
-            Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
-            Card(Rank(8),Suit(2))])
-    count_ranks = hand.count('ranks')
+    hand = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(14), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+        ]
+    )
+    count_ranks = hand.count("ranks")
     assert max(count_ranks.values()) == 3
 
 
 def test_repeated_cards() -> None:
-    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
-            Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
-            Card(Rank(8),Suit(2))])
+    hand = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(14), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+        ]
+    )
     reps = hand.find_repeated_cards()
-    assert len(reps)==2
+    assert len(reps) == 2
+
 
 def test_repeated_cards_ace_pair() -> None:
-    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
-            Card(Rank(11), Suit(3)), Card(Rank(8),Suit(1)),
-            Card(Rank(7),Suit(2))])
+    hand = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(11), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(7), Suit(2)),
+        ]
+    )
     reps = hand.find_repeated_cards()
-    assert len(reps)==1
+    assert len(reps) == 1
     assert isinstance(list(reps.keys()).pop(), Rank)
 
+
 def test_hand_get_rank_from_repeated_cards() -> None:
-    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
-            Card(Rank(11), Suit(3)), Card(Rank(8),Suit(1)),
-            Card(Rank(7),Suit(2))])
+    hand = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(11), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(7), Suit(2)),
+        ]
+    )
     reps = hand.find_repeated_cards()
     assert get_ranks_from_repeated_cards(reps) == (Rank(14),)
 
+
 def test_hand_get_rank_from_repeated_cards_multiple_ranks() -> None:
-    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
-            Card(Rank(11), Suit(3)), Card(Rank(8),Suit(1)),
-            Card(Rank(8),Suit(2))])
+    hand = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(11), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+        ]
+    )
     reps = hand.find_repeated_cards()
     assert get_ranks_from_repeated_cards(reps) == (Rank(14), Rank(8))
 
+
 def test_hand_get_rank_from_repeated_cards_no_ranks() -> None:
-    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
-            Card(Rank(11), Suit(3)), Card(Rank(8),Suit(1)),
-            Card(Rank(8),Suit(2))])
+    hand = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(11), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+        ]
+    )
     hand = make_flush()
     reps = hand.find_repeated_cards()
     assert get_ranks_from_repeated_cards(reps) == ()
 
+
 def test_hand_get_rank_from_repeated_cards_multiple_ranks_max_is_ace() -> None:
-    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
-            Card(Rank(11), Suit(3)), Card(Rank(8),Suit(1)),
-            Card(Rank(8),Suit(2))])
+    hand = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(11), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+        ]
+    )
     reps = hand.find_repeated_cards()
     assert max(get_ranks_from_repeated_cards(reps)) == 14
 
+
 def test_hand_get_rank_from_repeated_cards_multiple_ranks_twopair() -> None:
-    twopair = Hand([Card(Rank(8), Suit(1)), Card(Rank(8), Suit(2)),
-                    Card(Rank(2), Suit(1)), Card( Rank(2), Suit(2)),
-                    Card(Rank(5), Suit(3))])
+    twopair = Hand(
+        [
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+            Card(Rank(2), Suit(1)),
+            Card(Rank(2), Suit(2)),
+            Card(Rank(5), Suit(3)),
+        ]
+    )
 
     reps = twopair.find_repeated_cards()
     assert max(get_ranks_from_repeated_cards(reps)) == 8
 
+
 def test_hand_convert_rank_to_int() -> None:
-    twopair = Hand([Card(Rank(8), Suit(1)), Card(Rank(8), Suit(2)),
-                    Card(Rank(2), Suit(1)), Card( Rank(2), Suit(2)),
-                    Card(Rank(5), Suit(3))])
+    twopair = Hand(
+        [
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+            Card(Rank(2), Suit(1)),
+            Card(Rank(2), Suit(2)),
+            Card(Rank(5), Suit(3)),
+        ]
+    )
 
     reps = twopair.find_repeated_cards()
     assert convert_rank_enum_to_integer(reps) is not None
     assert len(convert_rank_enum_to_integer(reps)) == 2
     assert list(convert_rank_enum_to_integer(reps).values()) == [8, 2]
+
 
 def test_make_straight_is_straight() -> None:
     straight = make_straight(start=5)
@@ -2042,9 +2164,11 @@ def test_straight_has_consecutive_numbers() -> None:
     ranks_int = [int(rank) for rank in ranks]
     assert ranks_int == [5, 6, 7, 8, 9]
 
+
 def test_is_flush_correct() -> None:
     flush = make_flush()
     assert flush.is_flush()
+
 
 def test_get_scores_scores_every_hand() -> None:
     rhand = random_hand()
@@ -2052,84 +2176,133 @@ def test_get_scores_scores_every_hand() -> None:
     assert rscore is not None
 
 
-
-
 def test_discard_cards() -> None:
-    testhand = Hand([Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
-                Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))])
+    testhand = Hand(
+        [
+            Card(Rank(2), Suit(1)),
+            Card(Rank(2), Suit(2)),
+            Card(Rank(2), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(7), Suit(4)),
+        ]
+    )
     keep, discarded = discard_cards(testhand)
     assert len(keep) == 3 and len(discarded) == 2
 
+
 def test_discard_cards_nothing() -> None:
-    testhand = Hand([Card(Rank(2), Suit(1)), Card(Rank(5), Suit(2)),
-                Card(Rank(14), Suit(3)), Card(Rank(7), Suit(1)),
-                Card(Rank(11), Suit(2))])
+    testhand = Hand(
+        [
+            Card(Rank(2), Suit(1)),
+            Card(Rank(5), Suit(2)),
+            Card(Rank(14), Suit(3)),
+            Card(Rank(7), Suit(1)),
+            Card(Rank(11), Suit(2)),
+        ]
+    )
     keep, discarded = discard_cards(testhand)
     assert len(keep) == 2 and len(discarded) == 3
+
 
 def test_discard_cards_straight() -> None:
     straight = make_straight(5)
     keep, discarded = discard_cards(straight)
     assert len(keep) == 5
 
+
 def test_discard_cards_flush() -> None:
     flush = make_flush()
     keep, discarded = discard_cards(flush)
     assert len(discarded) == 0
-
 #+END_SRC
 
 #+begin_src python :tangle deck/tests/test_score_hand.py
-from deck.pkr import Card, Suit, Rank, Hand,  make_straight, Round
+from deck.pkr import Card, Suit, Rank, Hand, make_straight, Round
 from deck.stats import generate_hands
+
+
 def test_score_full_house() -> None:
-    full_house = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
-                       Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
-                       Card(Rank(8),Suit(2))])
+    full_house = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(14), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+        ]
+    )
     score, name = full_house.score()
-    assert name == 'FULL-HOUSE'
+    assert name == "FULL-HOUSE"
+
 
 def test_score_pair() -> None:
-    pair = Hand([Card(Rank(8),Suit(1)), Card(Rank(8), Suit(2)),
-                 Card(Rank(2), Suit(1)), Card( Rank(3), Suit(2)),
-                 Card(Rank(5), Suit(3))])
+    pair = Hand(
+        [
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+            Card(Rank(2), Suit(1)),
+            Card(Rank(3), Suit(2)),
+            Card(Rank(5), Suit(3)),
+        ]
+    )
     score, name = pair.score()
-    assert name == 'PAIR'
-    
+    assert name == "PAIR"
+
+
 def test_score_straight() -> None:
     straight = make_straight(start=5)
     score, name = straight.score()
     ## make straight sometimes returns a straight flush
-    assert name.startswith('STRAIGHT')
+    assert name.startswith("STRAIGHT")
+
 
 def test_score_straight_flush() -> None:
-    straight_flush = Hand([Card( Rank(7),Suit(1)),  Card(Rank(8),Suit(1)),
-                           Card(Rank(9), Suit(1)), Card( Rank(10), Suit(1)),
-                           Card(Rank(11), Suit(1))])
+    straight_flush = Hand(
+        [
+            Card(Rank(7), Suit(1)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(9), Suit(1)),
+            Card(Rank(10), Suit(1)),
+            Card(Rank(11), Suit(1)),
+        ]
+    )
     score, name = straight_flush.score()
-    assert name == 'STRAIGHT-FLUSH'
+    assert name == "STRAIGHT-FLUSH"
+
 
 def test_score_three_of_a_kind() -> None:
-    three_of_a_kind = Hand([Card(Rank(14), Suit(1)), Card( Rank(14), Suit(2)),
-                            Card(Rank(14), Suit(3)), Card( Rank(3), Suit(1)),
-                            Card(Rank(5), Suit(1))])
+    three_of_a_kind = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(14), Suit(3)),
+            Card(Rank(3), Suit(1)),
+            Card(Rank(5), Suit(1)),
+        ]
+    )
     score, name = three_of_a_kind.score()
-    assert name == 'THREE-OF-A-KIND'
+    assert name == "THREE-OF-A-KIND"
+
 
 def test_score_twopair() -> None:
-    twopair = Hand([Card(Rank(8), Suit(1)), Card(Rank(8), Suit(2)),
-                    Card(Rank(2), Suit(1)), Card( Rank(2), Suit(2)),
-                    Card(Rank(5), Suit(3))])
+    twopair = Hand(
+        [
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+            Card(Rank(2), Suit(1)),
+            Card(Rank(2), Suit(2)),
+            Card(Rank(5), Suit(3)),
+        ]
+    )
     score, name = twopair.score()
-    assert name == 'TWO-PAIR'
+    assert name == "TWO-PAIR"
+
 
 def test_all_hands_can_be_scored() -> None:
     n = 1000
     manyhands = generate_hands(n)
     scores = [hand.score() for hand in manyhands]
     assert len(scores) == n
-
-
 #+end_src
 
 #+RESULTS:
