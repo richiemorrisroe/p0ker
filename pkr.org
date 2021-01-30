@@ -1027,6 +1027,7 @@ class Hand:
         counts = self.count("ranks")
         for k, v in counts.items():
             if v >= 2:
+                #has at least two of this rank=pair
                 res[k] = v
         return res
 
@@ -1039,47 +1040,66 @@ class Hand:
             handscore = 0
             scorename = "EMPTY"
             return handscore, scorename
-
-        suits, ranks = hand.split_cards()
+            
+        # suits, ranks = hand.split_cards()
+        
         flush = hand.is_flush()
         straight = hand.is_straight()
         pairs = hand.find_repeated_cards()
+        
+        suits, ranks = self.split_cards()
+        max_rank = max(list(convert_rank_enum_to_integer(ranks)))
+        ranks = get_ranks_from_repeated_cards(pairs)
+        ranks_int = list(convert_rank_enum_to_integer(ranks).values())
         if straight and not flush:
-            handscore = scores["STRAIGHT"]
+            handscore = scores["STRAIGHT"] + max_rank
             scorename = "STRAIGHT"
         if flush and not straight:
-            handscore = scores["FLUSH"]
+            handscore = scores["FLUSH"] + max_rank
             scorename = "FLUSH"
         if straight and flush:
-            handscore = scores["STRAIGHT-FLUSH"]
+            handscore = scores["STRAIGHT-FLUSH"] + max_rank
             scorename = "STRAIGHT-FLUSH"
         if len(pairs) == 0 and not flush and not straight:
-            handscore = scores["NOTHING"]
+            handscore = scores["NOTHING"] + max_rank
             scorename = "NOTHING"
-        if len(pairs) >= 1:
-            vals = pairs.values()
-            if max(vals) == 2 and len(pairs) == 1:
-                handscore = scores["PAIR"]
-                scorename = "PAIR"
-            if max(vals) == 2 and len(pairs) == 2:
-                handscore = scores["TWO-PAIR"]
-                scorename = "TWO-PAIR"
-            if max(vals) == 3 and len(pairs) == 1:
-                handscore = scores["THREE-OF-A-KIND"]
-                scorename = "THREE-OF-A-KIND"
-            if max(vals) == 3 and len(pairs) == 2:
-                handscore = scores["FULL-HOUSE"]
-                scorename = "FULL-HOUSE"
-            if max(vals) == 4:
-                handscore = scores["FOUR-OF-A-KIND"]
-                scorename = "FOUR-OF-A-KIND"
+        if len(pairs) > 0:
+            handscore, scorename = self.check_for_kind_of_pair(pairs, scores, ranks_int)
         return handscore, scorename
+
+    def check_for_kind_of_pair(self, pairs, scores, ranks_int):
+            if len(pairs) >= 1:
+                vals = pairs.values()
+                if max(vals) == 2 and len(pairs) == 1:
+                    handscore = scores["PAIR"] + ranks_int[0]
+                    scorename = "PAIR"
+                if max(vals) == 2 and len(pairs) == 2:
+                    handscore = scores["TWO-PAIR"] + ranks_int[0] + ranks_int[1]
+                    scorename = "TWO-PAIR"
+                if max(vals) == 3 and len(pairs) == 1:
+                    handscore = scores["THREE-OF-A-KIND"] + ranks_int[0]
+                    scorename = "THREE-OF-A-KIND"
+                if max(vals) == 3 and len(pairs) == 2:
+                    handscore = scores["FULL-HOUSE"] + ranks_int[0] + ranks_int[1]
+                    scorename = "FULL-HOUSE"
+                if max(vals) == 4:
+                    handscore = scores["FOUR-OF-A-KIND"] + ranks_int[0]
+                    scorename = "FOUR-OF-A-KIND"
+            return handscore, scorename
 
     def get_suits(self) -> List[Suit]:
         suits = []
         for card in self.cards:
             suits.append(card.get_suit())
         return suits
+
+def get_ranks_from_repeated_cards(reps) -> Rank:
+    result = tuple(reps.keys())
+    return result
+
+def convert_rank_enum_to_integer(ranks) -> Dict[Rank, int]:
+    rank_ints = {rank:int(rank) for rank in ranks}
+    return rank_ints
 
 
 def random_choice(upper: int, lower: int) -> int:
@@ -1769,7 +1789,7 @@ def test_fuzz_Dealer_start_round(name, ante, players: List[Player]) -> None:
 # type: ignore 
 import pytest
 from deck.pkr import (Card, Suit, Rank, Hand, random_suit, random_rank, random_card,
-                 random_hand, Round)
+                 random_hand, Round, make_straight)
 ace_spades = Card(Rank(14), Suit(1))
 king_clubs = Card(Rank(13), Suit(2))
 hand = Hand([ace_spades, king_clubs])
@@ -1834,8 +1854,25 @@ def test_get_rank_type() -> None:
 #     suits = rhand.get_suits()
 #     assert suits is None
 
+def test_hand_scoring() -> None:
+    twopair_8_2 = Hand([Card(Rank(8), Suit(1)), Card(Rank(8), Suit(2)),
+                    Card(Rank(2), Suit(1)), Card( Rank(2), Suit(2)),
+                    Card(Rank(5), Suit(3))])
+    twopair_8_3 = Hand([Card(Rank(8), Suit(1)), Card(Rank(8), Suit(2)),
+                    Card(Rank(3), Suit(1)), Card( Rank(3), Suit(2)),
+                    Card(Rank(5), Suit(3))])
+    score_82, name_82 = twopair_8_2.score()
+    score_83, name_83 = twopair_8_3.score()
+    assert name_82 == 'TWO-PAIR' and name_83 == 'TWO-PAIR'
+    assert score_83 > score_82
 
 
+def test_hand_score_straight_comparison():
+    straight5 = make_straight(5)
+    straight6 = make_straight(6)
+    handscore5, _ = straight5.score()
+    handscore6, _ = straight6.score()
+    assert handscore6 > handscore5
 #+END_SRC
 
 
@@ -1903,9 +1940,11 @@ def test_deck_shuffle() -> None:
 
 #+BEGIN_SRC python :tangle deck/tests/test_card_functions.py
 from deck.pkr import (Card, Player, Suit, Rank,  Deck, Hand, deal_cards,
-                 random_hand, anyrep,
-                  make_straight,
-                  make_flush, discard_cards, Dealer, Round)
+                      random_hand, anyrep,
+                      make_straight,
+                      make_flush, discard_cards, Dealer, Round,
+                      get_ranks_from_repeated_cards,
+                      convert_rank_enum_to_integer)
 def test_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
@@ -1955,6 +1994,61 @@ def test_repeated_cards() -> None:
             Card(Rank(8),Suit(2))])
     reps = hand.find_repeated_cards()
     assert len(reps)==2
+
+def test_repeated_cards_ace_pair() -> None:
+    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+            Card(Rank(11), Suit(3)), Card(Rank(8),Suit(1)),
+            Card(Rank(7),Suit(2))])
+    reps = hand.find_repeated_cards()
+    assert len(reps)==1
+    assert isinstance(list(reps.keys()).pop(), Rank)
+
+def test_hand_get_rank_from_repeated_cards() -> None:
+    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+            Card(Rank(11), Suit(3)), Card(Rank(8),Suit(1)),
+            Card(Rank(7),Suit(2))])
+    reps = hand.find_repeated_cards()
+    assert get_ranks_from_repeated_cards(reps) == (Rank(14),)
+
+def test_hand_get_rank_from_repeated_cards_multiple_ranks() -> None:
+    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+            Card(Rank(11), Suit(3)), Card(Rank(8),Suit(1)),
+            Card(Rank(8),Suit(2))])
+    reps = hand.find_repeated_cards()
+    assert get_ranks_from_repeated_cards(reps) == (Rank(14), Rank(8))
+
+def test_hand_get_rank_from_repeated_cards_no_ranks() -> None:
+    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+            Card(Rank(11), Suit(3)), Card(Rank(8),Suit(1)),
+            Card(Rank(8),Suit(2))])
+    hand = make_flush()
+    reps = hand.find_repeated_cards()
+    assert get_ranks_from_repeated_cards(reps) is ()
+
+def test_hand_get_rank_from_repeated_cards_multiple_ranks_max_is_ace() -> None:
+    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+            Card(Rank(11), Suit(3)), Card(Rank(8),Suit(1)),
+            Card(Rank(8),Suit(2))])
+    reps = hand.find_repeated_cards()
+    assert max(get_ranks_from_repeated_cards(reps)) == 14
+
+def test_hand_get_rank_from_repeated_cards_multiple_ranks_twopair() -> None:
+    twopair = Hand([Card(Rank(8), Suit(1)), Card(Rank(8), Suit(2)),
+                    Card(Rank(2), Suit(1)), Card( Rank(2), Suit(2)),
+                    Card(Rank(5), Suit(3))])
+
+    reps = twopair.find_repeated_cards()
+    assert max(get_ranks_from_repeated_cards(reps)) == 8
+
+def test_hand_convert_rank_to_int() -> None:
+    twopair = Hand([Card(Rank(8), Suit(1)), Card(Rank(8), Suit(2)),
+                    Card(Rank(2), Suit(1)), Card( Rank(2), Suit(2)),
+                    Card(Rank(5), Suit(3))])
+
+    reps = twopair.find_repeated_cards()
+    assert convert_rank_enum_to_integer(reps) is not None
+    assert len(convert_rank_enum_to_integer(reps)) == 2
+    assert list(convert_rank_enum_to_integer(reps).values()) == [8, 2]
 
 def test_make_straight_is_straight() -> None:
     straight = make_straight(start=5)
