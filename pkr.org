@@ -811,6 +811,7 @@ deck
 This will make it easier to set up all the testing and whatnot. 
 
 #+BEGIN_SRC python :tangle deck/pkr.py  :file deck/pkr.py
+from copy import deepcopy
 from enum import Enum, IntEnum
 import random as random
 
@@ -1394,14 +1395,14 @@ class Round:
         position = self.get_position()
         min_bet = self.get_minimum_bet()
         actions = self.get_actions()
-        return {
+        return deepcopy({
             "small_blind": sblind,
             "big_blind": lblind,
             "pot_value": potval,
             "position": position,
             "min_bet": min_bet,
             "actions": actions,
-        }
+        })
 
 
 class Dealer:
@@ -1499,7 +1500,8 @@ class Dealer:
         self.round.position = position
 
     def update_state(self, round):
-        return round.update_state()
+        state = round.update_state()
+        return state
 
     def get_state(self, Round: Round):
         return self.update_state(Round)
@@ -1823,6 +1825,7 @@ from deck.pkr import (
     random_card,
     random_hand,
     Round,
+    make_straight
 )
 
 
@@ -2665,15 +2668,15 @@ def test_player_calls_if_has_good_hand() -> None:
     assert p1_action["action"] and p2_action["action"] == "CALL"
 
 
-# def test_round_adds_player_state() -> None:
-#     dealer = Dealer()
-#     p1 = Player()
-#     p2 = Player()
-#     p3 = Player()
-#     round = dealer.start_round([p1, p2, p3])
-#     state = dealer.get_state(round)
-#     action = p1.decide_action(round)
-#     assert p1.send_action(state) is not None
+def test_round_adds_player_state() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    round = dealer.start_round([p1, p2, p3])
+    state = dealer.get_state(round)
+    action = p1.decide_action(state)
+    assert p1.send_action(state) is not None
 #+end_src
 
 #+begin_src python :tangle deck/tests/test_game.py
@@ -2731,18 +2734,34 @@ def test_round_state_gets_updated() -> None:
     pprint(state)
     assert state is not None
 
+def test_round_update_state() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    list_players = [p1, p2, p3]
+    round = dealer.start_round(list_players)
+    state1 = round.update_state()
+    dealer.take_action(p1)
+    state2 = round.update_state()
+    assert state2 != state1
 
-# def test_dealer_updates_state_after_action() -> None:
-#     dealer = Dealer()
-#     p1 = Player()
-#     p2 = Player()
-#     p3 = Player()
-#     list_players = [p1, p2, p3]
-#     round = dealer.start_round(list_players)
-#     state = round.update_state()
-#     p1_action = p1.decide_action(state)
-#     dealer.take_action(p1)
-#     assert dealer.get_state(round) != state
+
+def test_dealer_updates_state_after_action() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    list_players = [p1, p2, p3]
+    round = dealer.start_round(list_players)
+    state = round.update_state()
+    from pprint import pprint
+    pprint(f"state is {state}")
+    p1_action = p1.decide_action(state)
+    dealer.take_action(p1)
+    state2 = dealer.get_state(round)
+    pprint(f"state 2 is {state2}")
+    assert len(state2['actions']) > len(state['actions'])
 
 
 

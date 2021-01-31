@@ -1,3 +1,4 @@
+from copy import deepcopy
 from enum import Enum, IntEnum
 import random as random
 
@@ -581,14 +582,14 @@ class Round:
         position = self.get_position()
         min_bet = self.get_minimum_bet()
         actions = self.get_actions()
-        return {
+        return deepcopy({
             "small_blind": sblind,
             "big_blind": lblind,
             "pot_value": potval,
             "position": position,
             "min_bet": min_bet,
             "actions": actions,
-        }
+        })
 
 
 class Dealer:
@@ -686,7 +687,8 @@ class Dealer:
         self.round.position = position
 
     def update_state(self, round):
-        return round.update_state()
+        state = round.update_state()
+        return state
 
     def get_state(self, Round: Round):
         return self.update_state(Round)

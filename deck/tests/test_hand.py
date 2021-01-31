@@ -11,6 +11,7 @@ from deck.pkr import (
     random_card,
     random_hand,
     Round,
+    make_straight
 )
 
 

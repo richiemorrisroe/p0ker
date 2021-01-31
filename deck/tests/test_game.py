@@ -52,18 +52,34 @@ def test_round_state_gets_updated() -> None:
     pprint(state)
     assert state is not None
 
+def test_round_update_state() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    list_players = [p1, p2, p3]
+    round = dealer.start_round(list_players)
+    state1 = round.update_state()
+    dealer.take_action(p1)
+    state2 = round.update_state()
+    assert state2 != state1
 
-# def test_dealer_updates_state_after_action() -> None:
-#     dealer = Dealer()
-#     p1 = Player()
-#     p2 = Player()
-#     p3 = Player()
-#     list_players = [p1, p2, p3]
-#     round = dealer.start_round(list_players)
-#     state = round.update_state()
-#     p1_action = p1.decide_action(state)
-#     dealer.take_action(p1)
-#     assert dealer.get_state(round) != state
+
+def test_dealer_updates_state_after_action() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    list_players = [p1, p2, p3]
+    round = dealer.start_round(list_players)
+    state = round.update_state()
+    from pprint import pprint
+    pprint(f"state is {state}")
+    p1_action = p1.decide_action(state)
+    dealer.take_action(p1)
+    state2 = dealer.get_state(round)
+    pprint(f"state 2 is {state2}")
+    assert len(state2['actions']) > len(state['actions'])
 
 
 

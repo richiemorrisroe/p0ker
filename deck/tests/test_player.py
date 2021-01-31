@@ -263,12 +263,12 @@ def test_player_calls_if_has_good_hand() -> None:
     assert p1_action["action"] and p2_action["action"] == "CALL"
 
 
-# def test_round_adds_player_state() -> None:
-#     dealer = Dealer()
-#     p1 = Player()
-#     p2 = Player()
-#     p3 = Player()
-#     round = dealer.start_round([p1, p2, p3])
-#     state = dealer.get_state(round)
-#     action = p1.decide_action(round)
-#     assert p1.send_action(state) is not None
+def test_round_adds_player_state() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    round = dealer.start_round([p1, p2, p3])
+    state = dealer.get_state(round)
+    action = p1.decide_action(state)
+    assert p1.send_action(state) is not None
