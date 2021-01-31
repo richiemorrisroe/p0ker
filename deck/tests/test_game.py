@@ -58,6 +58,7 @@ def test_round_update_state() -> None:
     p2 = Player()
     p3 = Player()
     list_players = [p1, p2, p3]
+    list_players = dealer.start_game(list_players)
     round = dealer.start_round(list_players)
     state1 = round.update_state()
     dealer.take_action(p1)
@@ -71,6 +72,7 @@ def test_dealer_updates_state_after_action() -> None:
     p2 = Player()
     p3 = Player()
     list_players = [p1, p2, p3]
+    dealer.start_game(list_players)
     round = dealer.start_round(list_players)
     state = round.update_state()
     from pprint import pprint
@@ -82,6 +84,20 @@ def test_dealer_updates_state_after_action() -> None:
     assert len(state2['actions']) > len(state['actions'])
 
 
+def test_dealer_associates_player_name_with_action() -> None:
+    dealer = Dealer()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    list_players = [p1, p2, p3]
+    dealer.start_game(list_players)
+    round = dealer.start_round(list_players)
+    state_0 = round.update_state()
+    dealer.take_action(p1)
+    state_1 = round.update_state()
+    p1_name = p1.name
+    assert state_1['actions'][0]['name'] == p1_name
+    # assert state_1['action'][p1_name] is not None
 
 
 def test_dealer_ask_for_action() -> None:

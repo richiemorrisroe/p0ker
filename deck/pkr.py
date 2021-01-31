@@ -513,6 +513,8 @@ class Player:
 
     def send_action(self, state=None):
         action = self.decide_action(state)
+        player_name = self.name
+        action = {'name' :player_name, **action}
         return action
 
     def pay(self, amount):
