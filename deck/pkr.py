@@ -228,47 +228,51 @@ class Hand:
             scorename = "EMPTY"
             return handscore, scorename
 
+            
         # suits, ranks = hand.split_cards()
+        
         flush = hand.is_flush()
         straight = hand.is_straight()
         pairs = hand.find_repeated_cards()
+        
+        suits, ranks = self.split_cards()
+        max_rank = max(list(convert_rank_enum_to_integer(ranks)))
         ranks = get_ranks_from_repeated_cards(pairs)
-        ranks_int = convert_rank_enum_to_integer(ranks)
-        if not ranks_int:
-            max_pair_rank = 0
+        ranks_int = list(convert_rank_enum_to_integer(ranks).values())
         if straight and not flush:
-            handscore = scores["STRAIGHT"]
+            handscore = scores["STRAIGHT"] + max_rank
             scorename = "STRAIGHT"
         if flush and not straight:
-            handscore = scores["FLUSH"]
+            handscore = scores["FLUSH"] + max_rank
             scorename = "FLUSH"
         if straight and flush:
-            handscore = scores["STRAIGHT-FLUSH"]
+            handscore = scores["STRAIGHT-FLUSH"] + max_rank
             scorename = "STRAIGHT-FLUSH"
         if len(pairs) == 0 and not flush and not straight:
-            handscore = scores["NOTHING"]
+            handscore = scores["NOTHING"] + max_rank
             scorename = "NOTHING"
         if len(pairs) > 0:
-            handscore, scorename = self.check_for_kind_of_pair(pairs, scores)
+
+            handscore, scorename = self.check_for_kind_of_pair(pairs, scores, ranks_int)
         return handscore, scorename
 
-    def check_for_kind_of_pair(self, pairs, scores):
+    def check_for_kind_of_pair(self, pairs, scores, ranks_int):
             if len(pairs) >= 1:
                 vals = pairs.values()
                 if max(vals) == 2 and len(pairs) == 1:
-                    handscore = scores["PAIR"]
+                    handscore = scores["PAIR"] + ranks_int[0]
                     scorename = "PAIR"
                 if max(vals) == 2 and len(pairs) == 2:
-                    handscore = scores["TWO-PAIR"]
+                    handscore = scores["TWO-PAIR"] + ranks_int[0] + ranks_int[1]
                     scorename = "TWO-PAIR"
                 if max(vals) == 3 and len(pairs) == 1:
-                    handscore = scores["THREE-OF-A-KIND"]
+                    handscore = scores["THREE-OF-A-KIND"] + ranks_int[0]
                     scorename = "THREE-OF-A-KIND"
                 if max(vals) == 3 and len(pairs) == 2:
-                    handscore = scores["FULL-HOUSE"]
+                    handscore = scores["FULL-HOUSE"] + ranks_int[0] + ranks_int[1]
                     scorename = "FULL-HOUSE"
                 if max(vals) == 4:
-                    handscore = scores["FOUR-OF-A-KIND"]
+                    handscore = scores["FOUR-OF-A-KIND"] + ranks_int[0]
                     scorename = "FOUR-OF-A-KIND"
             return handscore, scorename
 
@@ -284,6 +288,16 @@ def get_ranks_from_repeated_cards(reps) -> Rank:
 
 def convert_rank_enum_to_integer(ranks) -> Dict[Rank, int]:
     rank_ints = {rank:int(rank) for rank in ranks}
+    return rank_ints
+
+
+def get_ranks_from_repeated_cards(reps) -> Rank:
+    result = tuple(reps.keys())
+    return result
+
+
+def convert_rank_enum_to_integer(ranks) -> Dict[Rank, int]:
+    rank_ints = {rank: int(rank) for rank in ranks}
     return rank_ints
 
 
