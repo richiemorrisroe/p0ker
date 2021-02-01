@@ -54,59 +54,40 @@ def test_round_state_gets_updated() -> None:
 
 def test_round_update_state() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
-    list_players = [p1, p2, p3]
-    list_players = dealer.start_game(list_players)
+    list_players = dealer.start_game(n_players=3)
     round = dealer.start_round(list_players)
+    player_1, player_2, player_3 = list_players
     state1 = round.update_state()
-    dealer.take_action(p1)
+    dealer.take_action(player_1)
     state2 = round.update_state()
     assert state2 != state1
 
 
 def test_dealer_updates_state_after_action() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
-    list_players = [p1, p2, p3]
-    dealer.start_game(list_players)
+    list_players = dealer.start_game(n_players = 3)
     round = dealer.start_round(list_players)
     state = round.update_state()
-    from pprint import pprint
-    pprint(f"state is {state}")
-    p1_action = p1.decide_action(state)
-    dealer.take_action(p1)
+    dealer.take_action(list_players[0])
     state2 = dealer.get_state(round)
-    pprint(f"state 2 is {state2}")
     assert len(state2['actions']) > len(state['actions'])
 
 
 def test_dealer_associates_player_name_with_action() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
-    list_players = [p1, p2, p3]
-    dealer.start_game(list_players)
+    list_players = dealer.start_game(3)
     round = dealer.start_round(list_players)
     state_0 = round.update_state()
-    dealer.take_action(p1)
+    dealer.take_action(list_players[0])
     state_1 = round.update_state()
-    p1_name = p1.name
+    p1_name = list_players[0].name
     assert state_1['actions'][0]['name'] == p1_name
     # assert state_1['action'][p1_name] is not None
 
     
 def test_dealer_can_take_one_action_from_all_players() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
-    list_players = [p1, p2, p3]
-    dealer.start_game(list_players)
+    list_players = dealer.start_game(3)
     round = dealer.start_round(list_players)
     for player in list_players:
         dealer.take_action(player)
@@ -163,8 +144,12 @@ def test_dealer_keeps_track_of_completed_rounds() -> None:
 
 def test_dealer_can_compare_players() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    list_players = dealer.start_game([p1, p2])
+    list_players = dealer.start_game(2)
     round = dealer.start_round(list_players)
-    assert dealer.compare([p1, p2]) is not None
+    assert dealer.compare(list_players) is not None
+
+def test_dealer_start_game_creates_n_players() -> None:
+    dealer = Dealer()
+    n_players = 3
+    players = dealer.start_game(n_players=n_players)
+    assert len(players) == 3

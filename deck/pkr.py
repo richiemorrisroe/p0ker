@@ -606,10 +606,11 @@ class Dealer:
         self.round_count = None
         self.player_namer = PlayerNamer()
 
-    def start_game(self, players: List[Player]) -> List[Player]:
+    def start_game(self, n_players:int) -> List[Player]:
         player_list = []
         self.round_count = 0
-        for player in players:
+        for _ in range(0, n_players):
+            player = Player()
             player = self.give_name(player)
             player_list.append(player)
         return player_list
