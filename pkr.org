@@ -1486,21 +1486,21 @@ class Dealer:
         for card in cards:
             self.discard_pile.append(card)
 
-    def get_pot_value(self):
-        val = self.round.get_pot_value()
-        return val
+    # def get_pot_value(self):
+    #     val = self.round.get_pot_value()
+    #     return val
 
-    def get_blind(self, blind_type):
-        return self.round.get_blind(blind_type)
+    # def get_blind(self, blind_type):
+    #     return self.round.get_blind(blind_type)
 
-    def get_blinds(self, players: List[Player]) -> List[Player]:
-        return self.round.get_blinds(players)
+    # def get_blinds(self, players: List[Player]) -> List[Player]:
+    #     return self.round.get_blinds(players)
 
-    def get_position(self):
-        return self.round.position
+    # def get_position(self):
+    #     return self.round.position
 
-    def set_position(self, position) -> None:
-        self.round.position = position
+    # def set_position(self, position) -> None:
+    #     self.round.position = position
 
     def update_state(self, round):
         state = round.update_state()
@@ -1508,6 +1508,15 @@ class Dealer:
 
     def get_state(self, Round: Round):
         return self.update_state(Round)
+
+    def is_valid_action(action, state=None) -> bool:
+        if not state:
+            state = self.update_state()
+        if action=='CALL' and amount==0:
+            return False
+        else:
+            return True
+        
 
 
 def deal_cards(dealer: Dealer, players: List[Player]) -> Tuple[Dealer, List[Player]]:
@@ -2224,7 +2233,7 @@ def test_hand_get_rank_from_repeated_cards_no_ranks() -> None:
             Card(Rank(8),Suit(2))])
     hand = make_flush()
     reps = hand.find_repeated_cards()
-    assert get_ranks_from_repeated_cards(reps) is ()
+    assert get_ranks_from_repeated_cards(reps) == ()
 
 def test_hand_get_rank_from_repeated_cards_multiple_ranks_max_is_ace() -> None:
     hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
@@ -2832,7 +2841,29 @@ def test_dealer_start_game_creates_n_players() -> None:
     players = dealer.start_game(n_players=n_players)
     assert len(players) == 3
 
-    
+def test_dealer_can_validate_action() -> None:
+    dealer = Dealer()
+    list_players = dealer.start_game(4)
+    round = dealer.start_round(list_players)
+    first_player = list_players[0]
+    state = dealer.update_state(round)
+    action = first_player.send_action(state)
+    assert dealer.is_valid_action(action) is True
+
+def test_fold_cannot_have_an_amount_greater_than_zero():
+    pass
+
+def test_bet_must_have_an_amount_greater_than_zero():
+    pass
+
+def test_call_must_match_maximum_bet_less_players_own_bet():
+    pass
+
+def test_not_all_players_can_fold():
+    pass
+
+
+
 #+end_src
 
 #+begin_src python :tangle deck/tests/test_round.py

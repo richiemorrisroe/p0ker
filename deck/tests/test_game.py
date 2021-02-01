@@ -151,3 +151,24 @@ def test_dealer_start_game_creates_n_players() -> None:
     n_players = 3
     players = dealer.start_game(n_players=n_players)
     assert len(players) == 3
+
+def test_dealer_can_validate_action() -> None:
+    dealer = Dealer()
+    list_players = dealer.start_game(4)
+    round = dealer.start_round(list_players)
+    first_player = list_players[0]
+    state = dealer.update_state(round)
+    action = first_player.send_action(state)
+    assert dealer.is_valid_action(action) is True
+
+def test_fold_cannot_have_an_amount_greater_than_zero():
+    pass
+
+def test_bet_must_have_an_amount_greater_than_zero():
+    pass
+
+def test_call_must_match_maximum_bet_less_players_own_bet():
+    pass
+
+def test_not_all_players_can_fold():
+    pass

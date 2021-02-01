@@ -673,21 +673,21 @@ class Dealer:
         for card in cards:
             self.discard_pile.append(card)
 
-    def get_pot_value(self):
-        val = self.round.get_pot_value()
-        return val
+    # def get_pot_value(self):
+    #     val = self.round.get_pot_value()
+    #     return val
 
-    def get_blind(self, blind_type):
-        return self.round.get_blind(blind_type)
+    # def get_blind(self, blind_type):
+    #     return self.round.get_blind(blind_type)
 
-    def get_blinds(self, players: List[Player]) -> List[Player]:
-        return self.round.get_blinds(players)
+    # def get_blinds(self, players: List[Player]) -> List[Player]:
+    #     return self.round.get_blinds(players)
 
-    def get_position(self):
-        return self.round.position
+    # def get_position(self):
+    #     return self.round.position
 
-    def set_position(self, position) -> None:
-        self.round.position = position
+    # def set_position(self, position) -> None:
+    #     self.round.position = position
 
     def update_state(self, round):
         state = round.update_state()
@@ -695,6 +695,15 @@ class Dealer:
 
     def get_state(self, Round: Round):
         return self.update_state(Round)
+
+    def is_valid_action(action, state=None) -> bool:
+        if not state:
+            state = self.update_state()
+        if action=='CALL' and amount==0:
+            return False
+        else:
+            return True
+        
 
 
 def deal_cards(dealer: Dealer, players: List[Player]) -> Tuple[Dealer, List[Player]]:
