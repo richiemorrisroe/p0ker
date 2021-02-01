@@ -135,9 +135,7 @@ def test_dealer_update_cards_two_player() -> None:
     
 def test_dealer_keeps_track_of_completed_rounds() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    list_players = dealer.start_game([p1, p2])
+    list_players = dealer.start_game(2)
     round = dealer.start_round(list_players)
     assert dealer.round_count is not None
 

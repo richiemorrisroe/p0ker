@@ -156,9 +156,8 @@ def test_player_add_card_to_hand() -> None:
 
 
 def test_player_send_action() -> None:
-    p1 = Player()
-    p2 = Player()
     dealer = Dealer()
+    p1, p2 = dealer.start_game(2)
     p1, p2 = dealer.deals([p1, p2])
     action = p1.decide_action()
     assert action["action"] in ["CALL", "BET", "FOLD", "RAISE"]
@@ -166,29 +165,23 @@ def test_player_send_action() -> None:
 
 def test_player_has_name() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    list_players = dealer.start_game([p1, p2])
-    assert p1.name is not None
+    list_players = dealer.start_game(2)
+    assert list_players[0].name is not None
 
 
 def test_different_players_have_different_names() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    list_players = dealer.start_game([p1, p2])
+    list_players = dealer.start_game(2)
+    p1, p2 = list_players
     assert p1.name != p2.name
 
 
 def test_player_action_response_is_dict() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
-    list_players = [p1, p2, p3]
-    dealer.start_game(list_players)
+    list_players = dealer.start_game(3)
     round = dealer.start_round(list_players)
     state = dealer.update_state(round)
+    p1, p2, p3 = list_players
     action = p1.send_action(state)
     assert isinstance(action, dict)
 
@@ -268,11 +261,9 @@ def test_player_hand_has_class_hand() -> None:
 
 def test_round_adds_player_state() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
-    dealer.start_game([p1, p2, p3])
-    round = dealer.start_round([p1, p2, p3])
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
     state = dealer.get_state(round)
+    p1, p2, p3 = list_players
     action = p1.decide_action(state)
     assert p1.send_action(state) is not None
