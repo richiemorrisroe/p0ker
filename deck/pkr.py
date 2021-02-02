@@ -696,10 +696,10 @@ class Dealer:
     def get_state(self, Round: Round):
         return self.update_state(Round)
 
-    def is_valid_action(action, state=None) -> bool:
+    def is_valid_action(self, action, state=None) -> bool:
         if not state:
-            state = self.update_state()
-        if action=='CALL' and amount==0:
+            state = self.update_state(self.round)
+        if action=='CALL' and state["amount"]==0:
             return False
         else:
             return True
