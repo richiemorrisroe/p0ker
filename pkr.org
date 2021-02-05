@@ -1815,7 +1815,7 @@ def test_fuzz_Dealer(name, ante) -> None:
 #     dealer = deck.pkr.Dealer(name=name, ante=ante)
 #     players = dealer.start_game(integers)
 
-
+@pytest.mark.slow
 @given(name=st.just("poker"), ante=st.just(100), players=st.lists(st.builds(Player)))
 def test_fuzz_Dealer_start_round(name, ante, players: List[Player]) -> None:
     dealer = deck.pkr.Dealer(name=name, ante=ante)
