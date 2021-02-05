@@ -1,7 +1,12 @@
+import pytest
+from typing import List
+
+from hypothesis import given, assume, strategies as st
+
+
 import deck.pkr
 from deck.pkr import Hand, Card, Player, Round
-from hypothesis import given, assume, strategies as st
-from typing import List
+
 
 
 @given(rank=st.sampled_from(deck.pkr.Rank), suit=st.sampled_from(deck.pkr.Suit))
