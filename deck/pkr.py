@@ -406,6 +406,9 @@ class PlayerNamer:
         name = self.names.pop(rand_choice)
         return name
 
+class Action:
+    def __init__(self):
+        pass
 
 class Player:
     def __init__(self, hand=None, stash=None):

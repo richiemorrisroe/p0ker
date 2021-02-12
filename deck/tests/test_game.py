@@ -63,37 +63,7 @@ def test_round_update_state() -> None:
     assert state2 != state1
 
 
-def test_dealer_updates_state_after_action() -> None:
-    dealer = Dealer()
-    list_players = dealer.start_game(n_players = 3)
-    round = dealer.start_round(list_players)
-    state = round.update_state()
-    dealer.take_action(list_players[0])
-    state2 = dealer.get_state(round)
-    assert len(state2['actions']) > len(state['actions'])
 
-
-def test_dealer_associates_player_name_with_action() -> None:
-    dealer = Dealer()
-    list_players = dealer.start_game(3)
-    round = dealer.start_round(list_players)
-    state_0 = round.update_state()
-    dealer.take_action(list_players[0])
-    state_1 = round.update_state()
-    p1_name = list_players[0].name
-    assert state_1['actions'][0]['name'] == p1_name
-    # assert state_1['action'][p1_name] is not None
-
-    
-def test_dealer_can_take_one_action_from_all_players() -> None:
-    dealer = Dealer()
-    list_players = dealer.start_game(3)
-    round = dealer.start_round(list_players)
-    for player in list_players:
-        dealer.take_action(player)
-    state = dealer.update_state(round)
-    # assert state is None
-    assert len(state['actions']) == len(list_players)
 
 
 def test_dealer_ask_for_action() -> None:

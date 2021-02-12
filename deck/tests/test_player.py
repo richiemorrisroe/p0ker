@@ -122,14 +122,7 @@ def test_player_stash_default_correct() -> None:
     assert player.stash == 5000
 
 
-def test_player_decide_action() -> None:
-    hand = random_hand()
-    player = Player(hand=hand)
-    p2 = Player()
-    dealer = Dealer()
-    round = dealer.start_round([player, p2])
-    state = dealer.get_state(round)
-    assert player.decide_action(state) is not None
+
 
 
 def test_player_cannot_go_into_debt() -> None:
@@ -155,12 +148,7 @@ def test_player_add_card_to_hand() -> None:
     assert len(p.hand) == 1
 
 
-def test_player_send_action() -> None:
-    dealer = Dealer()
-    p1, p2 = dealer.start_game(2)
-    p1, p2 = dealer.deals([p1, p2])
-    action = p1.decide_action()
-    assert action["action"] in ["CALL", "BET", "FOLD", "RAISE"]
+
 
 
 def test_player_has_name() -> None:
@@ -176,14 +164,7 @@ def test_different_players_have_different_names() -> None:
     assert p1.name != p2.name
 
 
-def test_player_action_response_is_dict() -> None:
-    dealer = Dealer()
-    list_players = dealer.start_game(3)
-    round = dealer.start_round(list_players)
-    state = dealer.update_state(round)
-    p1, p2, p3 = list_players
-    action = p1.send_action(state)
-    assert isinstance(action, dict)
+
 
 
 def test_player_can_have_predetermined_hand() -> None:
