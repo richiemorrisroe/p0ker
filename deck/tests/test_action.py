@@ -1,3 +1,7 @@
+import pytest
+
+from deck.pkr import random_hand, Player, Dealer, Action
+
 def test_player_decide_action() -> None:
     hand = random_hand()
     player = Player(hand=hand)
@@ -54,3 +58,26 @@ def test_dealer_can_take_one_action_from_all_players() -> None:
     state = dealer.update_state(round)
     # assert state is None
     assert len(state['actions']) == len(list_players)
+
+def test_action_is_one_of_four_actions():
+    bet = Action(kind='BET', amount=100)
+    assert isinstance(bet, Action)
+
+def test_action_fold_cannot_have_an_amount_greater_than_zero():
+    wrong_fold = Action(kind='FOLD', amount=100)
+    assert not wrong_fold.is_valid()
+    
+
+
+def test_bet_must_have_an_amount_greater_than_zero():
+    wrong_bet = Action(kind='BET', amount=0)
+    assert not wrong_bet.is_valid()
+
+
+
+def test_call_must_match_maximum_bet_less_players_own_bet():
+    pass
+
+
+def test_not_all_players_can_fold():
+    pass

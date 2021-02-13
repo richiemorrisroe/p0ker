@@ -407,8 +407,18 @@ class PlayerNamer:
         return name
 
 class Action:
-    def __init__(self):
-        pass
+    def __init__(self, kind:str, amount:int):
+        
+        self.kind = kind
+        self.amount = amount
+
+    def is_valid(self) -> bool:
+        assert self.kind in ['BET', 'CALL', 'RAISE', 'FOLD']
+        if self.kind == 'BET' and self.amount==0:
+            return False
+        
+
+        
 
 class Player:
     def __init__(self, hand=None, stash=None):
