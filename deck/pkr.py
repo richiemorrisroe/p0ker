@@ -522,6 +522,7 @@ class Player:
     def decide_action(self, state=None) -> Dict[str, Union[int, str]]:
         is_call = self.call()
         is_fold = self.fold(state)
+        print("score is {score}".format(score=self.score))
         if is_fold:
             return Action(kind="FOLD", amount = 0)
         if not is_fold and is_call:
@@ -555,6 +556,7 @@ class Round:
         self.num_players = len(players)
         self.min_bet = ante
         self.actions = []
+        self.turn = 0
 
     def add_to_pot(self, bet) -> None:
         self.pot += bet
@@ -572,6 +574,7 @@ class Round:
         return self.actions
 
     def set_action(self, action) -> None:
+        self.turn += 1
         self.actions.append(action)
         self.update_state()
 
@@ -598,6 +601,12 @@ class Round:
             self.min_bet = self.ante
         return self.min_bet
 
+    def calculate_valid_actions(self):
+        if self.turn == 0:
+            return [Action('CHECK', 0),
+                    Action('BET', self.ante),
+                    Action('FOLD', 0)]
+
     def update_state(self) -> Dict[str, Any]:
         sblind = self.get_blind("small")
         lblind = self.get_blind("big")
@@ -605,6 +614,7 @@ class Round:
         position = self.get_position()
         min_bet = self.get_minimum_bet()
         actions = self.get_actions()
+        valid_actions = self.calculate_valid_actions()
         return deepcopy({
             "small_blind": sblind,
             "big_blind": lblind,
@@ -612,6 +622,7 @@ class Round:
             "position": position,
             "min_bet": min_bet,
             "actions": actions,
+            "valid_actions" : valid_actions
         })
 
 
@@ -642,9 +653,10 @@ class Dealer:
         return player
 
     def __repr__(self) -> str:
-        pot = self.get_pot_value()
-        fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
-        return fstring.format(name=self.name, ante=self.ante, maxdrop=self.maxdrop)
+        pot = self.round.get_pot_value()
+        fstring = "Game({name}, ante={ante}, maxdrop={maxdrop},pot={pot})"
+        return fstring.format(name=self.name, ante=self.ante, maxdrop=self.maxdrop,
+                              pot = pot)
 
     def deals(self, players: List[Player]) -> List[Player]:
         """Takes a list of players (normally empty lists)
@@ -718,7 +730,7 @@ class Dealer:
         return self.update_state(Round)
 
     def is_valid_action(self, action, state=None) -> bool:
-        is_valid = action.is_valid()
+        is_valid = action['action'].is_valid()
         if not is_valid:
             return False
         if not state:

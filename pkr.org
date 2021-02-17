@@ -1335,6 +1335,7 @@ class Player:
     def decide_action(self, state=None) -> Dict[str, Union[int, str]]:
         is_call = self.call()
         is_fold = self.fold(state)
+        print("score is {score}".format(score=self.score))
         if is_fold:
             return Action(kind="FOLD", amount = 0)
         if not is_fold and is_call:
@@ -1368,6 +1369,7 @@ class Round:
         self.num_players = len(players)
         self.min_bet = ante
         self.actions = []
+        self.turn = 0
 
     def add_to_pot(self, bet) -> None:
         self.pot += bet
@@ -1385,6 +1387,7 @@ class Round:
         return self.actions
 
     def set_action(self, action) -> None:
+        self.turn += 1
         self.actions.append(action)
         self.update_state()
 
@@ -1411,6 +1414,12 @@ class Round:
             self.min_bet = self.ante
         return self.min_bet
 
+    def calculate_valid_actions(self):
+        if self.turn == 0:
+            return [Action('CHECK', 0),
+                    Action('BET', self.ante),
+                    Action('FOLD', 0)]
+
     def update_state(self) -> Dict[str, Any]:
         sblind = self.get_blind("small")
         lblind = self.get_blind("big")
@@ -1418,6 +1427,7 @@ class Round:
         position = self.get_position()
         min_bet = self.get_minimum_bet()
         actions = self.get_actions()
+        valid_actions = self.calculate_valid_actions()
         return deepcopy({
             "small_blind": sblind,
             "big_blind": lblind,
@@ -1425,6 +1435,7 @@ class Round:
             "position": position,
             "min_bet": min_bet,
             "actions": actions,
+            "valid_actions" : valid_actions
         })
 
 
@@ -1456,7 +1467,7 @@ class Dealer:
 
     def __repr__(self) -> str:
         pot = self.round.get_pot_value()
-        fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
+        fstring = "Game({name}, ante={ante}, maxdrop={maxdrop},pot={pot})"
         return fstring.format(name=self.name, ante=self.ante, maxdrop=self.maxdrop,
                               pot = pot)
 
@@ -1532,7 +1543,7 @@ class Dealer:
         return self.update_state(Round)
 
     def is_valid_action(self, action, state=None) -> bool:
-        is_valid = action.is_valid()
+        is_valid = action['action'].is_valid()
         if not is_valid:
             return False
         if not state:
@@ -1754,12 +1765,44 @@ def test_bet_must_have_an_amount_greater_than_zero():
 
 
 
-def test_call_must_match_maximum_bet_less_players_own_bet():
-    pass
+def test_call_cannot_have_amount_of_zero():
+    dealer = Dealer()
+    wrong_call = Action(kind='CALL', amount=0)
+    wrong_call_with_name = {'name' : 'Eveline', 'action' : wrong_call}
+    assert not dealer.is_valid_action(wrong_call_with_name)
+
 
 
 def test_not_all_players_can_fold():
     pass
+
+def test_dealer_can_provide_list_of_valid_actions():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    state = dealer.update_state(round)
+    assert state['valid_actions'] is not None
+
+
+def test_dealer_only_check_bet_and_fold_possible_for_first_player():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    state = dealer.update_state(round)
+    valid_actions = [a.action() for a in state['valid_actions']]
+    assert ['CHECK', 'BET', 'FOLD'] ==  valid_actions
+
+
+
+# def test_player_can_take_valid_action():
+#     dealer = Dealer()
+#     list_players = dealer.start_game(3)
+#     round = dealer.start_round(list_players)
+#     state = dealer.update_state(round)
+#     p1 = list_players[0]
+#     p1_action = p1.send_action(state)
+#     assert p1_action['action'] in state['valid_actions']
+    
 #+end_src
 
 #+begin_src python :tangle deck/tests/test_stats.py
@@ -2907,15 +2950,15 @@ def test_dealer_start_game_creates_n_players() -> None:
     assert len(players) == 3
 
 
-def test_dealer_can_validate_action() -> None:
-    dealer = Dealer()
-    list_players = dealer.start_game(4)
-    round = dealer.start_round(list_players)
-    first_player = list_players[0]
-    state = dealer.update_state(round)
-    action = first_player.send_action(state)
-    print(action)
-    assert dealer.is_valid_action(action) is True
+# def test_dealer_can_validate_action() -> None:
+#     dealer = Dealer()
+#     list_players = dealer.start_game(4)
+#     round = dealer.start_round(list_players)
+#     first_player = list_players[0]
+#     state = dealer.update_state(round)
+#     action = first_player.send_action(state)
+#     print(action)
+#     assert dealer.is_valid_action(action) is True
 
 
 
@@ -3071,7 +3114,7 @@ def test_round_minimum_bet_equal_to_sum_of_bets() -> None:
 **** DONE large blind
 **** DONE deal cards to players
 - Wrap up all of these functions into a start round one, which returns players with Hands
-**** send players state so they can decide action
+**** DONE send players state so they can decide action
   - have player decide on action based on state
   - internal state (cards held)
   - external state (position, pot value, actions of other players)
@@ -3084,9 +3127,9 @@ def test_round_minimum_bet_equal_to_sum_of_bets() -> None:
 ****** Change player function names to calculate_bet, call etc
 ****** Make use of state object to decide action
 ***** Dealer Updates
-****** Add dealer get action function
+****** DONE Add dealer get action function
 ****** Add dealer logic for round structure
-****** Add dealing of cards to start_round
+****** DONE Add dealing of cards to start_round
 ***** Deck Object
 ****** Move discard pile to deck object
 ****** Move replenish_cards and update_cards to dealer object

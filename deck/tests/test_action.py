@@ -75,9 +75,40 @@ def test_bet_must_have_an_amount_greater_than_zero():
 
 
 
-def test_call_must_match_maximum_bet_less_players_own_bet():
-    pass
+def test_call_cannot_have_amount_of_zero():
+    dealer = Dealer()
+    wrong_call = Action(kind='CALL', amount=0)
+    wrong_call_with_name = {'name' : 'Eveline', 'action' : wrong_call}
+    assert not dealer.is_valid_action(wrong_call_with_name)
+
 
 
 def test_not_all_players_can_fold():
     pass
+
+def test_dealer_can_provide_list_of_valid_actions():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    state = dealer.update_state(round)
+    assert state['valid_actions'] is not None
+
+
+def test_dealer_only_check_bet_and_fold_possible_for_first_player():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    state = dealer.update_state(round)
+    valid_actions = [a.action() for a in state['valid_actions']]
+    assert ['CHECK', 'BET', 'FOLD'] ==  valid_actions
+
+
+
+# def test_player_can_take_valid_action():
+#     dealer = Dealer()
+#     list_players = dealer.start_game(3)
+#     round = dealer.start_round(list_players)
+#     state = dealer.update_state(round)
+#     p1 = list_players[0]
+#     p1_action = p1.send_action(state)
+#     assert p1_action['action'] in state['valid_actions']
