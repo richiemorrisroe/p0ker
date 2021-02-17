@@ -1224,11 +1224,18 @@ class Action:
         
         self.kind = kind
         self.amount = amount
+        
+    def __repr__(self):
+        return f"Action({self.kind!r}, {self.amount!r})"
+    
 
     def is_valid(self) -> bool:
         assert self.kind in ['BET', 'CALL', 'RAISE', 'FOLD']
         if self.kind == 'BET' and self.amount==0:
             return False
+
+    def action(self):
+        return self.kind
         
 
         
@@ -1329,18 +1336,19 @@ class Player:
         is_call = self.call()
         is_fold = self.fold(state)
         if is_fold:
-            return {"action": "FOLD", "amount": 0}
+            return Action(kind="FOLD", amount = 0)
         if not is_fold and is_call:
-            return {"action": "CALL", "amount": 0}
+            return Action("CALL", amount = 0)
         if self.score < 200 or self.score > 400:
-            return {"action": "CHECK", "amount": 0}
+            return Action("CHECK", amount = 0)
         else:
-            return {"action": "BET", "amount": 0}
+            return Action("BET", amount = 0)
+
 
     def send_action(self, state=None):
         action = self.decide_action(state)
         player_name = self.name
-        action = {'name' :player_name, **action}
+        action = {'name' :player_name, 'action' :action}
         return action
 
     def pay(self, amount):
@@ -1683,7 +1691,7 @@ def test_player_send_action() -> None:
     p1, p2 = dealer.start_game(2)
     p1, p2 = dealer.deals([p1, p2])
     action = p1.decide_action()
-    assert action["action"] in ["CALL", "BET", "FOLD", "RAISE"]
+    assert action.action() in ["CALL", "BET", "FOLD", "RAISE"]
 
 def test_player_action_response_is_dict() -> None:
     dealer = Dealer()
@@ -1692,7 +1700,7 @@ def test_player_action_response_is_dict() -> None:
     state = dealer.update_state(round)
     p1, p2, p3 = list_players
     action = p1.send_action(state)
-    assert isinstance(action, dict)
+    assert isinstance(action['action'], Action)
 
 def test_dealer_updates_state_after_action() -> None:
     dealer = Dealer()

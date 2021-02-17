@@ -411,11 +411,18 @@ class Action:
         
         self.kind = kind
         self.amount = amount
+        
+    def __repr__(self):
+        return f"Action({self.kind!r}, {self.amount!r})"
+    
 
     def is_valid(self) -> bool:
         assert self.kind in ['BET', 'CALL', 'RAISE', 'FOLD']
         if self.kind == 'BET' and self.amount==0:
             return False
+
+    def action(self):
+        return self.kind
         
 
         
@@ -516,18 +523,19 @@ class Player:
         is_call = self.call()
         is_fold = self.fold(state)
         if is_fold:
-            return {"action": "FOLD", "amount": 0}
+            return Action(kind="FOLD", amount = 0)
         if not is_fold and is_call:
-            return {"action": "CALL", "amount": 0}
+            return Action("CALL", amount = 0)
         if self.score < 200 or self.score > 400:
-            return {"action": "CHECK", "amount": 0}
+            return Action("CHECK", amount = 0)
         else:
-            return {"action": "BET", "amount": 0}
+            return Action("BET", amount = 0)
+
 
     def send_action(self, state=None):
         action = self.decide_action(state)
         player_name = self.name
-        action = {'name' :player_name, **action}
+        action = {'name' :player_name, 'action' :action}
         return action
 
     def pay(self, amount):

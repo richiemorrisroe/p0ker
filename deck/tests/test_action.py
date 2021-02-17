@@ -16,7 +16,7 @@ def test_player_send_action() -> None:
     p1, p2 = dealer.start_game(2)
     p1, p2 = dealer.deals([p1, p2])
     action = p1.decide_action()
-    assert action["action"] in ["CALL", "BET", "FOLD", "RAISE"]
+    assert action.action() in ["CALL", "BET", "FOLD", "RAISE"]
 
 def test_player_action_response_is_dict() -> None:
     dealer = Dealer()
@@ -25,7 +25,7 @@ def test_player_action_response_is_dict() -> None:
     state = dealer.update_state(round)
     p1, p2, p3 = list_players
     action = p1.send_action(state)
-    assert isinstance(action, dict)
+    assert isinstance(action['action'], Action)
 
 def test_dealer_updates_state_after_action() -> None:
     dealer = Dealer()
