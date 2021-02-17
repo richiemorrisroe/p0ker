@@ -1455,9 +1455,10 @@ class Dealer:
         return player
 
     def __repr__(self) -> str:
-        pot = self.get_pot_value()
+        pot = self.round.get_pot_value()
         fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
-        return fstring.format(name=self.name, ante=self.ante, maxdrop=self.maxdrop)
+        return fstring.format(name=self.name, ante=self.ante, maxdrop=self.maxdrop,
+                              pot = pot)
 
     def deals(self, players: List[Player]) -> List[Player]:
         """Takes a list of players (normally empty lists)
@@ -1531,6 +1532,9 @@ class Dealer:
         return self.update_state(Round)
 
     def is_valid_action(self, action, state=None) -> bool:
+        is_valid = action.is_valid()
+        if not is_valid:
+            return False
         if not state:
             state = self.update_state(self.round)
         if action=='CALL' and state["amount"]==0:
@@ -2910,6 +2914,7 @@ def test_dealer_can_validate_action() -> None:
     first_player = list_players[0]
     state = dealer.update_state(round)
     action = first_player.send_action(state)
+    print(action)
     assert dealer.is_valid_action(action) is True
 
 

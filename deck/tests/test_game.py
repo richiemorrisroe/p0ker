@@ -128,4 +128,5 @@ def test_dealer_can_validate_action() -> None:
     first_player = list_players[0]
     state = dealer.update_state(round)
     action = first_player.send_action(state)
+    print(action)
     assert dealer.is_valid_action(action) is True
