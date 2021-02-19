@@ -589,23 +589,13 @@ class Round:
         self.actions.append(action)
         self.update_state()
 
-    def get_blind(self, blind_type):
-        if blind_type == "small":
-            return self.ante
-        if blind_type == "big":
-            return self.ante * 2
-        else:
-            raise NotImplementedError
 
     def get_blinds(self, players: List[Player]) -> List[Player]:
-        small_blind_pos = 0
-        big_blind_pos = 1
-        small_blind = self.get_blind("small")
-        big_blind = self.get_blind("big")
-        sb = players[small_blind_pos].pay(small_blind)
-        bb = players[big_blind_pos].pay(big_blind)
-        self.add_to_pot(bb + sb)
+        pot = 0
+        for player in players:
+            self.add_to_pot(player.pay(self.ante))
         return players
+
 
     def get_minimum_bet(self):
         if not self.min_bet:
@@ -620,16 +610,12 @@ class Round:
         
 
     def update_state(self) -> Dict[str, Any]:
-        sblind = self.get_blind("small")
-        lblind = self.get_blind("big")
         potval = self.get_pot_value()
         position = self.get_position()
         min_bet = self.get_minimum_bet()
         actions = self.get_actions()
         valid_actions:List[Action] = self.calculate_valid_actions()
         return deepcopy({
-            "small_blind": sblind,
-            "big_blind": lblind,
             "pot_value": potval,
             "position": position,
             "min_bet": min_bet,

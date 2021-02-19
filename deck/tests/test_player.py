@@ -136,9 +136,9 @@ def test_player_can_pay() -> None:
     p2 = Player()
     dealer = Dealer()
     round = dealer.start_round([p1, p2])
-    small_blind = round.get_blind("small")
-    pay_blind = p1.pay(small_blind)
-    assert pay_blind == small_blind
+    ante = dealer.ante
+    pay_blind = p1.pay(ante)
+    assert pay_blind == ante
 
 
 def test_player_add_card_to_hand() -> None:

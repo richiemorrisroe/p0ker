@@ -16,16 +16,7 @@ def test_round_exists() -> None:
 
 
 
-def test_dealer_set_blind() -> None:
-    dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    round = dealer.start_round([p1, p2])
-    small_blind = round.get_blind('small')
-    big_blind = round.get_blind('big')
-    assert big_blind > small_blind
-
-def test_round_get_blind() -> None:
+def test_round_get_blinds() -> None:
     dealer = Dealer()
     p1 = Player()
     p2 = Player()
