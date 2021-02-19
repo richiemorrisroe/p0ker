@@ -585,7 +585,7 @@ class Round:
         return self.actions
 
     def set_action(self, action) -> None:
-        self.turn += 1
+        self.set_position(self.get_position()+1)
         self.actions.append(action)
         self.update_state()
 
@@ -598,15 +598,39 @@ class Round:
 
 
     def get_minimum_bet(self):
-        if not self.min_bet:
-            self.min_bet = self.ante
-        return self.min_bet
+        if self.turn == 0:
+            min_bet = self.ante
+        else:
+            min_bet = self.min_bet
+        print("min_bet is {min_bet}".format(min_bet=min_bet))
+        actions = self.get_actions()
+        if actions:
+            sum_bets = min_bet
+            if len(actions) == 1:
+                action = actions[0]
+                if action == 'BET':
+                    sum_bets += action.amount
+            if len(actions) > 1:
+                for action, amount in actions['action']:
+                    print(f"action is {action} and amount is {amount}")
+                    if action == 'BET':
+                        sum_bets += amount
+            print(f"sum_bet is {sum_bets}")
+            min_bet = sum_bets
+        self.min_bet = min_bet
+        return min_bet
 
     def calculate_valid_actions(self):
-        if self.turn == 0:
+        if self.get_position() == 0:
             return [Action('CHECK', 0),
                     Action('BET', self.ante),
                     Action('FOLD', 0)]
+        actions = [action['action'].action() for action in self.get_actions()]
+        print(actions)
+        if any(actions) == 'BET':
+            return [Action('BET', self.ante),
+                    Action('FOLD', 0),
+                    Action('RAISE', self.ante * 2)]
         
 
     def update_state(self) -> Dict[str, Any]:

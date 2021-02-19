@@ -137,6 +137,7 @@ def test_round_can_update_minimum_bet():
     action = p1.send_action(state=state, action = Action("BET", 100))
     dealer.accept_action(action)
     state = dealer.update_state(round)
+    print(state)
     action2 = p2.send_action(state = state, action = Action("BET", 100))
     state = dealer.update_state(round)
     assert state['min_bet'] == 200
