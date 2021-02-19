@@ -1,9 +1,10 @@
 from copy import deepcopy
 from enum import Enum, IntEnum
+from pprint import pprint
 import random as random
 
 
-from random import shuffle
+from random import shuffle, sample
 import math as math
 import random as random
 from typing import Union, List, Dict, Tuple, Optional, Set, Any
@@ -417,9 +418,15 @@ class Action:
     
 
     def is_valid(self) -> bool:
-        assert self.kind in ['BET', 'CALL', 'RAISE', 'FOLD']
+        assert self.kind in ['BET', 'CALL', 'RAISE', 'FOLD', 'CHECK']
         if self.kind == 'BET' and self.amount==0:
             return False
+        if self.kind == 'FOLD' and self.amount > 0:
+            return False
+        if self.kind == 'CALL' and self.amount == 0:
+            return False
+        else:
+            return True
 
     def action(self):
         return self.kind
@@ -519,24 +526,28 @@ class Player:
         else:
             return False
 
-    def decide_action(self, state=None) -> Dict[str, Union[int, str]]:
-        is_call = self.call()
-        is_fold = self.fold(state)
-        print("score is {score}".format(score=self.score))
-        if is_fold:
-            return Action(kind="FOLD", amount = 0)
-        if not is_fold and is_call:
-            return Action("CALL", amount = 0)
-        if self.score < 200 or self.score > 400:
-            return Action("CHECK", amount = 0)
-        else:
-            return Action("BET", amount = 0)
+    def decide_action(self, state:Dict[str, Any]) -> Action:
+        print(state)
+        valid_actions = state['valid_actions']
+        print(type(valid_actions))
+        action = deepcopy(sample(valid_actions, 1))
+        print(action)
+        action_pop = action.pop()
+        actual_action = action_pop.action()
+        action = actual_action
+        if action=='BET':
+            amount = random.randint(state['min_bet'], state['min_bet']+ 100)
+        if action=='FOLD' or action=='CHECK':
+            amount = 0
+        return Action(action, amount)
+        
 
 
-    def send_action(self, state=None):
-        action = self.decide_action(state)
+    def send_action(self, state=None, action:Action=None):
+        if not action:
+            action = self.decide_action(state)
         player_name = self.name
-        action = {'name' :player_name, 'action' :action}
+        action = {'name' :player_name, 'action' : action}
         return action
 
     def pay(self, amount):
@@ -555,7 +566,7 @@ class Round:
         self.ante = ante
         self.num_players = len(players)
         self.min_bet = ante
-        self.actions = []
+        self.actions:List[Action] = []
         self.turn = 0
 
     def add_to_pot(self, bet) -> None:
@@ -606,6 +617,7 @@ class Round:
             return [Action('CHECK', 0),
                     Action('BET', self.ante),
                     Action('FOLD', 0)]
+        
 
     def update_state(self) -> Dict[str, Any]:
         sblind = self.get_blind("small")
@@ -614,7 +626,7 @@ class Round:
         position = self.get_position()
         min_bet = self.get_minimum_bet()
         actions = self.get_actions()
-        valid_actions = self.calculate_valid_actions()
+        valid_actions:List[Action] = self.calculate_valid_actions()
         return deepcopy({
             "small_blind": sblind,
             "big_blind": lblind,
@@ -635,7 +647,7 @@ class Dealer:
         self.deck = deck
         self.round = None
         self.discard_pile = []
-        self.round_count = None
+        self.round_count = 0
         self.player_namer = PlayerNamer()
 
     def start_game(self, n_players:int) -> List[Player]:
@@ -679,8 +691,15 @@ class Dealer:
         return player
 
     def take_action(self, player) -> None:
-        state = self.round.update_state()
+        state = self.update_state(self.round)
         action = player.send_action(state)
+        if self.is_valid_action(action):
+            self.accept_action(action)
+        else:
+            raise ValueError("action is not valid")
+    
+
+    def accept_action(self, action) -> None:
         self.round.set_action(action)
 
     def compare(self, players):

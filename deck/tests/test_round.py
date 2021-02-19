@@ -1,4 +1,4 @@
-from deck.pkr import Round, Dealer, Player, random_choice
+from deck.pkr import Round, Dealer, Player, random_choice, Action
 
 
 def test_dealer_round_is_round() -> None:
@@ -135,3 +135,27 @@ def test_round_minimum_bet_equal_to_sum_of_bets() -> None:
     p2 = Player()
     p3 = Player()
     round  = dealer.start_round([p1, p2, p3])
+
+def test_round_can_update_minimum_bet():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    state = dealer.update_state(round)
+    p1, p2, p3 = list_players
+    print(state)
+    action = p1.send_action(state=state, action = Action("BET", 100))
+    dealer.accept_action(action)
+    state = dealer.update_state(round)
+    action2 = p2.send_action(state = state, action = Action("BET", 100))
+    state = dealer.update_state(round)
+    assert state['min_bet'] == 200
+
+def test_player_can_pass_in_action_argument_to_send_action():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    state = dealer.update_state(round)
+    p1, _, _ = list_players
+    # print(state)
+    action = p1.send_action(state = state, action=Action("BET", 100))
+    assert action['action'].action() == "BET" and action['action'].amount == 100

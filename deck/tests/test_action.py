@@ -14,9 +14,10 @@ def test_player_decide_action() -> None:
 def test_player_send_action() -> None:
     dealer = Dealer()
     p1, p2 = dealer.start_game(2)
-    p1, p2 = dealer.deals([p1, p2])
-    action = p1.decide_action()
-    assert action.action() in ["CALL", "BET", "FOLD", "RAISE"]
+    round = dealer.start_round([p1, p2])
+    state = dealer.update_state(round)
+    action = p1.decide_action(state)
+    assert action.action() in ["CALL", "BET", "FOLD", "RAISE", "CHECK"]
 
 def test_player_action_response_is_dict() -> None:
     dealer = Dealer()
@@ -49,15 +50,15 @@ def test_dealer_associates_player_name_with_action() -> None:
     # assert state_1['action'][p1_name] is not None
 
     
-def test_dealer_can_take_one_action_from_all_players() -> None:
-    dealer = Dealer()
-    list_players = dealer.start_game(3)
-    round = dealer.start_round(list_players)
-    for player in list_players:
-        dealer.take_action(player)
-    state = dealer.update_state(round)
-    # assert state is None
-    assert len(state['actions']) == len(list_players)
+# def test_dealer_can_take_one_action_from_all_players() -> None:
+#     dealer = Dealer()
+#     list_players = dealer.start_game(3)
+#     round = dealer.start_round(list_players)
+#     for player in list_players:
+#         dealer.take_action(player)
+#         state = dealer.update_state(round)
+#     # assert state is None
+#     assert len(state['actions']) == len(list_players)
 
 def test_action_is_one_of_four_actions():
     bet = Action(kind='BET', amount=100)
@@ -104,11 +105,14 @@ def test_dealer_only_check_bet_and_fold_possible_for_first_player():
 
 
 
-# def test_player_can_take_valid_action():
-#     dealer = Dealer()
-#     list_players = dealer.start_game(3)
-#     round = dealer.start_round(list_players)
-#     state = dealer.update_state(round)
-#     p1 = list_players[0]
-#     p1_action = p1.send_action(state)
-#     assert p1_action['action'] in state['valid_actions']
+
+
+def test_player_can_only_take_a_valid_action():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    state = dealer.update_state(round)
+    p1 = list_players[0]
+    p1_action = p1.send_action(state)
+    val_act = [a.action() for a in state['valid_actions']]
+    assert p1_action['action'].action() in val_act
