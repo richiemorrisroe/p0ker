@@ -598,11 +598,14 @@ class Round:
             raise NotImplementedError
 
     def get_blinds(self, players: List[Player]) -> List[Player]:
-        pot = 0
-        for player in players:
-            self.add_to_pot(player.pay(self.ante))
+        small_blind_pos = 0
+        big_blind_pos = 1
+        small_blind = self.get_blind("small")
+        big_blind = self.get_blind("big")
+        sb = players[small_blind_pos].pay(small_blind)
+        bb = players[big_blind_pos].pay(big_blind)
+        self.add_to_pot(bb + sb)
         return players
-
 
     def get_minimum_bet(self):
         if not self.min_bet:

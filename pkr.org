@@ -1411,11 +1411,14 @@ class Round:
             raise NotImplementedError
 
     def get_blinds(self, players: List[Player]) -> List[Player]:
-        pot = 0
-        for player in players:
-            self.add_to_pot(player.pay(self.ante))
+        small_blind_pos = 0
+        big_blind_pos = 1
+        small_blind = self.get_blind("small")
+        big_blind = self.get_blind("big")
+        sb = players[small_blind_pos].pay(small_blind)
+        bb = players[big_blind_pos].pay(big_blind)
+        self.add_to_pot(bb + sb)
         return players
-
 
     def get_minimum_bet(self):
         if not self.min_bet:
@@ -2865,10 +2868,9 @@ def test_dealer_pot_is_zero() -> None:
     dealer = Dealer()
     p1 = Player()
     p2 = Player()
-    list_players = [p1, p2]
-    round = dealer.start_round(list_players)
+    round = dealer.start_round([p1, p2])
     pot = round.get_pot_value()
-    assert pot == dealer.ante * len(list_players)
+    assert pot == 300
 
 
 def test_dealer_deal_cards() -> None:

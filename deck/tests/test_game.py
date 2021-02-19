@@ -16,10 +16,9 @@ def test_dealer_pot_is_zero() -> None:
     dealer = Dealer()
     p1 = Player()
     p2 = Player()
-    list_players = [p1, p2]
-    round = dealer.start_round(list_players)
+    round = dealer.start_round([p1, p2])
     pot = round.get_pot_value()
-    assert pot == dealer.ante * len(list_players)
+    assert pot == 300
 
 
 def test_dealer_deal_cards() -> None:
