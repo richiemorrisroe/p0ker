@@ -625,9 +625,10 @@ class Round:
             return [Action('CHECK', 0),
                     Action('BET', self.ante),
                     Action('FOLD', 0)]
-        actions = [action['action'].action() for action in self.get_actions()]
+        print(self.get_actions())
+        actions = {action:amount for action, amount in self.get_actions()}
         print(actions)
-        if any(actions) == 'BET':
+        if any(actions.keys()) == 'BET':
             return [Action('BET', self.ante),
                     Action('FOLD', 0),
                     Action('RAISE', self.ante * 2)]
