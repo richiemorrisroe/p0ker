@@ -565,7 +565,7 @@ class Round:
         self.position = 0
         self.ante = ante
         self.num_players = len(players)
-        self.min_bet = ante
+        self.min_bet = 0
         self.actions:List[Action] = []
         self.turn = 0
 
