@@ -5,7 +5,7 @@ from hypothesis import given, assume, strategies as st
 
 
 import deck.pkr
-from deck.pkr import Hand, Card, Player, Round
+from deck.pkr import Hand, Card, Player, Round, random_hand
 
 
 
@@ -20,13 +20,13 @@ def test_fuzz_Hand(cards) -> None:
     deck.pkr.Hand(cards=cards)
 
 
-@given(hand=st.builds(Hand))
+@given(hand=st.builds(random_hand))
 def test_fuzz_discard_cards(hand: Hand) -> None:
     assume(len(hand) <= 5)
     deck.pkr.discard_cards(hand=hand)
 
 
-@given(hand=st.builds(Hand))
+@given(hand=st.builds(random_hand))
 def test_fuzz_score_hand(hand) -> None:
     assume(len(hand) <= 5)
     hand.score()

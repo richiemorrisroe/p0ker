@@ -82,7 +82,7 @@ class Card:
 class Hand:
     """A hand holds cards from a particular deck"""
 
-    def __init__(self, cards: Set[Card]) -> None:
+    def __init__(self, cards: List[Card]) -> None:
         all_cards = [x for x in cards if isinstance(x, Card)]
         cards_set = set(cards)
         if len(all_cards) != len(cards):

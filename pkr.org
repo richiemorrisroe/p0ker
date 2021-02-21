@@ -895,7 +895,7 @@ class Card:
 class Hand:
     """A hand holds cards from a particular deck"""
 
-    def __init__(self, cards: Set[Card]) -> None:
+    def __init__(self, cards: List[Card]) -> None:
         all_cards = [x for x in cards if isinstance(x, Card)]
         cards_set = set(cards)
         if len(all_cards) != len(cards):
@@ -1971,7 +1971,7 @@ from hypothesis import given, assume, strategies as st
 
 
 import deck.pkr
-from deck.pkr import Hand, Card, Player, Round
+from deck.pkr import Hand, Card, Player, Round, random_hand
 
 
 
@@ -1986,13 +1986,13 @@ def test_fuzz_Hand(cards) -> None:
     deck.pkr.Hand(cards=cards)
 
 
-@given(hand=st.builds(Hand))
+@given(hand=st.builds(random_hand))
 def test_fuzz_discard_cards(hand: Hand) -> None:
     assume(len(hand) <= 5)
     deck.pkr.discard_cards(hand=hand)
 
 
-@given(hand=st.builds(Hand))
+@given(hand=st.builds(random_hand))
 def test_fuzz_score_hand(hand) -> None:
     assume(len(hand) <= 5)
     hand.score()
@@ -3162,7 +3162,7 @@ def test_player_can_pass_in_action_argument_to_send_action():
 **** DONE small blind
 **** DONE large blind
 **** DONE deal cards to players
-- Wrap up all of these functions into a start round one, which returns players with Hands
+***** DONE Wrap up all of these functions into a start round one, which returns players with Hands
 **** DONE send players state so they can decide action
   - have player decide on action based on state
   - internal state (cards held)
@@ -3172,28 +3172,46 @@ def test_player_can_pass_in_action_argument_to_send_action():
 - also have a bunch of functions that act on hand objects
 - should join them together in holy matrimony/encapsulation
 ***** TODO deal_cards apparently isn't used anywhere, delete
-***** Player Updates
-****** Change player function names to calculate_bet, call etc
-****** Make use of state object to decide action
-***** Dealer Updates
-****** DONE Add dealer get action function
-****** Add dealer logic for round structure
-****** DONE Add dealing of cards to start_round
-***** Deck Object
-****** Move discard pile to deck object
-****** Move replenish_cards and update_cards to dealer object
-***** Round Structure
-****** bet/call/fold in order
-****** discard cards
-****** get new cards
-****** bet/call/fold in order
-****** finish round
-  - award pot
-  - reset deck and cards
-  - log player/dealer state
+**** Player Updates
+***** Change player function names to calculate_bet, call etc
+***** DONE Make use of state object to decide action
+**** Dealer Updates
+***** DONE Add dealer get action function
+***** Add dealer logic for round structure
+***** DONE Add dealing of cards to start_round
+**** Deck Object
+***** Move discard pile to deck object
+***** Move replenish_cards and update_cards to dealer object
+**** Round Structure
+***** bet/call/fold in order
+***** discard cards
+***** get new cards
+***** bet/call/fold in order
+***** finish round
+ - award pot
+ - reset deck and cards
+ - log player/dealer state
+
+**** Card API
+- change equality function to make 10H and 10S equal
+- Use this to simplify logic in hand scoring etc
+- note that gt method and eq method are very different (gt only uses
+  rank)
+**** Hand API
+
+- Fix Set[Card] issue
+- I only added this to make hypothesis work, but it's ugly and stupid
+- Fix the hypothesis test so that the type can be List[Card]
+- move logic in __init__ to separate function (validate_hand)
+- Fix hand equality 
+- If same cards are in different order, will return False incorrectly
+- in general, it's impossible for two hands to be equal as it requires
+  the exact same cards
+- This is clearly impossible
+- make sure that __iter__ and __next__ actually work (they look kinda weird)
 
 
-** Design Thoughts
+** Design Thoughts :noexport:
 
 - I can see that the deal_cards API is not great
 - I have to do lots of jiggery-pokery to actually run the test
@@ -3246,3 +3264,4 @@ I should figure out how to do this for R and other languages.
 # org-src-preserve-indentation: t
 # org-edit-src-content-indentation: 4
 # End:
+
