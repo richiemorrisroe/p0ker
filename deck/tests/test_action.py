@@ -82,10 +82,26 @@ def test_call_cannot_have_amount_of_zero():
     wrong_call_with_name = {'name' : 'Eveline', 'action' : wrong_call}
     assert not dealer.is_valid_action(wrong_call_with_name)
 
-
+def test_dealer_take_action_can_be_passed_an_action():
+    dealer = Dealer()
+    p1, p2 = dealer.start_game(2)
+    round = dealer.start_round([p1, p2])
+    action = Action("FOLD", 0)
+    print(action)
+    dealer.take_action(player=p1, action=action)
+    
+    
 
 def test_not_all_players_can_fold():
-    pass
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    p1, p2, p3 = list_players
+    dealer.take_action(p1, Action("FOLD", 0))
+    dealer.take_action(p2, Action("FOLD", 0))
+    state = dealer.update_state()
+    assert state['valid_actions'] is not None
+    
 
 def test_dealer_can_provide_list_of_valid_actions():
     dealer = Dealer()

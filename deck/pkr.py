@@ -602,8 +602,9 @@ class Round:
             min_bet = self.ante
         else:
             min_bet = self.min_bet
-        print("min_bet is {min_bet}".format(min_bet=min_bet))
+        
         actions = self.get_actions()
+        
         if actions:
             sum_bets = min_bet
             if len(actions) == 1:
@@ -611,6 +612,7 @@ class Round:
                 if action == 'BET':
                     sum_bets += action.amount
             if len(actions) > 1:
+                print(actions)
                 for action, amount in actions['action']:
                     print(f"action is {action} and amount is {amount}")
                     if action == 'BET':
@@ -701,9 +703,14 @@ class Dealer:
         self.deck = deck
         return player
 
-    def take_action(self, player) -> None:
+    def take_action(self, player, action=None) -> None:
         state = self.update_state(self.round)
-        action = player.send_action(state)
+        if not action:
+            
+            action = player.send_action(state)
+        else:
+            action = player.send_action(state, action)
+        
         if self.is_valid_action(action):
             self.accept_action(action)
         else:
