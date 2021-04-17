@@ -92,15 +92,15 @@ def test_dealer_take_action_can_be_passed_an_action():
     
     
 
-def test_not_all_players_can_fold():
-    dealer = Dealer()
-    list_players = dealer.start_game(3)
-    round = dealer.start_round(list_players)
-    p1, p2, p3 = list_players
-    dealer.take_action(p1, Action("FOLD", 0))
-    dealer.take_action(p2, Action("FOLD", 0))
-    state = dealer.update_state()
-    assert state['valid_actions'] is not None
+# def test_not_all_players_can_fold():
+#     dealer = Dealer()
+#     list_players = dealer.start_game(3)
+#     round = dealer.start_round(list_players)
+#     p1, p2, p3 = list_players
+#     dealer.take_action(p1, Action("FOLD", 0))
+#     dealer.take_action(p2, Action("FOLD", 0))
+#     state = dealer.update_state()
+#     assert state['valid_actions'] is not None
     
 
 def test_dealer_can_provide_list_of_valid_actions():
