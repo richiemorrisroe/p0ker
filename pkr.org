@@ -1229,7 +1229,15 @@ class Action:
         
     def __repr__(self):
         return f"Action({self.name!r}, {self.kind!r}, {self.amount!r})"
-    
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, name):
+        if not self.name:
+            self.name = name
+        else:
+            raise ValueError("cannot overwrite name")
 
     def is_valid(self) -> bool:
         assert self.kind in ['BET', 'CALL', 'RAISE', 'FOLD', 'CHECK']
@@ -1746,6 +1754,21 @@ def test_player_send_action() -> None:
     state = dealer.update_state(round)
     action = p1.decide_action(state)
     assert action.action() in ["CALL", "BET", "FOLD", "RAISE", "CHECK"]
+
+def test_action_can_get_name():
+    action = Action("FOLD", 0, "Richie")
+    assert action.get_name() == "Richie"
+
+def test_action_can_set_name():
+    action = Action("FOLD", 0, None)
+    action.set_name("Richie")
+    assert action.get_name() == "Richie"
+
+def test_action_cannot_set_name_if_not_none():
+    action = Action("FOLD", 0, "richie")
+    with pytest.raises(ValueError):
+        action.set_name("Eveline")
+
 
 def test_player_action_response_is_dict() -> None:
     dealer = Dealer()

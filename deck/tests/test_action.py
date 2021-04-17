@@ -19,6 +19,21 @@ def test_player_send_action() -> None:
     action = p1.decide_action(state)
     assert action.action() in ["CALL", "BET", "FOLD", "RAISE", "CHECK"]
 
+def test_action_can_get_name():
+    action = Action("FOLD", 0, "Richie")
+    assert action.get_name() == "Richie"
+
+def test_action_can_set_name():
+    action = Action("FOLD", 0, None)
+    action.set_name("Richie")
+    assert action.get_name() == "Richie"
+
+def test_action_cannot_set_name_if_not_none():
+    action = Action("FOLD", 0, "richie")
+    with pytest.raises(ValueError):
+        action.set_name("Eveline")
+
+
 def test_player_action_response_is_dict() -> None:
     dealer = Dealer()
     list_players = dealer.start_game(3)

@@ -416,7 +416,15 @@ class Action:
         
     def __repr__(self):
         return f"Action({self.name!r}, {self.kind!r}, {self.amount!r})"
-    
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, name):
+        if not self.name:
+            self.name = name
+        else:
+            raise ValueError("cannot overwrite name")
 
     def is_valid(self) -> bool:
         assert self.kind in ['BET', 'CALL', 'RAISE', 'FOLD', 'CHECK']
