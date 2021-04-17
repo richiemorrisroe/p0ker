@@ -408,13 +408,14 @@ class PlayerNamer:
         return name
 
 class Action:
-    def __init__(self, kind:str, amount:int):
+    def __init__(self, kind:str, amount:int, name:str=None):
         
         self.kind = kind
         self.amount = amount
+        self.name = name
         
     def __repr__(self):
-        return f"Action({self.kind!r}, {self.amount!r})"
+        return f"Action({self.name!r}, {self.kind!r}, {self.amount!r})"
     
 
     def is_valid(self) -> bool:
