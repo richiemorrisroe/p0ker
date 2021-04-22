@@ -148,4 +148,4 @@ def test_player_can_pass_in_action_argument_to_send_action():
     p1, _, _ = list_players
     # print(state)
     action = p1.send_action(state = state, action=Action("BET", 100))
-    assert action['action'].action() == "BET" and action['action'].amount == 100
+    assert action.action() == "BET" and action.amount == 100

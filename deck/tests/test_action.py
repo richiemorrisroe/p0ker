@@ -19,14 +19,29 @@ def test_player_send_action() -> None:
     action = p1.decide_action(state)
     assert action.action() in ["CALL", "BET", "FOLD", "RAISE", "CHECK"]
 
-def test_player_action_response_is_dict() -> None:
+def test_action_can_get_name():
+    action = Action("FOLD", 0, "Richie")
+    assert action.get_name() == "Richie"
+
+def test_action_can_set_name():
+    action = Action("FOLD", 0, None)
+    action.set_name("Richie")
+    assert action.get_name() == "Richie"
+
+def test_action_cannot_set_name_if_not_none():
+    action = Action("FOLD", 0, "richie")
+    with pytest.raises(ValueError):
+        action.set_name("Eveline")
+
+
+def test_player_action_response_is_action() -> None:
     dealer = Dealer()
     list_players = dealer.start_game(3)
     round = dealer.start_round(list_players)
     state = dealer.update_state(round)
     p1, p2, p3 = list_players
     action = p1.send_action(state)
-    assert isinstance(action['action'], Action)
+    assert isinstance(action, Action)
 
 def test_dealer_updates_state_after_action() -> None:
     dealer = Dealer()
@@ -46,7 +61,7 @@ def test_dealer_associates_player_name_with_action() -> None:
     dealer.take_action(list_players[0])
     state_1 = round.update_state()
     p1_name = list_players[0].name
-    assert state_1['actions'][0]['name'] == p1_name
+    assert state_1['actions'][0].name == p1_name
     # assert state_1['action'][p1_name] is not None
 
     
@@ -79,8 +94,8 @@ def test_bet_must_have_an_amount_greater_than_zero():
 def test_call_cannot_have_amount_of_zero():
     dealer = Dealer()
     wrong_call = Action(kind='CALL', amount=0)
-    wrong_call_with_name = {'name' : 'Eveline', 'action' : wrong_call}
-    assert not dealer.is_valid_action(wrong_call_with_name)
+    wrong_call.set_name("Eveline")
+    assert not dealer.is_valid_action(wrong_call)
 
 def test_dealer_take_action_can_be_passed_an_action():
     dealer = Dealer()
@@ -92,15 +107,15 @@ def test_dealer_take_action_can_be_passed_an_action():
     
     
 
-def test_not_all_players_can_fold():
-    dealer = Dealer()
-    list_players = dealer.start_game(3)
-    round = dealer.start_round(list_players)
-    p1, p2, p3 = list_players
-    dealer.take_action(p1, Action("FOLD", 0))
-    dealer.take_action(p2, Action("FOLD", 0))
-    state = dealer.update_state()
-    assert state['valid_actions'] is not None
+# def test_not_all_players_can_fold():
+#     dealer = Dealer()
+#     list_players = dealer.start_game(3)
+#     round = dealer.start_round(list_players)
+#     p1, p2, p3 = list_players
+#     dealer.take_action(p1, Action("FOLD", 0))
+#     dealer.take_action(p2, Action("FOLD", 0))
+#     state = dealer.update_state()
+#     assert state['valid_actions'] is not None
     
 
 def test_dealer_can_provide_list_of_valid_actions():
@@ -131,4 +146,4 @@ def test_player_can_only_take_a_valid_action():
     p1 = list_players[0]
     p1_action = p1.send_action(state)
     val_act = [a.action() for a in state['valid_actions']]
-    assert p1_action['action'].action() in val_act
+    assert p1_action.action() in val_act

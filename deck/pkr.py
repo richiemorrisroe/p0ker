@@ -408,14 +408,23 @@ class PlayerNamer:
         return name
 
 class Action:
-    def __init__(self, kind:str, amount:int):
+    def __init__(self, kind:str, amount:int, name:str=None):
         
         self.kind = kind
         self.amount = amount
+        self.name = name
         
     def __repr__(self):
-        return f"Action({self.kind!r}, {self.amount!r})"
-    
+        return f"Action({self.name!r}, {self.kind!r}, {self.amount!r})"
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, name):
+        if not self.name:
+            self.name = name
+        else:
+            raise ValueError("cannot overwrite name")
 
     def is_valid(self) -> bool:
         assert self.kind in ['BET', 'CALL', 'RAISE', 'FOLD', 'CHECK']
@@ -430,7 +439,9 @@ class Action:
 
     def action(self):
         return self.kind
-        
+    
+    def amount(self):
+        return self.amount
 
         
 
@@ -547,7 +558,8 @@ class Player:
         if not action:
             action = self.decide_action(state)
         player_name = self.name
-        action = {'name' :player_name, 'action' : action}
+        action.set_name(player_name)
+        # action = {"name": player_name, "action" : action}
         return action
 
     def pay(self, amount):
@@ -623,17 +635,21 @@ class Round:
         return min_bet
 
     def calculate_valid_actions(self):
-        if self.get_position() == 0:
-            return [Action('CHECK', 0),
+        no_bet_state = [Action('CHECK', 0),
                     Action('BET', self.ante),
                     Action('FOLD', 0)]
-        print(self.get_actions())
-        actions = {action:amount for action, amount in self.get_actions()}
-        print(actions)
-        if any(actions.keys()) == 'BET':
-            return [Action('BET', self.ante),
+        some_bet_state = [Action('BET', self.ante+ self.min_bet),
                     Action('FOLD', 0),
                     Action('RAISE', self.ante * 2)]
+        if self.get_position() == 0:
+            return no_bet_state
+        print(self.get_actions())
+        kinds = [a.kind for a in self.get_actions()]
+        amounts = [a.amount for a in self.get_actions()]
+        actions = {kind:amount for kind, amount in zip(kinds, amounts)}
+        print(actions)
+        if any(kinds) == 'BET':
+            return some_bet_state
         
 
     def update_state(self) -> Dict[str, Any]:
@@ -767,7 +783,7 @@ class Dealer:
         return self.update_state(Round)
 
     def is_valid_action(self, action, state=None) -> bool:
-        is_valid = action['action'].is_valid()
+        is_valid = action.is_valid()
         if not is_valid:
             return False
         if not state:
