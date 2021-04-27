@@ -69,8 +69,9 @@ class Card:
     def __gt__(self, other) -> Optional[bool]:
         if self.rank > other.rank:
             return True
-        if self.rank < other.rank:
+        if self.rank <= other.rank:
             return False
+        return False
 
     def get_suit(self):
         return self.suit
@@ -284,7 +285,7 @@ class Hand:
             suits.append(card.get_suit())
         return suits
 
-def get_ranks_from_repeated_cards(reps) -> Rank:
+def get_ranks_from_repeated_cards(reps) -> List[Rank]:
     result = tuple(reps.keys())
     return result
 
