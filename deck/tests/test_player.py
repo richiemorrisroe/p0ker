@@ -132,9 +132,9 @@ def test_player_cannot_go_into_debt() -> None:
 
 
 def test_player_can_pay() -> None:
-    p1 = Player()
-    p2 = Player()
     dealer = Dealer()
+    p1, p2 = dealer.start_game(2)
+
     round = dealer.start_round([p1, p2])
     ante = dealer.ante
     pay_blind = p1.pay(ante)
@@ -186,9 +186,11 @@ def test_player_can_have_predetermined_hand() -> None:
             Card(Rank(5), Suit(3)),
         ]
     )
-    p1 = Player(hand=full_house)
-    p2 = Player(hand=twopair)
     dealer = Dealer()
+    p1, p2 = dealer.start_game(2)
+    p1.hand = full_house
+    p2.hand = twopair
+    
     round = dealer.start_round([p1, p2])
     assert p1.hand == full_house  # and p2.hand == twopair
 
@@ -203,9 +205,9 @@ def test_player_hand_has_class_hand() -> None:
             Card(Rank(8), Suit(2)),
         ]
     )
-    p1 = Player(hand=full_house)
-    p2 = Player()
     dealer = Dealer()
+    p1, p2 = dealer.start_game(2)
+    p1.hand=full_house
     round = dealer.start_round([p1, p2])
     assert isinstance(p1.hand, Hand) and isinstance(p2.hand, Hand)
 

@@ -2,11 +2,18 @@ from copy import deepcopy
 from enum import Enum, IntEnum
 import logging
 import math
-import random
 from pprint import pprint
 from random import shuffle, sample
+import random
+import sys
 from typing import Union, List, Dict, Tuple, Optional, Set, Any
 
+
+logging.basicConfig(filename = "test.log", encoding='utf-8', level=logging.INFO)
+# root = logging.getLogger()
+# handler = logging.StreamHandler(sys.stdout)
+# handler.setLevel(logging.INFO)
+# root.addHandler(handler)
 
 class Suit(Enum):
     """An enum defining the suits in a deck of playing cards"""
@@ -408,7 +415,7 @@ class PlayerNamer:
 
 class Action:
     def __init__(self, kind:str, amount:int, name:str=None):
-        
+        assert kind in ['BET', 'CALL', 'RAISE', 'FOLD', 'CHECK']
         self.kind = kind
         self.amount = amount
         self.name = name
@@ -441,6 +448,7 @@ class Action:
     
     def amount(self):
         return self.amount
+    
 
         
 
@@ -458,7 +466,7 @@ class Player:
         self.score = 0
         self.minbet = 10
         self.randnum = random.randint(0, 100)
-
+        
         ##this guarentees unique names as the names list is shared
         ##between player objects. Normally this would be a bug,
         ##it's a little tricksy
@@ -537,11 +545,11 @@ class Player:
             return False
 
     def decide_action(self, state:Dict[str, Any]) -> Action:
-        print(state)
+        logging.info(state)
         valid_actions = state['valid_actions']
-        print(type(valid_actions))
+        logging.info(type(valid_actions))
         action = deepcopy(sample(valid_actions, 1))
-        print(action)
+        logging.info(action)
         action_pop = action.pop()
         actual_action = action_pop.action()
         action = actual_action
@@ -617,18 +625,22 @@ class Round:
         actions = self.get_actions()
         
         if actions:
+            logging.warning(f"actions are {actions}")
             sum_bets = min_bet
             if len(actions) == 1:
                 action = actions[0]
                 if action == 'BET':
                     sum_bets += action.amount
+                
             if len(actions) > 1:
                 print(actions)
-                for action, amount in actions['action']:
-                    print(f"action is {action} and amount is {amount}")
+                for action in actions:
+                    kind = action.kind
+                    amount = action.amount
+                    logging.info(f"action is {kind} and amount is {amount}")
                     if action == 'BET':
                         sum_bets += amount
-            print(f"sum_bet is {sum_bets}")
+            logging.info(f"sum_bet is {sum_bets}")
             min_bet = sum_bets
         self.min_bet = min_bet
         return min_bet
@@ -646,9 +658,12 @@ class Round:
         kinds = [a.kind for a in self.get_actions()]
         amounts = [a.amount for a in self.get_actions()]
         actions = {kind:amount for kind, amount in zip(kinds, amounts)}
+        names = [a.name for a in self.get_actions()]
         print(actions)
         if any(kinds) == 'BET':
             return some_bet_state
+        if all(kinds) == 'FOLD' and self.position == self.num_players:
+            return 1
         
 
     def update_state(self) -> Dict[str, Any]:
@@ -677,6 +692,7 @@ class Dealer:
         self.discard_pile = []
         self.round_count = 0
         self.player_namer = PlayerNamer()
+        self.player_names = []
 
     def start_game(self, n_players:int) -> List[Player]:
         player_list = []
@@ -749,33 +765,24 @@ class Dealer:
         self.round = r
         players = self.round.get_blinds(players)
         players = self.deals(players)
+        names = [p.name for p in players]
         return r
 
-    def end_round(self, players: List[Player]) -> None:
+    def end_round(self, round) -> None:
+        pot = round.get_pot_value()
+        actions = round.get_actions()
+
         self.round_count += 1
 
     def take_discards(self, cards: List[Card]) -> None:
         for card in cards:
             self.discard_pile.append(card)
 
-    # def get_pot_value(self):
-    #     val = self.round.get_pot_value()
-    #     return val
-
-    # def get_blind(self, blind_type):
-    #     return self.round.get_blind(blind_type)
-
-    # def get_blinds(self, players: List[Player]) -> List[Player]:
-    #     return self.round.get_blinds(players)
-
-    # def get_position(self):
-    #     return self.round.position
-
-    # def set_position(self, position) -> None:
-    #     self.round.position = position
 
     def update_state(self, round):
         state = round.update_state()
+        if state['valid_actions'] == 'END':
+            self.end_round()
         return state
 
     def get_state(self, Round: Round):

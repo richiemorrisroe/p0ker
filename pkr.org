@@ -815,11 +815,18 @@ from copy import deepcopy
 from enum import Enum, IntEnum
 import logging
 import math
-import random
 from pprint import pprint
 from random import shuffle, sample
+import random
+import sys
 from typing import Union, List, Dict, Tuple, Optional, Set, Any
 
+
+logging.basicConfig(filename = "test.log", encoding='utf-8', level=logging.INFO)
+# root = logging.getLogger()
+# handler = logging.StreamHandler(sys.stdout)
+# handler.setLevel(logging.INFO)
+# root.addHandler(handler)
 
 class Suit(Enum):
     """An enum defining the suits in a deck of playing cards"""
@@ -1221,7 +1228,7 @@ class PlayerNamer:
 
 class Action:
     def __init__(self, kind:str, amount:int, name:str=None):
-        
+        assert kind in ['BET', 'CALL', 'RAISE', 'FOLD', 'CHECK']
         self.kind = kind
         self.amount = amount
         self.name = name
@@ -1254,6 +1261,7 @@ class Action:
     
     def amount(self):
         return self.amount
+    
 
         
 
@@ -1271,7 +1279,7 @@ class Player:
         self.score = 0
         self.minbet = 10
         self.randnum = random.randint(0, 100)
-
+        
         ##this guarentees unique names as the names list is shared
         ##between player objects. Normally this would be a bug,
         ##it's a little tricksy
@@ -1350,11 +1358,11 @@ class Player:
             return False
 
     def decide_action(self, state:Dict[str, Any]) -> Action:
-        print(state)
+        logging.info(state)
         valid_actions = state['valid_actions']
-        print(type(valid_actions))
+        logging.info(type(valid_actions))
         action = deepcopy(sample(valid_actions, 1))
-        print(action)
+        logging.info(action)
         action_pop = action.pop()
         actual_action = action_pop.action()
         action = actual_action
@@ -1430,18 +1438,22 @@ class Round:
         actions = self.get_actions()
         
         if actions:
+            logging.warning(f"actions are {actions}")
             sum_bets = min_bet
             if len(actions) == 1:
                 action = actions[0]
                 if action == 'BET':
                     sum_bets += action.amount
+                
             if len(actions) > 1:
                 print(actions)
-                for action, amount in actions['action']:
-                    print(f"action is {action} and amount is {amount}")
+                for action in actions:
+                    kind = action.kind
+                    amount = action.amount
+                    logging.info(f"action is {kind} and amount is {amount}")
                     if action == 'BET':
                         sum_bets += amount
-            print(f"sum_bet is {sum_bets}")
+            logging.info(f"sum_bet is {sum_bets}")
             min_bet = sum_bets
         self.min_bet = min_bet
         return min_bet
@@ -1459,9 +1471,12 @@ class Round:
         kinds = [a.kind for a in self.get_actions()]
         amounts = [a.amount for a in self.get_actions()]
         actions = {kind:amount for kind, amount in zip(kinds, amounts)}
+        names = [a.name for a in self.get_actions()]
         print(actions)
         if any(kinds) == 'BET':
             return some_bet_state
+        if all(kinds) == 'FOLD' and self.position == self.num_players:
+            return 1
         
 
     def update_state(self) -> Dict[str, Any]:
@@ -1490,6 +1505,7 @@ class Dealer:
         self.discard_pile = []
         self.round_count = 0
         self.player_namer = PlayerNamer()
+        self.player_names = []
 
     def start_game(self, n_players:int) -> List[Player]:
         player_list = []
@@ -1562,33 +1578,24 @@ class Dealer:
         self.round = r
         players = self.round.get_blinds(players)
         players = self.deals(players)
+        names = [p.name for p in players]
         return r
 
-    def end_round(self, players: List[Player]) -> None:
+    def end_round(self, round) -> None:
+        pot = round.get_pot_value()
+        actions = round.get_actions()
+
         self.round_count += 1
 
     def take_discards(self, cards: List[Card]) -> None:
         for card in cards:
             self.discard_pile.append(card)
 
-    # def get_pot_value(self):
-    #     val = self.round.get_pot_value()
-    #     return val
-
-    # def get_blind(self, blind_type):
-    #     return self.round.get_blind(blind_type)
-
-    # def get_blinds(self, players: List[Player]) -> List[Player]:
-    #     return self.round.get_blinds(players)
-
-    # def get_position(self):
-    #     return self.round.position
-
-    # def set_position(self, position) -> None:
-    #     self.round.position = position
 
     def update_state(self, round):
         state = round.update_state()
+        if state['valid_actions'] == 'END':
+            self.end_round()
         return state
 
     def get_state(self, Round: Round):
@@ -1744,14 +1751,7 @@ import pytest
 
 from deck.pkr import random_hand, Player, Dealer, Action
 
-def test_player_decide_action() -> None:
-    hand = random_hand()
-    player = Player(hand=hand)
-    p2 = Player()
-    dealer = Dealer()
-    round = dealer.start_round([player, p2])
-    state = dealer.get_state(round)
-    assert player.decide_action(state) is not None
+
 
 def test_player_send_action() -> None:
     dealer = Dealer()
@@ -1856,9 +1856,10 @@ def test_not_all_players_can_fold():
     p1, p2, p3 = list_players
     dealer.take_action(p1, Action("FOLD", 0))
     dealer.take_action(p2, Action("FOLD", 0))
-    state = dealer.update_state()
-    assert state['valid_actions'] is not None
-    
+    state = dealer.update_state(round)
+    assert state['valid_actions'] is None
+
+
 
 def test_dealer_can_provide_list_of_valid_actions():
     dealer = Dealer()
@@ -2795,9 +2796,9 @@ def test_player_cannot_go_into_debt() -> None:
 
 
 def test_player_can_pay() -> None:
-    p1 = Player()
-    p2 = Player()
     dealer = Dealer()
+    p1, p2 = dealer.start_game(2)
+
     round = dealer.start_round([p1, p2])
     ante = dealer.ante
     pay_blind = p1.pay(ante)
@@ -2849,9 +2850,11 @@ def test_player_can_have_predetermined_hand() -> None:
             Card(Rank(5), Suit(3)),
         ]
     )
-    p1 = Player(hand=full_house)
-    p2 = Player(hand=twopair)
     dealer = Dealer()
+    p1, p2 = dealer.start_game(2)
+    p1.hand = full_house
+    p2.hand = twopair
+    
     round = dealer.start_round([p1, p2])
     assert p1.hand == full_house  # and p2.hand == twopair
 
@@ -2866,9 +2869,9 @@ def test_player_hand_has_class_hand() -> None:
             Card(Rank(8), Suit(2)),
         ]
     )
-    p1 = Player(hand=full_house)
-    p2 = Player()
     dealer = Dealer()
+    p1, p2 = dealer.start_game(2)
+    p1.hand=full_house
     round = dealer.start_round([p1, p2])
     assert isinstance(p1.hand, Hand) and isinstance(p2.hand, Hand)
 
@@ -2930,8 +2933,7 @@ def test_dealer_has_deck() -> None:
 
 def test_dealer_pot_is_zero() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
+    p1, p2 = dealer.start_game(2)
     list_players = [p1, p2]
     round = dealer.start_round(list_players)
     pot = round.get_pot_value()
@@ -2967,8 +2969,7 @@ def test_dealer_discard_pile_update() -> None:
 
 def test_round_state_gets_updated() -> None:
     d = Dealer()
-    p1 = Player()
-    p2 = Player()
+    p1, p2 = d.start_game(2)
     lp = d.start_round([p1, p2])
     state = d.get_state(lp)
     from pprint import pprint
@@ -2990,9 +2991,7 @@ def test_round_update_state() -> None:
 
 def test_dealer_ask_for_action() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     list_players = [p1, p2, p3]
     round = dealer.start_round(list_players)
     state = dealer.get_state(round)
@@ -3058,8 +3057,7 @@ from deck.pkr import Round, Dealer, Player, random_choice, Action
 
 def test_dealer_round_is_round() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
+    p1, p2 = dealer.start_game(2)
     round =  dealer.start_round([p1, p2])
     assert isinstance(round, Round)
 
@@ -3073,28 +3071,21 @@ def test_round_exists() -> None:
 
 def test_round_get_blinds() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
-    list_players = [p1, p2, p3]
+    list_players = dealer.start_game(3)
     round = dealer.start_round(list_players)
     assert round.get_pot_value() == 300
 
 def test_dealer_has_state() -> None:
-    p1 = Player()
-    p2 = Player()
-    
     dealer = Dealer()
+    p1, p2 = dealer.start_game(2)
     round = dealer.start_round([p1, p2])
     state = dealer.get_state(round)
     assert state is not None
 
 
 def test_round_state_is_dict() -> None:
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
     dealer = Dealer()
+    p1, p2, p3 = dealer.start_game(3)
     round = dealer.start_round([p1, p2, p3])
     state = dealer.get_state(round)
     assert isinstance(state, dict)
@@ -3102,18 +3093,14 @@ def test_round_state_is_dict() -> None:
 
 def test_round_state_has_pot_value() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
+    p1, p2 = dealer.start_game(2)
     round = dealer.start_round([p1, p2])
     state = dealer.get_state(round)
     assert state['pot_value'] is not None
 
 def test_round_pot_value_state() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
-    list_players = [p1, p2, p3]
+    list_players = dealer.start_game(3)
     round = dealer.start_round(list_players)
     state = dealer.get_state(round)
     assert state['pot_value'] == 300
@@ -3121,20 +3108,16 @@ def test_round_pot_value_state() -> None:
 
 def test_round_state_has_player_pos() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round = dealer.start_round([p1, p2, p3])
     state = dealer.get_state(round)
     assert state['position'] is not None
 
 
 def test_round_set_position() -> None:
-    
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    list_players = [p1, p2]
+    
+    list_players = dealer.start_game(3)
     pos = random_choice(0, len(list_players))
     round = dealer.start_round(list_players)
     round.set_position(pos)
@@ -3143,43 +3126,33 @@ def test_round_set_position() -> None:
 
 def test_round_takes_a_list_of_players() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round = dealer.start_round([p1, p2, p3])
     assert round is not None
 
 def test_round_returns_players_with_hands() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round = dealer.start_round([p1, p2, p3])
     assert (len(p1.hand) == 5 and len(p2.hand) == 5
             and len(p3.hand) == 5)
 
 def test_round_has_minimum_bet() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round  = dealer.start_round([p1, p2, p3])
     assert dealer.get_state(round)['min_bet'] is not None
 
 def test_round_has_minimum_bet_greater_than_zero() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round  = dealer.start_round([p1, p2, p3])
     assert dealer.get_state(round)['min_bet'] > 0 
 
 
 def test_round_minimum_bet_equal_to_sum_of_bets() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round  = dealer.start_round([p1, p2, p3])
 
 def test_round_can_update_minimum_bet():

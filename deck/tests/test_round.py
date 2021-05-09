@@ -3,8 +3,7 @@ from deck.pkr import Round, Dealer, Player, random_choice, Action
 
 def test_dealer_round_is_round() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
+    p1, p2 = dealer.start_game(2)
     round =  dealer.start_round([p1, p2])
     assert isinstance(round, Round)
 
@@ -18,28 +17,21 @@ def test_round_exists() -> None:
 
 def test_round_get_blinds() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
-    list_players = [p1, p2, p3]
+    list_players = dealer.start_game(3)
     round = dealer.start_round(list_players)
     assert round.get_pot_value() == 300
 
 def test_dealer_has_state() -> None:
-    p1 = Player()
-    p2 = Player()
-    
     dealer = Dealer()
+    p1, p2 = dealer.start_game(2)
     round = dealer.start_round([p1, p2])
     state = dealer.get_state(round)
     assert state is not None
 
 
 def test_round_state_is_dict() -> None:
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
     dealer = Dealer()
+    p1, p2, p3 = dealer.start_game(3)
     round = dealer.start_round([p1, p2, p3])
     state = dealer.get_state(round)
     assert isinstance(state, dict)
@@ -47,18 +39,14 @@ def test_round_state_is_dict() -> None:
 
 def test_round_state_has_pot_value() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
+    p1, p2 = dealer.start_game(2)
     round = dealer.start_round([p1, p2])
     state = dealer.get_state(round)
     assert state['pot_value'] is not None
 
 def test_round_pot_value_state() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
-    list_players = [p1, p2, p3]
+    list_players = dealer.start_game(3)
     round = dealer.start_round(list_players)
     state = dealer.get_state(round)
     assert state['pot_value'] == 300
@@ -66,20 +54,16 @@ def test_round_pot_value_state() -> None:
 
 def test_round_state_has_player_pos() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round = dealer.start_round([p1, p2, p3])
     state = dealer.get_state(round)
     assert state['position'] is not None
 
 
 def test_round_set_position() -> None:
-    
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    list_players = [p1, p2]
+    
+    list_players = dealer.start_game(3)
     pos = random_choice(0, len(list_players))
     round = dealer.start_round(list_players)
     round.set_position(pos)
@@ -88,43 +72,33 @@ def test_round_set_position() -> None:
 
 def test_round_takes_a_list_of_players() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round = dealer.start_round([p1, p2, p3])
     assert round is not None
 
 def test_round_returns_players_with_hands() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round = dealer.start_round([p1, p2, p3])
     assert (len(p1.hand) == 5 and len(p2.hand) == 5
             and len(p3.hand) == 5)
 
 def test_round_has_minimum_bet() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round  = dealer.start_round([p1, p2, p3])
     assert dealer.get_state(round)['min_bet'] is not None
 
 def test_round_has_minimum_bet_greater_than_zero() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round  = dealer.start_round([p1, p2, p3])
     assert dealer.get_state(round)['min_bet'] > 0 
 
 
 def test_round_minimum_bet_equal_to_sum_of_bets() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round  = dealer.start_round([p1, p2, p3])
 
 def test_round_can_update_minimum_bet():

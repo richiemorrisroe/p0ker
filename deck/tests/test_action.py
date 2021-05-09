@@ -2,14 +2,7 @@ import pytest
 
 from deck.pkr import random_hand, Player, Dealer, Action
 
-def test_player_decide_action() -> None:
-    hand = random_hand()
-    player = Player(hand=hand)
-    p2 = Player()
-    dealer = Dealer()
-    round = dealer.start_round([player, p2])
-    state = dealer.get_state(round)
-    assert player.decide_action(state) is not None
+
 
 def test_player_send_action() -> None:
     dealer = Dealer()
@@ -114,9 +107,10 @@ def test_not_all_players_can_fold():
     p1, p2, p3 = list_players
     dealer.take_action(p1, Action("FOLD", 0))
     dealer.take_action(p2, Action("FOLD", 0))
-    state = dealer.update_state()
-    assert state['valid_actions'] is not None
-    
+    state = dealer.update_state(round)
+    assert state['valid_actions'] is None
+
+
 
 def test_dealer_can_provide_list_of_valid_actions():
     dealer = Dealer()

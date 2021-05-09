@@ -14,8 +14,7 @@ def test_dealer_has_deck() -> None:
 
 def test_dealer_pot_is_zero() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
+    p1, p2 = dealer.start_game(2)
     list_players = [p1, p2]
     round = dealer.start_round(list_players)
     pot = round.get_pot_value()
@@ -51,8 +50,7 @@ def test_dealer_discard_pile_update() -> None:
 
 def test_round_state_gets_updated() -> None:
     d = Dealer()
-    p1 = Player()
-    p2 = Player()
+    p1, p2 = d.start_game(2)
     lp = d.start_round([p1, p2])
     state = d.get_state(lp)
     from pprint import pprint
@@ -74,9 +72,7 @@ def test_round_update_state() -> None:
 
 def test_dealer_ask_for_action() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     list_players = [p1, p2, p3]
     round = dealer.start_round(list_players)
     state = dealer.get_state(round)
