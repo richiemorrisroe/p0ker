@@ -813,13 +813,11 @@ This will make it easier to set up all the testing and whatnot.
 #+BEGIN_SRC python :tangle deck/pkr.py  :file deck/pkr.py
 from copy import deepcopy
 from enum import Enum, IntEnum
+import logging
+import math
+import random
 from pprint import pprint
-import random as random
-
-
 from random import shuffle, sample
-import math as math
-import random as random
 from typing import Union, List, Dict, Tuple, Optional, Set, Any
 
 
@@ -1159,7 +1157,7 @@ class Deck:
 
     def __init__(self) -> None:
         deck = [Card(rank, suit) for suit in Suit for rank in Rank]
-        random.shuffle(deck)
+        shuffle(deck)
         self._cards = deck
 
     def __len__(self) -> int:
@@ -1851,15 +1849,15 @@ def test_dealer_take_action_can_be_passed_an_action():
     
     
 
-# def test_not_all_players_can_fold():
-#     dealer = Dealer()
-#     list_players = dealer.start_game(3)
-#     round = dealer.start_round(list_players)
-#     p1, p2, p3 = list_players
-#     dealer.take_action(p1, Action("FOLD", 0))
-#     dealer.take_action(p2, Action("FOLD", 0))
-#     state = dealer.update_state()
-#     assert state['valid_actions'] is not None
+def test_not_all_players_can_fold():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    p1, p2, p3 = list_players
+    dealer.take_action(p1, Action("FOLD", 0))
+    dealer.take_action(p2, Action("FOLD", 0))
+    state = dealer.update_state()
+    assert state['valid_actions'] is not None
     
 
 def test_dealer_can_provide_list_of_valid_actions():
@@ -3239,6 +3237,7 @@ def test_player_can_pass_in_action_argument_to_send_action():
 ***** Move replenish_cards and update_cards to dealer object
 **** Round Structure
 ***** bet/call/fold in order
+- Almost done, just need to handle the case where all but one player folds     
 ***** discard cards
 ***** get new cards
 ***** bet/call/fold in order
@@ -3248,22 +3247,23 @@ def test_player_can_pass_in_action_argument_to_send_action():
  - log player/dealer state
 
 **** Card API
-- change equality function to make 10H and 10S equal
+***** TODO change equality function to make 10H and 10S equal
 - Use this to simplify logic in hand scoring etc
 - note that gt method and eq method are very different (gt only uses
   rank)
 **** Hand API
 
-- Fix Set[Card] issue
+***** DONE Fix Set[Card] issue
 - I only added this to make hypothesis work, but it's ugly and stupid
 - Fix the hypothesis test so that the type can be List[Card]
 - move logic in __init__ to separate function (validate_hand)
-- Fix hand equality 
+  
+****** TODO Fix hand equality 
 - If same cards are in different order, will return False incorrectly
 - in general, it's impossible for two hands to be equal as it requires
   the exact same cards
 - This is clearly impossible
-- make sure that __iter__ and __next__ actually work (they look kinda weird)
+****** TODO make sure that __iter__ and __next__ actually work (they look kinda weird)
 
 
 ** Design Thoughts :noexport:

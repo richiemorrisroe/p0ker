@@ -1,12 +1,10 @@
 from copy import deepcopy
 from enum import Enum, IntEnum
+import logging
+import math
+import random
 from pprint import pprint
-import random as random
-
-
 from random import shuffle, sample
-import math as math
-import random as random
 from typing import Union, List, Dict, Tuple, Optional, Set, Any
 
 
@@ -346,7 +344,7 @@ class Deck:
 
     def __init__(self) -> None:
         deck = [Card(rank, suit) for suit in Suit for rank in Rank]
-        random.shuffle(deck)
+        shuffle(deck)
         self._cards = deck
 
     def __len__(self) -> int:
