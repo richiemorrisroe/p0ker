@@ -2063,10 +2063,10 @@ def test_fuzz_Dealer(name, ante) -> None:
 #     players = dealer.start_game(integers)
 
 @pytest.mark.slow
-@given(name=st.just("poker"), ante=st.just(100), players=st.lists(st.builds(Player)))
-def test_fuzz_Dealer_start_round(name, ante, players: List[Player]) -> None:
+@given(name=st.just("poker"), ante=st.just(100), n_players=st.integers(1, 10))
+def test_fuzz_Dealer_start_round(name, ante, n_players: int) -> None:
     dealer = deck.pkr.Dealer(name=name, ante=ante)
-    assume(len(players) > 1 and len(players) < 10)
+    players = dealer.start_game(n_players)
     players = dealer.start_round(players)
 #+end_src
 
