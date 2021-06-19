@@ -122,9 +122,6 @@ def test_player_stash_default_correct() -> None:
     assert player.stash == 5000
 
 
-
-
-
 def test_player_cannot_go_into_debt() -> None:
     p = Player(stash=100)
     with pytest.raises(ValueError):
@@ -148,9 +145,6 @@ def test_player_add_card_to_hand() -> None:
     assert len(p.hand) == 1
 
 
-
-
-
 def test_player_has_name() -> None:
     dealer = Dealer()
     list_players = dealer.start_game(2)
@@ -162,9 +156,6 @@ def test_different_players_have_different_names() -> None:
     list_players = dealer.start_game(2)
     p1, p2 = list_players
     assert p1.name != p2.name
-
-
-
 
 
 def test_player_can_have_predetermined_hand() -> None:
@@ -190,7 +181,7 @@ def test_player_can_have_predetermined_hand() -> None:
     p1, p2 = dealer.start_game(2)
     p1.hand = full_house
     p2.hand = twopair
-    
+
     round = dealer.start_round([p1, p2])
     assert p1.hand == full_house  # and p2.hand == twopair
 
@@ -207,7 +198,7 @@ def test_player_hand_has_class_hand() -> None:
     )
     dealer = Dealer()
     p1, p2 = dealer.start_game(2)
-    p1.hand=full_house
+    p1.hand = full_house
     round = dealer.start_round([p1, p2])
     assert isinstance(p1.hand, Hand) and isinstance(p2.hand, Hand)
 

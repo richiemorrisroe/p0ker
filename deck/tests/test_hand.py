@@ -16,7 +16,6 @@ from deck.pkr import (
 )
 
 
-
 ace_spades = Card(Rank(14), Suit(1))
 king_clubs = Card(Rank(13), Suit(2))
 hand = Hand([ace_spades, king_clubs])
@@ -89,11 +88,11 @@ def test_get_rank_type() -> None:
 
 def test_hand_scoring() -> None:
     twopair_8_2 = Hand([Card(Rank(8), Suit(1)), Card(Rank(8), Suit(2)),
-                    Card(Rank(2), Suit(1)), Card( Rank(2), Suit(2)),
-                    Card(Rank(5), Suit(3))])
+                        Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)),
+                        Card(Rank(5), Suit(3))])
     twopair_8_3 = Hand([Card(Rank(8), Suit(1)), Card(Rank(8), Suit(2)),
-                    Card(Rank(3), Suit(1)), Card( Rank(3), Suit(2)),
-                    Card(Rank(5), Suit(3))])
+                        Card(Rank(3), Suit(1)), Card(Rank(3), Suit(2)),
+                        Card(Rank(5), Suit(3))])
     score_82, name_82 = twopair_8_2.score()
     score_83, name_83 = twopair_8_3.score()
     assert name_82 == 'TWO-PAIR' and name_83 == 'TWO-PAIR'

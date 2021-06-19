@@ -8,8 +8,8 @@ import deck.pkr
 from deck.pkr import Hand, Card, Player, Round, random_hand
 
 
-
-@given(rank=st.sampled_from(deck.pkr.Rank), suit=st.sampled_from(deck.pkr.Suit))
+@given(rank=st.sampled_from(deck.pkr.Rank),
+       suit=st.sampled_from(deck.pkr.Suit))
 def test_fuzz_Card(rank, suit) -> None:
     deck.pkr.Card(rank=rank, suit=suit)
 

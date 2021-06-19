@@ -9,11 +9,12 @@ import sys
 from typing import Union, List, Dict, Tuple, Optional, Set, Any
 
 
-logging.basicConfig(filename = "test.log", encoding='utf-8', level=logging.INFO)
+logging.basicConfig(filename="test.log", encoding='utf-8', level=logging.INFO)
 # root = logging.getLogger()
 # handler = logging.StreamHandler(sys.stdout)
 # handler.setLevel(logging.INFO)
 # root.addHandler(handler)
+
 
 class Suit(Enum):
     """An enum defining the suits in a deck of playing cards"""
@@ -222,7 +223,7 @@ class Hand:
         counts = self.count("ranks")
         for k, v in counts.items():
             if v >= 2:
-                #has at least two of this rank=pair
+                # has at least two of this rank=pair
                 res[k] = v
         return res
 
@@ -236,13 +237,12 @@ class Hand:
             scorename = "EMPTY"
             return handscore, scorename
 
-            
         # suits, ranks = hand.split_cards()
-        
+
         flush = hand.is_flush()
         straight = hand.is_straight()
         pairs = hand.find_repeated_cards()
-        
+
         suits, ranks = self.split_cards()
         max_rank = max(list(convert_rank_enum_to_integer(ranks)))
         ranks = get_ranks_from_repeated_cards(pairs)
@@ -260,28 +260,29 @@ class Hand:
             handscore = scores["NOTHING"] + max_rank
             scorename = "NOTHING"
         if len(pairs) > 0:
-            handscore, scorename = self.check_for_kind_of_pair(pairs, scores, ranks_int)
+            handscore, scorename = self.check_for_kind_of_pair(
+                pairs, scores, ranks_int)
         return handscore, scorename
 
     def check_for_kind_of_pair(self, pairs, scores, ranks_int):
-            if len(pairs) >= 1:
-                vals = pairs.values()
-                if max(vals) == 2 and len(pairs) == 1:
-                    handscore = scores["PAIR"] + ranks_int[0]
-                    scorename = "PAIR"
-                if max(vals) == 2 and len(pairs) == 2:
-                    handscore = scores["TWO-PAIR"] + ranks_int[0] + ranks_int[1]
-                    scorename = "TWO-PAIR"
-                if max(vals) == 3 and len(pairs) == 1:
-                    handscore = scores["THREE-OF-A-KIND"] + ranks_int[0]
-                    scorename = "THREE-OF-A-KIND"
-                if max(vals) == 3 and len(pairs) == 2:
-                    handscore = scores["FULL-HOUSE"] + ranks_int[0] + ranks_int[1]
-                    scorename = "FULL-HOUSE"
-                if max(vals) == 4:
-                    handscore = scores["FOUR-OF-A-KIND"] + ranks_int[0]
-                    scorename = "FOUR-OF-A-KIND"
-            return handscore, scorename
+        if len(pairs) >= 1:
+            vals = pairs.values()
+            if max(vals) == 2 and len(pairs) == 1:
+                handscore = scores["PAIR"] + ranks_int[0]
+                scorename = "PAIR"
+            if max(vals) == 2 and len(pairs) == 2:
+                handscore = scores["TWO-PAIR"] + ranks_int[0] + ranks_int[1]
+                scorename = "TWO-PAIR"
+            if max(vals) == 3 and len(pairs) == 1:
+                handscore = scores["THREE-OF-A-KIND"] + ranks_int[0]
+                scorename = "THREE-OF-A-KIND"
+            if max(vals) == 3 and len(pairs) == 2:
+                handscore = scores["FULL-HOUSE"] + ranks_int[0] + ranks_int[1]
+                scorename = "FULL-HOUSE"
+            if max(vals) == 4:
+                handscore = scores["FOUR-OF-A-KIND"] + ranks_int[0]
+                scorename = "FOUR-OF-A-KIND"
+        return handscore, scorename
 
     def get_suits(self) -> List[Suit]:
         suits = []
@@ -295,10 +296,10 @@ def get_ranks_from_repeated_cards(reps) -> List[Rank]:
     result = tuple(reps.keys())
     return result
 
-def convert_rank_enum_to_integer(ranks) -> Dict[Rank, int]:
-    rank_ints = {rank:int(rank) for rank in ranks}
-    return rank_ints
 
+def convert_rank_enum_to_integer(ranks) -> Dict[Rank, int]:
+    rank_ints = {rank: int(rank) for rank in ranks}
+    return rank_ints
 
 
 def random_choice(upper: int, lower: int) -> int:
@@ -405,13 +406,14 @@ class PlayerNamer:
         name = self.names.pop(rand_choice)
         return name
 
+
 class Action:
-    def __init__(self, kind:str, amount:int, name:str=None):
+    def __init__(self, kind: str, amount: int, name: str = None):
         assert kind in ['BET', 'CALL', 'RAISE', 'FOLD', 'CHECK']
         self.kind = kind
         self.amount = amount
         self.name = name
-        
+
     def __repr__(self):
         return f"Action({self.name!r}, {self.kind!r}, {self.amount!r})"
 
@@ -426,7 +428,7 @@ class Action:
 
     def is_valid(self) -> bool:
         assert self.kind in ['BET', 'CALL', 'RAISE', 'FOLD', 'CHECK']
-        if self.kind == 'BET' and self.amount==0:
+        if self.kind == 'BET' and self.amount == 0:
             return False
         if self.kind == 'FOLD' and self.amount > 0:
             return False
@@ -437,12 +439,10 @@ class Action:
 
     def action(self):
         return self.kind
-    
+
     def amount(self):
         return self.amount
-    
 
-        
 
 class Player:
     def __init__(self, hand=None, stash=None):
@@ -458,14 +458,17 @@ class Player:
         self.score = 0
         self.minbet = 10
         self.randnum = random.randint(0, 100)
-        
-        ##this guarentees unique names as the names list is shared
-        ##between player objects. Normally this would be a bug,
-        ##it's a little tricksy
+
+        # this guarentees unique names as the names list is shared
+        # between player objects. Normally this would be a bug,
+        # it's a little tricksy
 
     def __repr__(self) -> str:
         fstring = "Player(stash = {stash}, score={score}, hand = {hand})"
-        return fstring.format(stash=self.stash, score=self.score, hand=self.hand)
+        return fstring.format(
+            stash=self.stash,
+            score=self.score,
+            hand=self.hand)
 
     def __len__(self) -> int:
         return 1
@@ -536,7 +539,7 @@ class Player:
         else:
             return False
 
-    def decide_action(self, state:Dict[str, Any]) -> Action:
+    def decide_action(self, state: Dict[str, Any]) -> Action:
         logging.info(state)
         valid_actions = state['valid_actions']
         logging.info(type(valid_actions))
@@ -545,15 +548,13 @@ class Player:
         action_pop = action.pop()
         actual_action = action_pop.action()
         action = actual_action
-        if action=='BET':
-            amount = random.randint(state['min_bet'], state['min_bet']+ 100)
-        if action=='FOLD' or action=='CHECK':
+        if action == 'BET':
+            amount = random.randint(state['min_bet'], state['min_bet'] + 100)
+        if action == 'FOLD' or action == 'CHECK':
             amount = 0
         return Action(action, amount)
-        
 
-
-    def send_action(self, state=None, action:Action=None):
+    def send_action(self, state=None, action: Action = None):
         if not action:
             action = self.decide_action(state)
         player_name = self.name
@@ -577,7 +578,7 @@ class Round:
         self.ante = ante
         self.num_players = len(players)
         self.min_bet = 0
-        self.actions:List[Action] = []
+        self.actions: List[Action] = []
         self.turn = 0
 
     def add_to_pot(self, bet) -> None:
@@ -596,10 +597,9 @@ class Round:
         return self.actions
 
     def set_action(self, action) -> None:
-        self.set_position(self.get_position()+1)
+        self.set_position(self.get_position() + 1)
         self.actions.append(action)
         self.update_state()
-
 
     def get_blinds(self, players: List[Player]) -> List[Player]:
         pot = 0
@@ -607,15 +607,14 @@ class Round:
             self.add_to_pot(player.pay(self.ante))
         return players
 
-
     def get_minimum_bet(self):
         if self.turn == 0:
             min_bet = self.ante
         else:
             min_bet = self.min_bet
-        
+
         actions = self.get_actions()
-        
+
         if actions:
             logging.warning(f"actions are {actions}")
             sum_bets = min_bet
@@ -623,7 +622,7 @@ class Round:
                 action = actions[0]
                 if action == 'BET':
                     sum_bets += action.amount
-                
+
             if len(actions) > 1:
                 print(actions)
                 for action in actions:
@@ -639,37 +638,36 @@ class Round:
 
     def calculate_valid_actions(self):
         no_bet_state = [Action('CHECK', 0),
-                    Action('BET', self.ante),
-                    Action('FOLD', 0)]
-        some_bet_state = [Action('BET', self.ante+ self.min_bet),
-                    Action('FOLD', 0),
-                    Action('RAISE', self.ante * 2)]
+                        Action('BET', self.ante),
+                        Action('FOLD', 0)]
+        some_bet_state = [Action('BET', self.ante + self.min_bet),
+                          Action('FOLD', 0),
+                          Action('RAISE', self.ante * 2)]
         if self.get_position() == 0:
             return no_bet_state
         print(self.get_actions())
         kinds = [a.kind for a in self.get_actions()]
         amounts = [a.amount for a in self.get_actions()]
-        actions = {kind:amount for kind, amount in zip(kinds, amounts)}
+        actions = {kind: amount for kind, amount in zip(kinds, amounts)}
         names = [a.name for a in self.get_actions()]
         print(actions)
         if any(kinds) == 'BET':
             return some_bet_state
         if all(kinds) == 'FOLD' and self.position == self.num_players:
             return 1
-        
 
     def update_state(self) -> Dict[str, Any]:
         potval = self.get_pot_value()
         position = self.get_position()
         min_bet = self.get_minimum_bet()
         actions = self.get_actions()
-        valid_actions:List[Action] = self.calculate_valid_actions()
+        valid_actions: List[Action] = self.calculate_valid_actions()
         return deepcopy({
             "pot_value": potval,
             "position": position,
             "min_bet": min_bet,
             "actions": actions,
-            "valid_actions" : valid_actions
+            "valid_actions": valid_actions
         })
 
 
@@ -686,7 +684,7 @@ class Dealer:
         self.player_namer = PlayerNamer()
         self.player_names = []
 
-    def start_game(self, n_players:int) -> List[Player]:
+    def start_game(self, n_players: int) -> List[Player]:
         player_list = []
         self.round_count = 0
         for _ in range(0, n_players):
@@ -703,8 +701,11 @@ class Dealer:
     def __repr__(self) -> str:
         pot = self.round.get_pot_value()
         fstring = "Game({name}, ante={ante}, maxdrop={maxdrop},pot={pot})"
-        return fstring.format(name=self.name, ante=self.ante, maxdrop=self.maxdrop,
-                              pot = pot)
+        return fstring.format(
+            name=self.name,
+            ante=self.ante,
+            maxdrop=self.maxdrop,
+            pot=pot)
 
     def deals(self, players: List[Player]) -> List[Player]:
         """Takes a list of players (normally empty lists)
@@ -720,8 +721,8 @@ class Dealer:
     def update_cards(self, player):
         if len(player) > 1:
             raise ValueError(
-                "update cards only takes one player, not {x}".format(x=len(player))
-            )
+                "update cards only takes one player, not {x}".format(
+                    x=len(player)))
         deck, player = replenish_cards(self.deck, player)
         self.deck = deck
         return player
@@ -729,16 +730,15 @@ class Dealer:
     def take_action(self, player, action=None) -> None:
         state = self.update_state(self.round)
         if not action:
-            
+
             action = player.send_action(state)
         else:
             action = player.send_action(state, action)
-        
+
         if self.is_valid_action(action):
             self.accept_action(action)
         else:
             raise ValueError("action is not valid")
-    
 
     def accept_action(self, action) -> None:
         self.round.set_action(action)
@@ -770,7 +770,6 @@ class Dealer:
         for card in cards:
             self.discard_pile.append(card)
 
-
     def update_state(self, round):
         state = round.update_state()
         if state['valid_actions'] == 'END':
@@ -786,14 +785,15 @@ class Dealer:
             return False
         if not state:
             state = self.update_state(self.round)
-        if action=='CALL' and state["amount"]==0:
+        if action == 'CALL' and state["amount"] == 0:
             return False
         else:
             return True
-        
 
 
-def deal_cards(dealer: Dealer, players: List[Player]) -> Tuple[Dealer, List[Player]]:
+def deal_cards(dealer: Dealer,
+               players: List[Player]) -> Tuple[Dealer,
+                                               List[Player]]:
     """Takes a list of players (normally empty lists)
     and deals each of them five cards,
     returning the updated lists"""

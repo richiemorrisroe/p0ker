@@ -33,7 +33,7 @@ def test_score_pair() -> None:
 def test_score_straight() -> None:
     straight = make_straight(start=5)
     score, name = straight.score()
-    ## make straight sometimes returns a straight flush
+    # make straight sometimes returns a straight flush
     assert name.startswith("STRAIGHT")
 
 
