@@ -811,15 +811,22 @@ deck
 This will make it easier to set up all the testing and whatnot. 
 
 #+BEGIN_SRC python :tangle deck/pkr.py  :file deck/pkr.py
+from copy import deepcopy
 from enum import Enum, IntEnum
-import random as random
-
-
-from random import shuffle
-import math as math
-import random as random
+import logging
+import math
+from pprint import pprint
+from random import shuffle, sample
+import random
+import sys
 from typing import Union, List, Dict, Tuple, Optional, Set, Any
 
+
+logging.basicConfig(filename = "test.log", encoding='utf-8', level=logging.INFO)
+# root = logging.getLogger()
+# handler = logging.StreamHandler(sys.stdout)
+# handler.setLevel(logging.INFO)
+# root.addHandler(handler)
 
 class Suit(Enum):
     """An enum defining the suits in a deck of playing cards"""
@@ -880,8 +887,9 @@ class Card:
     def __gt__(self, other) -> Optional[bool]:
         if self.rank > other.rank:
             return True
-        if self.rank < other.rank:
+        if self.rank <= other.rank:
             return False
+        return False
 
     def get_suit(self):
         return self.suit
@@ -893,7 +901,7 @@ class Card:
 class Hand:
     """A hand holds cards from a particular deck"""
 
-    def __init__(self, cards: Set[Card]) -> None:
+    def __init__(self, cards: List[Card]) -> None:
         all_cards = [x for x in cards if isinstance(x, Card)]
         cards_set = set(cards)
         if len(all_cards) != len(cards):
@@ -1040,6 +1048,7 @@ class Hand:
             handscore = 0
             scorename = "EMPTY"
             return handscore, scorename
+
             
         # suits, ranks = hand.split_cards()
         
@@ -1093,13 +1102,16 @@ class Hand:
             suits.append(card.get_suit())
         return suits
 
-def get_ranks_from_repeated_cards(reps) -> Rank:
+
+def get_ranks_from_repeated_cards(reps) -> List[Rank]:
+
     result = tuple(reps.keys())
     return result
 
 def convert_rank_enum_to_integer(ranks) -> Dict[Rank, int]:
     rank_ints = {rank:int(rank) for rank in ranks}
     return rank_ints
+
 
 
 def random_choice(upper: int, lower: int) -> int:
@@ -1144,7 +1156,7 @@ class Deck:
 
     def __init__(self) -> None:
         deck = [Card(rank, suit) for suit in Suit for rank in Rank]
-        random.shuffle(deck)
+        shuffle(deck)
         self._cards = deck
 
     def __len__(self) -> int:
@@ -1206,6 +1218,44 @@ class PlayerNamer:
         name = self.names.pop(rand_choice)
         return name
 
+class Action:
+    def __init__(self, kind:str, amount:int, name:str=None):
+        assert kind in ['BET', 'CALL', 'RAISE', 'FOLD', 'CHECK']
+        self.kind = kind
+        self.amount = amount
+        self.name = name
+        
+    def __repr__(self):
+        return f"Action({self.name!r}, {self.kind!r}, {self.amount!r})"
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, name):
+        if not self.name:
+            self.name = name
+        else:
+            raise ValueError("cannot overwrite name")
+
+    def is_valid(self) -> bool:
+        assert self.kind in ['BET', 'CALL', 'RAISE', 'FOLD', 'CHECK']
+        if self.kind == 'BET' and self.amount==0:
+            return False
+        if self.kind == 'FOLD' and self.amount > 0:
+            return False
+        if self.kind == 'CALL' and self.amount == 0:
+            return False
+        else:
+            return True
+
+    def action(self):
+        return self.kind
+    
+    def amount(self):
+        return self.amount
+    
+
+        
 
 class Player:
     def __init__(self, hand=None, stash=None):
@@ -1221,7 +1271,7 @@ class Player:
         self.score = 0
         self.minbet = 10
         self.randnum = random.randint(0, 100)
-
+        
         ##this guarentees unique names as the names list is shared
         ##between player objects. Normally this would be a bug,
         ##it's a little tricksy
@@ -1299,20 +1349,29 @@ class Player:
         else:
             return False
 
-    def decide_action(self, state=None) -> Dict[str, Union[int, str]]:
-        is_call = self.call()
-        is_fold = self.fold(state)
-        if is_fold:
-            return {"action": "FOLD", "amount": 0}
-        if not is_fold and is_call:
-            return {"action": "CALL", "amount": 0}
-        if self.score < 200 or self.score > 400:
-            return {"action": "CHECK", "amount": 0}
-        else:
-            return {"action": "BET", "amount": 0}
+    def decide_action(self, state:Dict[str, Any]) -> Action:
+        logging.info(state)
+        valid_actions = state['valid_actions']
+        logging.info(type(valid_actions))
+        action = deepcopy(sample(valid_actions, 1))
+        logging.info(action)
+        action_pop = action.pop()
+        actual_action = action_pop.action()
+        action = actual_action
+        if action=='BET':
+            amount = random.randint(state['min_bet'], state['min_bet']+ 100)
+        if action=='FOLD' or action=='CHECK':
+            amount = 0
+        return Action(action, amount)
+        
 
-    def send_action(self, state=None):
-        action = self.decide_action(state)
+
+    def send_action(self, state=None, action:Action=None):
+        if not action:
+            action = self.decide_action(state)
+        player_name = self.name
+        action.set_name(player_name)
+        # action = {"name": player_name, "action" : action}
         return action
 
     def pay(self, amount):
@@ -1330,8 +1389,9 @@ class Round:
         self.position = 0
         self.ante = ante
         self.num_players = len(players)
-        self.min_bet = ante
-        self.actions = []
+        self.min_bet = 0
+        self.actions:List[Action] = []
+        self.turn = 0
 
     def add_to_pot(self, bet) -> None:
         self.pot += bet
@@ -1349,47 +1409,81 @@ class Round:
         return self.actions
 
     def set_action(self, action) -> None:
+        self.set_position(self.get_position()+1)
         self.actions.append(action)
         self.update_state()
 
-    def get_blind(self, blind_type):
-        if blind_type == "small":
-            return self.ante
-        if blind_type == "big":
-            return self.ante * 2
-        else:
-            raise NotImplementedError
 
     def get_blinds(self, players: List[Player]) -> List[Player]:
-        small_blind_pos = 0
-        big_blind_pos = 1
-        small_blind = self.get_blind("small")
-        big_blind = self.get_blind("big")
-        sb = players[small_blind_pos].pay(small_blind)
-        bb = players[big_blind_pos].pay(big_blind)
-        self.add_to_pot(bb + sb)
+        pot = 0
+        for player in players:
+            self.add_to_pot(player.pay(self.ante))
         return players
 
+
     def get_minimum_bet(self):
-        if not self.min_bet:
-            self.min_bet = self.ante
-        return self.min_bet
+        if self.turn == 0:
+            min_bet = self.ante
+        else:
+            min_bet = self.min_bet
+        
+        actions = self.get_actions()
+        
+        if actions:
+            logging.warning(f"actions are {actions}")
+            sum_bets = min_bet
+            if len(actions) == 1:
+                action = actions[0]
+                if action == 'BET':
+                    sum_bets += action.amount
+                
+            if len(actions) > 1:
+                print(actions)
+                for action in actions:
+                    kind = action.kind
+                    amount = action.amount
+                    logging.info(f"action is {kind} and amount is {amount}")
+                    if action == 'BET':
+                        sum_bets += amount
+            logging.info(f"sum_bet is {sum_bets}")
+            min_bet = sum_bets
+        self.min_bet = min_bet
+        return min_bet
+
+    def calculate_valid_actions(self):
+        no_bet_state = [Action('CHECK', 0),
+                    Action('BET', self.ante),
+                    Action('FOLD', 0)]
+        some_bet_state = [Action('BET', self.ante+ self.min_bet),
+                    Action('FOLD', 0),
+                    Action('RAISE', self.ante * 2)]
+        if self.get_position() == 0:
+            return no_bet_state
+        print(self.get_actions())
+        kinds = [a.kind for a in self.get_actions()]
+        amounts = [a.amount for a in self.get_actions()]
+        actions = {kind:amount for kind, amount in zip(kinds, amounts)}
+        names = [a.name for a in self.get_actions()]
+        print(actions)
+        if any(kinds) == 'BET':
+            return some_bet_state
+        if all(kinds) == 'FOLD' and self.position == self.num_players:
+            return 1
+        
 
     def update_state(self) -> Dict[str, Any]:
-        sblind = self.get_blind("small")
-        lblind = self.get_blind("big")
         potval = self.get_pot_value()
         position = self.get_position()
         min_bet = self.get_minimum_bet()
         actions = self.get_actions()
-        return {
-            "small_blind": sblind,
-            "big_blind": lblind,
+        valid_actions:List[Action] = self.calculate_valid_actions()
+        return deepcopy({
             "pot_value": potval,
             "position": position,
             "min_bet": min_bet,
             "actions": actions,
-        }
+            "valid_actions" : valid_actions
+        })
 
 
 class Dealer:
@@ -1401,13 +1495,15 @@ class Dealer:
         self.deck = deck
         self.round = None
         self.discard_pile = []
-        self.round_count = None
+        self.round_count = 0
         self.player_namer = PlayerNamer()
+        self.player_names = []
 
-    def start_game(self, players: List[Player]) -> List[Player]:
+    def start_game(self, n_players:int) -> List[Player]:
         player_list = []
         self.round_count = 0
-        for player in players:
+        for _ in range(0, n_players):
+            player = Player()
             player = self.give_name(player)
             player_list.append(player)
         return player_list
@@ -1418,9 +1514,10 @@ class Dealer:
         return player
 
     def __repr__(self) -> str:
-        pot = self.get_pot_value()
-        fstring = "Game{name}, ante={ante}, maxdrop={maxdrop},pot={pot}"
-        return fstring.format(name=self.name, ante=self.ante, maxdrop=self.maxdrop)
+        pot = self.round.get_pot_value()
+        fstring = "Game({name}, ante={ante}, maxdrop={maxdrop},pot={pot})"
+        return fstring.format(name=self.name, ante=self.ante, maxdrop=self.maxdrop,
+                              pot = pot)
 
     def deals(self, players: List[Player]) -> List[Player]:
         """Takes a list of players (normally empty lists)
@@ -1442,9 +1539,21 @@ class Dealer:
         self.deck = deck
         return player
 
-    def take_action(self, player) -> None:
-        state = self.round.update_state()
-        action = player.send_action(state)
+    def take_action(self, player, action=None) -> None:
+        state = self.update_state(self.round)
+        if not action:
+            
+            action = player.send_action(state)
+        else:
+            action = player.send_action(state, action)
+        
+        if self.is_valid_action(action):
+            self.accept_action(action)
+        else:
+            raise ValueError("action is not valid")
+    
+
+    def accept_action(self, action) -> None:
         self.round.set_action(action)
 
     def compare(self, players):
@@ -1461,36 +1570,40 @@ class Dealer:
         self.round = r
         players = self.round.get_blinds(players)
         players = self.deals(players)
+        names = [p.name for p in players]
         return r
 
-    def end_round(self, players: List[Player]) -> None:
+    def end_round(self, round) -> None:
+        pot = round.get_pot_value()
+        actions = round.get_actions()
+
         self.round_count += 1
 
     def take_discards(self, cards: List[Card]) -> None:
         for card in cards:
             self.discard_pile.append(card)
 
-    def get_pot_value(self):
-        val = self.round.get_pot_value()
-        return val
-
-    def get_blind(self, blind_type):
-        return self.round.get_blind(blind_type)
-
-    def get_blinds(self, players: List[Player]) -> List[Player]:
-        return self.round.get_blinds(players)
-
-    def get_position(self):
-        return self.round.position
-
-    def set_position(self, position) -> None:
-        self.round.position = position
 
     def update_state(self, round):
-        return round.update_state()
+        state = round.update_state()
+        if state['valid_actions'] == 'END':
+            self.end_round()
+        return state
 
     def get_state(self, Round: Round):
         return self.update_state(Round)
+
+    def is_valid_action(self, action, state=None) -> bool:
+        is_valid = action.is_valid()
+        if not is_valid:
+            return False
+        if not state:
+            state = self.update_state(self.round)
+        if action=='CALL' and state["amount"]==0:
+            return False
+        else:
+            return True
+        
 
 
 def deal_cards(dealer: Dealer, players: List[Player]) -> Tuple[Dealer, List[Player]]:
@@ -1605,11 +1718,13 @@ from collections import defaultdict
 
 from .pkr import Hand, random_hand
 
-def generate_hands(n:int) -> List[Hand]:
-    manyhands = [random_hand() for _ in range(n)]
-    return(manyhands)
 
-def score_hand_distribution(hands:List[Hand]):
+def generate_hands(n: int) -> List[Hand]:
+    manyhands = [random_hand() for _ in range(n)]
+    return manyhands
+
+
+def score_hand_distribution(hands: List[Hand]):
     dist = {}
     scores = [hand.score() for hand in hands]
     assert len(scores) == len(hands)
@@ -1618,14 +1733,157 @@ def score_hand_distribution(hands:List[Hand]):
             dist[name] += 1
         except KeyError:
             dist[name] = 1
-            
-    return(dist)
-            
 
-
-
+    return dist
 #+end_src
 
+
+#+begin_src python :tangle deck/tests/test_action.py
+import pytest
+
+from deck.pkr import random_hand, Player, Dealer, Action
+
+
+
+def test_player_send_action() -> None:
+    dealer = Dealer()
+    p1, p2 = dealer.start_game(2)
+    round = dealer.start_round([p1, p2])
+    state = dealer.update_state(round)
+    action = p1.decide_action(state)
+    assert action.action() in ["CALL", "BET", "FOLD", "RAISE", "CHECK"]
+
+def test_action_can_get_name():
+    action = Action("FOLD", 0, "Richie")
+    assert action.get_name() == "Richie"
+
+def test_action_can_set_name():
+    action = Action("FOLD", 0, None)
+    action.set_name("Richie")
+    assert action.get_name() == "Richie"
+
+def test_action_cannot_set_name_if_not_none():
+    action = Action("FOLD", 0, "richie")
+    with pytest.raises(ValueError):
+        action.set_name("Eveline")
+
+
+def test_player_action_response_is_action() -> None:
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    state = dealer.update_state(round)
+    p1, p2, p3 = list_players
+    action = p1.send_action(state)
+    assert isinstance(action, Action)
+
+def test_dealer_updates_state_after_action() -> None:
+    dealer = Dealer()
+    list_players = dealer.start_game(n_players = 3)
+    round = dealer.start_round(list_players)
+    state = round.update_state()
+    dealer.take_action(list_players[0])
+    state2 = dealer.get_state(round)
+    assert len(state2['actions']) > len(state['actions'])
+
+
+def test_dealer_associates_player_name_with_action() -> None:
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    state_0 = round.update_state()
+    dealer.take_action(list_players[0])
+    state_1 = round.update_state()
+    p1_name = list_players[0].name
+    assert state_1['actions'][0].name == p1_name
+    # assert state_1['action'][p1_name] is not None
+
+    
+# def test_dealer_can_take_one_action_from_all_players() -> None:
+#     dealer = Dealer()
+#     list_players = dealer.start_game(3)
+#     round = dealer.start_round(list_players)
+#     for player in list_players:
+#         dealer.take_action(player)
+#         state = dealer.update_state(round)
+#     # assert state is None
+#     assert len(state['actions']) == len(list_players)
+
+def test_action_is_one_of_four_actions():
+    bet = Action(kind='BET', amount=100)
+    assert isinstance(bet, Action)
+
+def test_action_fold_cannot_have_an_amount_greater_than_zero():
+    wrong_fold = Action(kind='FOLD', amount=100)
+    assert not wrong_fold.is_valid()
+    
+
+
+def test_bet_must_have_an_amount_greater_than_zero():
+    wrong_bet = Action(kind='BET', amount=0)
+    assert not wrong_bet.is_valid()
+
+
+
+def test_call_cannot_have_amount_of_zero():
+    dealer = Dealer()
+    wrong_call = Action(kind='CALL', amount=0)
+    wrong_call.set_name("Eveline")
+    assert not dealer.is_valid_action(wrong_call)
+
+def test_dealer_take_action_can_be_passed_an_action():
+    dealer = Dealer()
+    p1, p2 = dealer.start_game(2)
+    round = dealer.start_round([p1, p2])
+    action = Action("FOLD", 0)
+    print(action)
+    dealer.take_action(player=p1, action=action)
+    
+    
+
+def test_not_all_players_can_fold():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    p1, p2, p3 = list_players
+    dealer.take_action(p1, Action("FOLD", 0))
+    dealer.take_action(p2, Action("FOLD", 0))
+    state = dealer.update_state(round)
+    assert state['valid_actions'] is None
+
+
+
+def test_dealer_can_provide_list_of_valid_actions():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    state = dealer.update_state(round)
+    assert state['valid_actions'] is not None
+
+
+def test_dealer_only_check_bet_and_fold_possible_for_first_player():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    state = dealer.update_state(round)
+    valid_actions = [a.action() for a in state['valid_actions']]
+    assert ['CHECK', 'BET', 'FOLD'] ==  valid_actions
+
+
+
+
+
+def test_player_can_only_take_a_valid_action():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    state = dealer.update_state(round)
+    p1 = list_players[0]
+    p1_action = p1.send_action(state)
+    val_act = [a.action() for a in state['valid_actions']]
+    assert p1_action.action() in val_act
+    
+#+end_src
 
 #+begin_src python :tangle deck/tests/test_stats.py
 from deck.pkr import random_hand, Round
@@ -1658,7 +1916,7 @@ def test_score_hand_dist_returns_scores() -> None:
 - We need to create an empty ~__init_file.py~  for /reasons/. 
 
 #+BEGIN_SRC python :tangle deck/tests/test_cards.py
-# type: ignore 
+# type: ignore
 import pytest
 from deck.pkr import Rank, Suit, Card, Round
 
@@ -1672,9 +1930,11 @@ def generate_suit(num) -> Suit:
     s = Suit(num)
     return s
 
+
 def test_suit_min() -> None:
     with pytest.raises(ValueError):
         suit = generate_suit(0)
+
 
 def test_suit_max() -> None:
     with pytest.raises(ValueError):
@@ -1685,6 +1945,7 @@ def test_rank_min() -> None:
     with pytest.raises(ValueError):
         rank = generate_rank(1)
 
+
 def test_rank_max() -> None:
     with pytest.raises(ValueError):
         rank = generate_rank(15)
@@ -1693,45 +1954,51 @@ def test_rank_max() -> None:
 # ace_of_spades = Card(Suit(1), Rank(14))
 # def test_suit_and_rank():
 #     assert (ace_of_spades == Card(Suit(1), Rank(14)))
-    
+
 Ace = Rank(14)
 Deuce = Rank(2)
 
+
 def test_rank_ordering() -> None:
     assert Ace > Deuce
+
 
 def test_wrong_rank_ordering() -> None:
     with pytest.raises(AssertionError):
         assert Deuce > Ace
 
+
 def test_court_cards() -> None:
     assert Rank(13) > Rank(12) > Rank(11)
+
 
 def test_card_equality() -> None:
     c1 = Card(Rank(14), Suit(1))
     c2 = Card(Rank(14), Suit(1))
     assert c1 == c2
 
+
 def test_card_notequal() -> None:
     c1 = Card(Rank(14), Suit(1))
     c2 = Card(Rank(14), Suit(2))
     assert c1 != c2
 
+
 def test_card_wrong_order_fails() -> None:
     with pytest.raises(AssertionError):
         Card(Suit(1), Rank(2))
+
 
 def test_card_greater_than() -> None:
     c1 = Card(Rank(14), Suit(1))
     c2 = Card(Rank(13), Suit(2))
     assert c1 > c2
 
+
 def test_card_less_than() -> None:
     c1 = Card(Rank(14), Suit(1))
     c2 = Card(Rank(13), Suit(2))
-    assert c2  <   c1
-
-
+    assert c2 < c1
 #+END_SRC
 
 After setting the empty file as above, tests can be ran with the
@@ -1743,62 +2010,87 @@ pytest --help #for far too much information
 #+END_SRC
 
 #+begin_src python :tangle deck/tests/test_hypothesis.py
-import deck.pkr
-from deck.pkr import Hand, Card, Player, Round
-from hypothesis import given, assume, strategies as st
+import pytest
 from typing import List
+
+from hypothesis import given, assume, strategies as st
+
+
+import deck.pkr
+from deck.pkr import Hand, Card, Player, Round, random_hand
+
 
 
 @given(rank=st.sampled_from(deck.pkr.Rank), suit=st.sampled_from(deck.pkr.Suit))
 def test_fuzz_Card(rank, suit) -> None:
     deck.pkr.Card(rank=rank, suit=suit)
 
+
 @given(cards=st.sets(st.builds(Card)))
 def test_fuzz_Hand(cards) -> None:
-    assume(len(cards)<=5)
+    assume(len(cards) <= 5)
     deck.pkr.Hand(cards=cards)
 
-@given(hand=st.builds(Hand))
+
+@given(hand=st.builds(random_hand))
 def test_fuzz_discard_cards(hand: Hand) -> None:
-    assume(len(hand)<=5)
+    assume(len(hand) <= 5)
     deck.pkr.discard_cards(hand=hand)
 
-@given(hand=st.builds(Hand))
+
+@given(hand=st.builds(random_hand))
 def test_fuzz_score_hand(hand) -> None:
-    assume(len(hand)<=5)
+    assume(len(hand) <= 5)
     hand.score()
+
 
 @given(name=st.just("poker"), ante=st.just(100))
 def test_fuzz_Dealer(name, ante) -> None:
     deck.pkr.Dealer(name=name, ante=ante)
+
 
 # @given(name=st.just("poker"), ante=st.just(100), players=st.integers(1, 10))
 # def test_fuzz_Dealer_start_game(name, ante, players):
 #     dealer = deck.pkr.Dealer(name=name, ante=ante)
 #     players = dealer.start_game(integers)
 
-@given(name=st.just("poker"), ante=st.just(100), players=st.lists(st.builds(Player)))
-def test_fuzz_Dealer_start_round(name, ante, players: List[Player]) -> None:
+@pytest.mark.slow
+@given(name=st.just("poker"), ante=st.just(100), n_players=st.integers(1, 10))
+def test_fuzz_Dealer_start_round(name, ante, n_players: int) -> None:
     dealer = deck.pkr.Dealer(name=name, ante=ante)
-    assume(len(players)>1 and len(players)<10)
+    players = dealer.start_game(n_players)
     players = dealer.start_round(players)
-
 #+end_src
 
 #+BEGIN_SRC python :tangle deck/tests/test_hand.py
-# type: ignore 
+# type: ignore
 import pytest
-from deck.pkr import (Card, Suit, Rank, Hand, random_suit, random_rank, random_card,
-                 random_hand, Round, make_straight)
+
+
+from deck.pkr import (
+    Card,
+    Suit,
+    Rank,
+    Hand,
+    random_suit,
+    random_rank,
+    random_card,
+    random_hand,
+    Round,
+    make_straight
+)
+
+
+
 ace_spades = Card(Rank(14), Suit(1))
 king_clubs = Card(Rank(13), Suit(2))
 hand = Hand([ace_spades, king_clubs])
 fake_hand = [1, 2, 3]
 
+
 def test_repr_hand() -> None:
     hand = random_hand()
     assert isinstance(repr(hand), str)
-
 
 
 def test_fake_hand() -> None:
@@ -1824,30 +2116,36 @@ def test_random_rank() -> None:
 def test_random_card() -> None:
     assert isinstance(random_card(), Card)
 
+
 def test_random_card_suit() -> None:
     c = random_card()
     assert isinstance(c.get_suit(), Suit)
-    
+
 
 def test_random_hand() -> None:
     rhand = random_hand()
     assert isinstance(rhand, Hand)
 
+
 def test_get_suit() -> None:
     c = Card(Rank(2), Suit(1))
     assert c.get_suit() == Suit(1)
+
 
 def test_get_rank() -> None:
     c = Card(Rank(2), Suit(1))
     assert c.get_rank() == Rank(2)
 
+
 def test_get_suit_type() -> None:
     c = random_card()
     assert isinstance(c.get_suit(), Suit)
 
+
 def test_get_rank_type() -> None:
     c = random_card()
-    assert isinstance(c.get_rank(), Rank)    
+    assert isinstance(c.get_rank(), Rank)
+
 
 # def test_hand_get_suits() -> None:
 #     rhand = random_hand()
@@ -1873,24 +2171,36 @@ def test_hand_score_straight_comparison():
     handscore5, _ = straight5.score()
     handscore6, _ = straight6.score()
     assert handscore6 > handscore5
+
 #+END_SRC
 
 
 
 #+BEGIN_SRC python :tangle deck/tests/test_deck.py
-# type: ignore 
+# type: ignore
 import pytest
 
-from deck.pkr import Card, Deck, Player, Suit, Rank, random_hand, Hand, deal_cards, Round
+from deck.pkr import (
+    Card,
+    Deck,
+    Player,
+    Suit,
+    Rank,
+    random_hand,
+    Hand,
+    deal_cards,
+    Round,
+)
 
 
 def test_deck_length() -> None:
     deck = Deck()
     assert len(deck) == 52
 
+
 def test_deck_deal() -> None:
     deck = Deck()
-    card = deck.deal(num_cards = 1)
+    card = deck.deal(num_cards=1)
     assert isinstance(card, Card)
 
 
@@ -1898,53 +2208,73 @@ def test_deck_getitem() -> None:
     first_card = Deck()[0]
     assert isinstance(first_card, Card)
 
+
 def test_deck_deal_hand() -> None:
     d = Deck()
     hand = d.deal(num_cards=5)
-    assert len(hand)==5
+    assert len(hand) == 5
 
 
 def test_hand_uniqueness() -> None:
     rhand = random_hand()
     assert len(set(rhand.cards)) == len(rhand.cards)
 
+
 def test_deck_length_after_dealing() -> None:
     d = Deck()
     cards = d.deal(num_cards=2)
     assert len(d) + len(cards) == 52
+
 
 def test_negative_number_deal() -> None:
     d = Deck()
     with pytest.raises(ValueError):
         d.deal(-1)
 
+
 def test_hand_rejects_invalid_card_combinations() -> None:
     invalid_hand = [Card(Rank(2), Suit(1)), Card(Rank(2), Suit(1))]
     with pytest.raises(ValueError):
         Hand(invalid_hand)
+
 
 def test_deck_deal_one_card() -> None:
     d = Deck()
     cards = d.deal(num_cards=1)
     assert len(d) + len(cards) == 52
 
+
 def test_deck_shuffle() -> None:
     d = Deck()
     len1 = len(d)
     d.shuffle()
     assert len(d) == len1
-
-
 #+END_SRC
 
 
 #+BEGIN_SRC python :tangle deck/tests/test_card_functions.py
-from deck.pkr import (Card, Player, Suit, Rank,  Deck, Hand, deal_cards,
-                      random_hand, anyrep,
-                      make_straight,
-                      make_flush, discard_cards, Dealer, Round,
-                      get_ranks_from_repeated_cards,
-                      convert_rank_enum_to_integer)
+from deck.pkr import (
+    Card,
+    Player,
+    Suit,
+    Rank,
+    Deck,
+    Hand,
+    deal_cards,
+    random_hand,
+    anyrep,
+    make_straight,
+    make_flush,
+    discard_cards,
+    Dealer,
+    Round,
+    get_ranks_from_repeated_cards,
+    convert_rank_enum_to_integer,
+)
+
+
+
+
 def test_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
@@ -1953,7 +2283,8 @@ def test_deal_cards() -> None:
     cards_in_hand = 5
     d, p = deal_cards(d, list_players)
     p1, p2 = p
-    assert len(p1.hand)==5 and len(p2.hand) == 5
+    assert len(p1.hand) == 5 and len(p2.hand) == 5
+
 
 # def test_game_deal_cards() -> None:
 #     game = Game()
@@ -1964,36 +2295,211 @@ def test_deal_cards() -> None:
 #     p1, p2 = players
 #     assert len(game.deck) + len(p1.hand) + len(p2.hand) == 52
 
+
 def test_split_cards() -> None:
-    rhand = random_hand() 
+    rhand = random_hand()
     suits, ranks = rhand.split_cards()
     assert len(ranks) and len(suits) == 5
 
+
 def test_split_cards_suits() -> None:
-    rhand = random_hand() 
+    rhand = random_hand()
     suits, ranks = rhand.split_cards()
     assert isinstance(suits[0], Suit)
 
+
 def test_split_cards_ranks() -> None:
-    rhand = random_hand() 
+    rhand = random_hand()
     suits, ranks = rhand.split_cards()
     assert isinstance(ranks[0], Rank)
 
-    
+
 def test_count() -> None:
-    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
-            Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
-            Card(Rank(8),Suit(2))])
-    count_ranks = hand.count('ranks')
+    hand = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(14), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+        ]
+    )
+    count_ranks = hand.count("ranks")
     assert max(count_ranks.values()) == 3
 
 
 def test_repeated_cards() -> None:
+    hand = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(14), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+        ]
+    )
+    reps = hand.find_repeated_cards()
+    assert len(reps) == 2
+
+
+def test_repeated_cards_ace_pair() -> None:
+    hand = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(11), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(7), Suit(2)),
+        ]
+    )
+    reps = hand.find_repeated_cards()
+    assert len(reps) == 1
+    assert isinstance(list(reps.keys()).pop(), Rank)
+
+
+def test_hand_get_rank_from_repeated_cards() -> None:
+    hand = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(11), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(7), Suit(2)),
+        ]
+    )
+    reps = hand.find_repeated_cards()
+    assert get_ranks_from_repeated_cards(reps) == (Rank(14),)
+
+
+def test_hand_get_rank_from_repeated_cards_multiple_ranks() -> None:
+    hand = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(11), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+        ]
+    )
+    reps = hand.find_repeated_cards()
+    assert get_ranks_from_repeated_cards(reps) == (Rank(14), Rank(8))
+
+
+def test_hand_get_rank_from_repeated_cards_no_ranks() -> None:
+    hand = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(11), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+        ]
+    )
+    hand = make_flush()
+    reps = hand.find_repeated_cards()
+    assert get_ranks_from_repeated_cards(reps) == ()
+
+
+def test_hand_get_rank_from_repeated_cards_multiple_ranks_max_is_ace() -> None:
+    hand = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(11), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+        ]
+    )
+    reps = hand.find_repeated_cards()
+    assert max(get_ranks_from_repeated_cards(reps)) == 14
+
+
+def test_hand_get_rank_from_repeated_cards_multiple_ranks_twopair() -> None:
+    twopair = Hand(
+        [
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+            Card(Rank(2), Suit(1)),
+            Card(Rank(2), Suit(2)),
+            Card(Rank(5), Suit(3)),
+        ]
+    )
+
+    reps = twopair.find_repeated_cards()
+    assert max(get_ranks_from_repeated_cards(reps)) == 8
+
+
+def test_hand_convert_rank_to_int() -> None:
+    twopair = Hand(
+        [
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+            Card(Rank(2), Suit(1)),
+            Card(Rank(2), Suit(2)),
+            Card(Rank(5), Suit(3)),
+        ]
+    )
+
+    reps = twopair.find_repeated_cards()
+    assert convert_rank_enum_to_integer(reps) is not None
+    assert len(convert_rank_enum_to_integer(reps)) == 2
+    assert list(convert_rank_enum_to_integer(reps).values()) == [8, 2]
+
+
+def test_repeated_cards_ace_pair() -> None:
     hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
-            Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
+            Card(Rank(11), Suit(3)), Card(Rank(8),Suit(1)),
+            Card(Rank(7),Suit(2))])
+    reps = hand.find_repeated_cards()
+    assert len(reps)==1
+    assert isinstance(list(reps.keys()).pop(), Rank)
+
+def test_hand_get_rank_from_repeated_cards() -> None:
+    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+            Card(Rank(11), Suit(3)), Card(Rank(8),Suit(1)),
+            Card(Rank(7),Suit(2))])
+    reps = hand.find_repeated_cards()
+    assert get_ranks_from_repeated_cards(reps) == (Rank(14),)
+
+def test_hand_get_rank_from_repeated_cards_multiple_ranks() -> None:
+    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+            Card(Rank(11), Suit(3)), Card(Rank(8),Suit(1)),
             Card(Rank(8),Suit(2))])
     reps = hand.find_repeated_cards()
-    assert len(reps)==2
+    assert get_ranks_from_repeated_cards(reps) == (Rank(14), Rank(8))
+
+def test_hand_get_rank_from_repeated_cards_no_ranks() -> None:
+    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+            Card(Rank(11), Suit(3)), Card(Rank(8),Suit(1)),
+            Card(Rank(8),Suit(2))])
+    hand = make_flush()
+    reps = hand.find_repeated_cards()
+    assert get_ranks_from_repeated_cards(reps) == ()
+
+def test_hand_get_rank_from_repeated_cards_multiple_ranks_max_is_ace() -> None:
+    hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
+            Card(Rank(11), Suit(3)), Card(Rank(8),Suit(1)),
+            Card(Rank(8),Suit(2))])
+    reps = hand.find_repeated_cards()
+    assert max(get_ranks_from_repeated_cards(reps)) == 14
+
+def test_hand_get_rank_from_repeated_cards_multiple_ranks_twopair() -> None:
+    twopair = Hand([Card(Rank(8), Suit(1)), Card(Rank(8), Suit(2)),
+                    Card(Rank(2), Suit(1)), Card( Rank(2), Suit(2)),
+                    Card(Rank(5), Suit(3))])
+
+    reps = twopair.find_repeated_cards()
+    assert max(get_ranks_from_repeated_cards(reps)) == 8
+
+def test_hand_convert_rank_to_int() -> None:
+    twopair = Hand([Card(Rank(8), Suit(1)), Card(Rank(8), Suit(2)),
+                    Card(Rank(2), Suit(1)), Card( Rank(2), Suit(2)),
+                    Card(Rank(5), Suit(3))])
+
+    reps = twopair.find_repeated_cards()
+    assert convert_rank_enum_to_integer(reps) is not None
+    assert len(convert_rank_enum_to_integer(reps)) == 2
+    assert list(convert_rank_enum_to_integer(reps).values()) == [8, 2]
 
 def test_repeated_cards_ace_pair() -> None:
     hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
@@ -2061,9 +2567,11 @@ def test_straight_has_consecutive_numbers() -> None:
     ranks_int = [int(rank) for rank in ranks]
     assert ranks_int == [5, 6, 7, 8, 9]
 
+
 def test_is_flush_correct() -> None:
     flush = make_flush()
     assert flush.is_flush()
+
 
 def test_get_scores_scores_every_hand() -> None:
     rhand = random_hand()
@@ -2071,84 +2579,133 @@ def test_get_scores_scores_every_hand() -> None:
     assert rscore is not None
 
 
-
-
 def test_discard_cards() -> None:
-    testhand = Hand([Card(Rank(2), Suit(1)), Card(Rank(2), Suit(2)), Card(Rank(2), Suit(3)),
-                Card(Rank(8), Suit(1)), Card(Rank(7), Suit(4))])
+    testhand = Hand(
+        [
+            Card(Rank(2), Suit(1)),
+            Card(Rank(2), Suit(2)),
+            Card(Rank(2), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(7), Suit(4)),
+        ]
+    )
     keep, discarded = discard_cards(testhand)
     assert len(keep) == 3 and len(discarded) == 2
 
+
 def test_discard_cards_nothing() -> None:
-    testhand = Hand([Card(Rank(2), Suit(1)), Card(Rank(5), Suit(2)),
-                Card(Rank(14), Suit(3)), Card(Rank(7), Suit(1)),
-                Card(Rank(11), Suit(2))])
+    testhand = Hand(
+        [
+            Card(Rank(2), Suit(1)),
+            Card(Rank(5), Suit(2)),
+            Card(Rank(14), Suit(3)),
+            Card(Rank(7), Suit(1)),
+            Card(Rank(11), Suit(2)),
+        ]
+    )
     keep, discarded = discard_cards(testhand)
     assert len(keep) == 2 and len(discarded) == 3
+
 
 def test_discard_cards_straight() -> None:
     straight = make_straight(5)
     keep, discarded = discard_cards(straight)
     assert len(keep) == 5
 
+
 def test_discard_cards_flush() -> None:
     flush = make_flush()
     keep, discarded = discard_cards(flush)
     assert len(discarded) == 0
-
 #+END_SRC
 
 #+begin_src python :tangle deck/tests/test_score_hand.py
-from deck.pkr import Card, Suit, Rank, Hand,  make_straight, Round
+from deck.pkr import Card, Suit, Rank, Hand, make_straight, Round
 from deck.stats import generate_hands
+
+
 def test_score_full_house() -> None:
-    full_house = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
-                       Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
-                       Card(Rank(8),Suit(2))])
+    full_house = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(14), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+        ]
+    )
     score, name = full_house.score()
-    assert name == 'FULL-HOUSE'
+    assert name == "FULL-HOUSE"
+
 
 def test_score_pair() -> None:
-    pair = Hand([Card(Rank(8),Suit(1)), Card(Rank(8), Suit(2)),
-                 Card(Rank(2), Suit(1)), Card( Rank(3), Suit(2)),
-                 Card(Rank(5), Suit(3))])
+    pair = Hand(
+        [
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+            Card(Rank(2), Suit(1)),
+            Card(Rank(3), Suit(2)),
+            Card(Rank(5), Suit(3)),
+        ]
+    )
     score, name = pair.score()
-    assert name == 'PAIR'
-    
+    assert name == "PAIR"
+
+
 def test_score_straight() -> None:
     straight = make_straight(start=5)
     score, name = straight.score()
     ## make straight sometimes returns a straight flush
-    assert name.startswith('STRAIGHT')
+    assert name.startswith("STRAIGHT")
+
 
 def test_score_straight_flush() -> None:
-    straight_flush = Hand([Card( Rank(7),Suit(1)),  Card(Rank(8),Suit(1)),
-                           Card(Rank(9), Suit(1)), Card( Rank(10), Suit(1)),
-                           Card(Rank(11), Suit(1))])
+    straight_flush = Hand(
+        [
+            Card(Rank(7), Suit(1)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(9), Suit(1)),
+            Card(Rank(10), Suit(1)),
+            Card(Rank(11), Suit(1)),
+        ]
+    )
     score, name = straight_flush.score()
-    assert name == 'STRAIGHT-FLUSH'
+    assert name == "STRAIGHT-FLUSH"
+
 
 def test_score_three_of_a_kind() -> None:
-    three_of_a_kind = Hand([Card(Rank(14), Suit(1)), Card( Rank(14), Suit(2)),
-                            Card(Rank(14), Suit(3)), Card( Rank(3), Suit(1)),
-                            Card(Rank(5), Suit(1))])
+    three_of_a_kind = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(14), Suit(3)),
+            Card(Rank(3), Suit(1)),
+            Card(Rank(5), Suit(1)),
+        ]
+    )
     score, name = three_of_a_kind.score()
-    assert name == 'THREE-OF-A-KIND'
+    assert name == "THREE-OF-A-KIND"
+
 
 def test_score_twopair() -> None:
-    twopair = Hand([Card(Rank(8), Suit(1)), Card(Rank(8), Suit(2)),
-                    Card(Rank(2), Suit(1)), Card( Rank(2), Suit(2)),
-                    Card(Rank(5), Suit(3))])
+    twopair = Hand(
+        [
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+            Card(Rank(2), Suit(1)),
+            Card(Rank(2), Suit(2)),
+            Card(Rank(5), Suit(3)),
+        ]
+    )
     score, name = twopair.score()
-    assert name == 'TWO-PAIR'
+    assert name == "TWO-PAIR"
+
 
 def test_all_hands_can_be_scored() -> None:
     n = 1000
     manyhands = generate_hands(n)
     scores = [hand.score() for hand in manyhands]
     assert len(scores) == n
-
-
 #+end_src
 
 #+RESULTS:
@@ -2156,6 +2713,8 @@ def test_all_hands_can_be_scored() -> None:
 #+begin_src python :results none :tangle deck/tests/test_player.py
 from deck.pkr import Player, random_hand, Card, Suit, Rank, Dealer, Hand, Round
 import pytest
+
+
 def test_player_exists() -> None:
     player = Player()
     assert isinstance(player, Player)
@@ -2166,14 +2725,20 @@ def test_player_hand_score() -> None:
     player = Player(hand=rhand)
     assert player.scores() is not None
 
+
 def test_player_discard_cards() -> None:
-    twopair = [Card(Rank(8),Suit(1)), Card(Rank(8), Suit(2)),
-            Card(Rank(2), Suit(1) ), Card(Rank(2), Suit(2)),
-            Card( Rank(5), Suit(3))]
+    twopair = [
+        Card(Rank(8), Suit(1)),
+        Card(Rank(8), Suit(2)),
+        Card(Rank(2), Suit(1)),
+        Card(Rank(2), Suit(2)),
+        Card(Rank(5), Suit(3)),
+    ]
     player = Player(hand=twopair)
     discard = player.discard()
     keep = player.hand
-    assert len(keep)==4 and len(discard)==1
+    assert len(keep) == 4 and len(discard) == 1
+
 
 def test_player_bet_amount() -> None:
     p = Player()
@@ -2181,89 +2746,112 @@ def test_player_bet_amount() -> None:
     new_bet = p.bet(bet=bet)
     assert bet == new_bet
 
+
 def test_player_always_calculate_bet() -> None:
     hand = random_hand()
     p = Player(hand=hand)
-    assert p.bet() is not  None
+    assert p.bet() is not None
+
 
 def test_player_bet_always_positive() -> None:
     hand = random_hand()
     p = Player(hand=hand)
     assert p.bet() > 0
 
+
 def test_player_call() -> None:
     p = Player(hand=random_hand())
     assert p.call() is not None
 
+
 def test_player_call_true() -> None:
-    twopair = [Card(Rank(8),Suit(1)), Card(Rank(8), Suit(2)),
-            Card(Rank(2), Suit(1) ), Card(Rank(2), Suit(2)),
-            Card( Rank(5), Suit(3))]
+    twopair = [
+        Card(Rank(8), Suit(1)),
+        Card(Rank(8), Suit(2)),
+        Card(Rank(2), Suit(1)),
+        Card(Rank(2), Suit(2)),
+        Card(Rank(5), Suit(3)),
+    ]
     p = Player(hand=twopair)
     assert p.call() is True
 
 
 def test_player_call_false() -> None:
-    testhand = [Card(Rank(2), Suit(1)), Card(Rank(5), Suit(2)),
-                Card(Rank(14), Suit(3)), Card(Rank(7), Suit(1)),
-                Card(Rank(11), Suit(2))]
+    testhand = [
+        Card(Rank(2), Suit(1)),
+        Card(Rank(5), Suit(2)),
+        Card(Rank(14), Suit(3)),
+        Card(Rank(7), Suit(1)),
+        Card(Rank(11), Suit(2)),
+    ]
     p = Player(hand=testhand)
     assert p.call() is False
 
+
 def test_player_negative_bet_impossible() -> None:
-    hand = [Card(Rank(7), Suit.DIAMONDS),
-            Card(Rank(3), Suit.DIAMONDS),
-            Card(Rank(13), Suit.SPADES),
-            Card(Rank(9), Suit.DIAMONDS),
-            Card(Rank(5), Suit.SPADES)]
+    hand = [
+        Card(Rank(7), Suit.DIAMONDS),
+        Card(Rank(3), Suit.DIAMONDS),
+        Card(Rank(13), Suit.SPADES),
+        Card(Rank(9), Suit.DIAMONDS),
+        Card(Rank(5), Suit.SPADES),
+    ]
     player = Player(stash=5077, hand=hand)
     assert player.bet() > 0
-    
+
+
 def test_player_stash_identical() -> None:
     player = Player(stash=100)
     assert player.stash == 100
 
+
 def test_player_fold() -> None:
-    testhand = [Card(Rank(2), Suit(1)), Card(Rank(5), Suit(2)),
-                Card(Rank(14), Suit(3)), Card(Rank(7), Suit(1)),
-                Card(Rank(11), Suit(2))]
+    testhand = [
+        Card(Rank(2), Suit(1)),
+        Card(Rank(5), Suit(2)),
+        Card(Rank(14), Suit(3)),
+        Card(Rank(7), Suit(1)),
+        Card(Rank(11), Suit(2)),
+    ]
     player = Player(stash=100, hand=testhand)
     assert player.fold() is True
 
+
 def test_player_fold_false() -> None:
-    full_house = [Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
-                       Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
-                       Card(Rank(8),Suit(2))]
+    full_house = [
+        Card(Rank(14), Suit(1)),
+        Card(Rank(14), Suit(2)),
+        Card(Rank(14), Suit(3)),
+        Card(Rank(8), Suit(1)),
+        Card(Rank(8), Suit(2)),
+    ]
     player = Player(stash=100, hand=full_house)
     assert player.fold() is False
+
 
 def test_player_stash_default_correct() -> None:
     hand = random_hand()
     player = Player(hand=hand)
     assert player.stash == 5000
 
-def test_player_decide_action() -> None:
-    hand = random_hand()
-    player = Player(hand=hand)
-    p2 = Player()
-    dealer = Dealer()
-    round = dealer.start_round([player, p2])
-    state = dealer.get_state(round)
-    assert player.decide_action(state) is not None
+
+
+
 
 def test_player_cannot_go_into_debt() -> None:
     p = Player(stash=100)
     with pytest.raises(ValueError):
         p.bet(101)
 
+
 def test_player_can_pay() -> None:
-    p1 = Player()
-    p2 = Player()
     dealer = Dealer()
+    p1, p2 = dealer.start_game(2)
+
     round = dealer.start_round([p1, p2])
-    small_blind = round.get_blind('small')
-    pay_blind = p1.pay(small_blind)
-    assert pay_blind == small_blind
+    ante = dealer.ante
+    pay_blind = p1.pay(ante)
+    assert pay_blind == ante
 
 
 def test_player_add_card_to_hand() -> None:
@@ -2272,109 +2860,134 @@ def test_player_add_card_to_hand() -> None:
     p.add_card(c)
     assert len(p.hand) == 1
 
-def test_player_send_action() -> None:
-    p1 = Player()
-    p2 = Player()
-    dealer = Dealer()
-    p1, p2 = dealer.deals([p1, p2])
-    action = p1.decide_action()
-    assert action['action'] in ['CALL', 'BET', 'FOLD', 'RAISE']
+
+
+
 
 def test_player_has_name() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    list_players = dealer.start_game([p1, p2])
-    assert p1.name is not None
+    list_players = dealer.start_game(2)
+    assert list_players[0].name is not None
+
 
 def test_different_players_have_different_names() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    list_players = dealer.start_game([p1, p2])
+    list_players = dealer.start_game(2)
+    p1, p2 = list_players
     assert p1.name != p2.name
 
-def test_player_action_response_is_dict() -> None:
-    dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
-    round  = dealer.start_round([p1, p2, p3])
-    state = dealer.update_state(round)
-    action = p1.send_action(state)
-    assert isinstance(action, dict)
+
+
+
 
 def test_player_can_have_predetermined_hand() -> None:
-        full_house = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
-                       Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
-                       Card(Rank(8),Suit(2))])
-        twopair = Hand([Card(Rank(8),Suit(1)), Card(Rank(8), Suit(2)),
-            Card(Rank(2), Suit(1) ), Card(Rank(2), Suit(2)),
-            Card( Rank(5), Suit(3))])
-        p1 = Player(hand = full_house)
-        p2 = Player(hand = twopair)
-        dealer = Dealer()
-        round = dealer.start_round([p1, p2])
-        assert p1.hand == full_house # and p2.hand == twopair
+    full_house = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(14), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+        ]
+    )
+    twopair = Hand(
+        [
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+            Card(Rank(2), Suit(1)),
+            Card(Rank(2), Suit(2)),
+            Card(Rank(5), Suit(3)),
+        ]
+    )
+    dealer = Dealer()
+    p1, p2 = dealer.start_game(2)
+    p1.hand = full_house
+    p2.hand = twopair
+    
+    round = dealer.start_round([p1, p2])
+    assert p1.hand == full_house  # and p2.hand == twopair
+
 
 def test_player_hand_has_class_hand() -> None:
-    full_house = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
-                       Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
-                       Card(Rank(8),Suit(2))])
-    p1 = Player(hand=full_house)
-    p2 = Player()
+    full_house = Hand(
+        [
+            Card(Rank(14), Suit(1)),
+            Card(Rank(14), Suit(2)),
+            Card(Rank(14), Suit(3)),
+            Card(Rank(8), Suit(1)),
+            Card(Rank(8), Suit(2)),
+        ]
+    )
     dealer = Dealer()
+    p1, p2 = dealer.start_game(2)
+    p1.hand=full_house
     round = dealer.start_round([p1, p2])
     assert isinstance(p1.hand, Hand) and isinstance(p2.hand, Hand)
 
-def test_player_calls_if_has_good_hand() -> None:
-    full_house = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
-                       Card(Rank(14), Suit(3)), Card(Rank(8),Suit(1)),
-                       Card(Rank(8),Suit(2))])
-    twopair = Hand([Card(Rank(8),Suit(1)), Card(Rank(8), Suit(2)),
-                    Card(Rank(2), Suit(1) ), Card(Rank(2), Suit(2)),
-                    Card( Rank(5), Suit(3))])
-    p1 = Player(hand = full_house)
-    p2 = Player(hand = twopair)
-    dealer = Dealer()
-    round = dealer.start_round([p1, p2])
-    state = dealer.get_state(round)
-    p1_action = p1.send_action(state)
-    p2_action = p2.send_action(state)
-    assert p1_action['action'] and p2_action['action'] == 'CALL'
 
-
-
-# def test_round_adds_player_state() -> None:
+# def test_player_calls_if_has_good_hand() -> None:
+#     full_house = Hand(
+#         [
+#             Card(Rank(14), Suit(1)),
+#             Card(Rank(14), Suit(2)),
+#             Card(Rank(14), Suit(3)),
+#             Card(Rank(8), Suit(1)),
+#             Card(Rank(8), Suit(2)),
+#         ]
+#     )
+#     twopair = Hand(
+#         [
+#             Card(Rank(8), Suit(1)),
+#             Card(Rank(8), Suit(2)),
+#             Card(Rank(2), Suit(1)),
+#             Card(Rank(2), Suit(2)),
+#             Card(Rank(5), Suit(3)),
+#         ]
+#     )
+#     p1 = Player(hand=full_house)
+#     p2 = Player(hand=twopair)
 #     dealer = Dealer()
-#     p1 = Player()
-#     p2 = Player()
-#     p3 = Player()
-#     round = dealer.start_round([p1, p2, p3])
+#     dealer.start_game([p1, p2])
+#     round = dealer.start_round([p1, p2])
 #     state = dealer.get_state(round)
-#     action = p1.decide_action(round)
-#     assert p1.send_action(state) is not None
+#     p1_action = p1.send_action(state)
+#     p2_action = p2.send_action(state)
+#     assert p1_action["actions"]['action'] and p2_action["actions"]["action"] == "CALL"
 
+
+def test_round_adds_player_state() -> None:
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    state = dealer.get_state(round)
+    p1, p2, p3 = list_players
+    action = p1.decide_action(state)
+    assert p1.send_action(state) is not None
 #+end_src
 
 #+begin_src python :tangle deck/tests/test_game.py
 from deck.pkr import Dealer, Deck, Player, deal_cards, random_choice, Round
 import pytest
+
+
 def test_dealer_is_dealer() -> None:
     dealer = Dealer()
     assert isinstance(dealer, Dealer)
+
 
 def test_dealer_has_deck() -> None:
     dealer = Dealer()
     assert isinstance(dealer.deck, Deck)
 
+
 def test_dealer_pot_is_zero() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    round = dealer.start_round([p1, p2])
+    p1, p2 = dealer.start_game(2)
+    list_players = [p1, p2]
+    round = dealer.start_round(list_players)
     pot = round.get_pot_value()
-    assert pot == 300
+    assert pot == dealer.ante * len(list_players)
+
 
 def test_dealer_deal_cards() -> None:
     p1 = Player()
@@ -2385,6 +2998,7 @@ def test_dealer_deal_cards() -> None:
     list_players = dealer.deals(lp)
     p1, p2 = list_players
     assert len(dealer.deck) == 42
+
 
 def test_dealer_discard_pile_exists() -> None:
     d = Dealer()
@@ -2404,57 +3018,44 @@ def test_dealer_discard_pile_update() -> None:
 
 def test_round_state_gets_updated() -> None:
     d = Dealer()
-    p1 = Player()
-    p2 = Player()
+    p1, p2 = d.start_game(2)
     lp = d.start_round([p1, p2])
     state = d.get_state(lp)
     from pprint import pprint
+
     pprint(state)
     assert state is not None
 
 
-# def test_dealer_updates_state_after_action() -> None:
-#     dealer = Dealer()
-#     p1 = Player()
-#     p2 = Player()
-#     p3 = Player()
-#     list_players = [p1, p2, p3]
-#     round = dealer.start_round(list_players)
-#     state = round.update_state()
-#     p1_action = p1.decide_action(state)
-#     dealer.take_action(p1)
-#     assert dealer.get_state(round) != state
-
-
+def test_round_update_state() -> None:
+    dealer = Dealer()
+    list_players = dealer.start_game(n_players=3)
+    round = dealer.start_round(list_players)
+    player_1, player_2, player_3 = list_players
+    state1 = round.update_state()
+    dealer.take_action(player_1)
+    state2 = round.update_state()
+    assert state2 != state1
 
 
 def test_dealer_ask_for_action() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     list_players = [p1, p2, p3]
     round = dealer.start_round(list_players)
     state = dealer.get_state(round)
     p1_action = p1.decide_action(state)
     p2_action = p2.decide_action(state)
     p3_action = p3.decide_action(state)
-    assert all([p1_action, p2_action, p3_action]) is not  None
+    assert all([p1_action, p2_action, p3_action]) is not None
 
 
-
-
-
-
-
-
-
-    
 def test_dealer_update_cards() -> None:
     p1 = Player()
     dealer = Dealer()
     p1 = dealer.update_cards(p1)
     assert len(p1.hand) == 5
+
 
 def test_dealer_update_cards_two_player() -> None:
     p1 = Player()
@@ -2463,35 +3064,49 @@ def test_dealer_update_cards_two_player() -> None:
     with pytest.raises(ValueError):
         dealer.update_cards([p1, p2])
 
-    
-    
+
 def test_dealer_keeps_track_of_completed_rounds() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    list_players = dealer.start_game([p1, p2])
+    list_players = dealer.start_game(2)
     round = dealer.start_round(list_players)
     assert dealer.round_count is not None
 
 
 def test_dealer_can_compare_players() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    list_players = dealer.start_game([p1, p2])
+    list_players = dealer.start_game(2)
     round = dealer.start_round(list_players)
-    assert dealer.compare([p1, p2]) is not None
+    assert dealer.compare(list_players) is not None
+
+
+def test_dealer_start_game_creates_n_players() -> None:
+    dealer = Dealer()
+    n_players = 3
+    players = dealer.start_game(n_players=n_players)
+    assert len(players) == 3
+
+
+# def test_dealer_can_validate_action() -> None:
+#     dealer = Dealer()
+#     list_players = dealer.start_game(4)
+#     round = dealer.start_round(list_players)
+#     first_player = list_players[0]
+#     state = dealer.update_state(round)
+#     action = first_player.send_action(state)
+#     print(action)
+#     assert dealer.is_valid_action(action) is True
+
+
 
 #+end_src
 
 #+begin_src python :tangle deck/tests/test_round.py
-from deck.pkr import Round, Dealer, Player, random_choice
+from deck.pkr import Round, Dealer, Player, random_choice, Action
 
 
 def test_dealer_round_is_round() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
+    p1, p2 = dealer.start_game(2)
     round =  dealer.start_round([p1, p2])
     assert isinstance(round, Round)
 
@@ -2503,39 +3118,23 @@ def test_round_exists() -> None:
 
 
 
-def test_dealer_set_blind() -> None:
+def test_round_get_blinds() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    round = dealer.start_round([p1, p2])
-    small_blind = round.get_blind('small')
-    big_blind = round.get_blind('big')
-    assert big_blind > small_blind
-
-def test_round_get_blind() -> None:
-    dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
-    list_players = [p1, p2, p3]
+    list_players = dealer.start_game(3)
     round = dealer.start_round(list_players)
     assert round.get_pot_value() == 300
 
 def test_dealer_has_state() -> None:
-    p1 = Player()
-    p2 = Player()
-    
     dealer = Dealer()
+    p1, p2 = dealer.start_game(2)
     round = dealer.start_round([p1, p2])
     state = dealer.get_state(round)
     assert state is not None
 
 
 def test_round_state_is_dict() -> None:
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
     dealer = Dealer()
+    p1, p2, p3 = dealer.start_game(3)
     round = dealer.start_round([p1, p2, p3])
     state = dealer.get_state(round)
     assert isinstance(state, dict)
@@ -2543,18 +3142,14 @@ def test_round_state_is_dict() -> None:
 
 def test_round_state_has_pot_value() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
+    p1, p2 = dealer.start_game(2)
     round = dealer.start_round([p1, p2])
     state = dealer.get_state(round)
     assert state['pot_value'] is not None
 
 def test_round_pot_value_state() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
-    list_players = [p1, p2, p3]
+    list_players = dealer.start_game(3)
     round = dealer.start_round(list_players)
     state = dealer.get_state(round)
     assert state['pot_value'] == 300
@@ -2562,20 +3157,16 @@ def test_round_pot_value_state() -> None:
 
 def test_round_state_has_player_pos() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round = dealer.start_round([p1, p2, p3])
     state = dealer.get_state(round)
     assert state['position'] is not None
 
 
 def test_round_set_position() -> None:
-    
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    list_players = [p1, p2]
+    
+    list_players = dealer.start_game(3)
     pos = random_choice(0, len(list_players))
     round = dealer.start_round(list_players)
     round.set_position(pos)
@@ -2584,44 +3175,58 @@ def test_round_set_position() -> None:
 
 def test_round_takes_a_list_of_players() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round = dealer.start_round([p1, p2, p3])
     assert round is not None
 
 def test_round_returns_players_with_hands() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round = dealer.start_round([p1, p2, p3])
     assert (len(p1.hand) == 5 and len(p2.hand) == 5
             and len(p3.hand) == 5)
 
 def test_round_has_minimum_bet() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round  = dealer.start_round([p1, p2, p3])
     assert dealer.get_state(round)['min_bet'] is not None
 
 def test_round_has_minimum_bet_greater_than_zero() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round  = dealer.start_round([p1, p2, p3])
     assert dealer.get_state(round)['min_bet'] > 0 
 
 
 def test_round_minimum_bet_equal_to_sum_of_bets() -> None:
     dealer = Dealer()
-    p1 = Player()
-    p2 = Player()
-    p3 = Player()
+    p1, p2, p3 = dealer.start_game(3)
     round  = dealer.start_round([p1, p2, p3])
+
+def test_round_can_update_minimum_bet():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    state = dealer.update_state(round)
+    p1, p2, p3 = list_players
+    action = p1.send_action(state=state, action = Action("BET", 100))
+    dealer.accept_action(action)
+    state = dealer.update_state(round)
+    action2 = p2.send_action(state = state, action = Action("BET", 100))
+    state = dealer.update_state(round)
+    assert state['min_bet'] == 100
+
+def test_player_can_pass_in_action_argument_to_send_action():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    state = dealer.update_state(round)
+    p1, _, _ = list_players
+    # print(state)
+    action = p1.send_action(state = state, action=Action("BET", 100))
+    assert action.action() == "BET" and action.amount == 100
+    
 
 #+end_src
 
@@ -2632,8 +3237,8 @@ def test_round_minimum_bet_equal_to_sum_of_bets() -> None:
 **** DONE small blind
 **** DONE large blind
 **** DONE deal cards to players
-- Wrap up all of these functions into a start round one, which returns players with Hands
-**** send players state so they can decide action
+***** DONE Wrap up all of these functions into a start round one, which returns players with Hands
+**** DONE send players state so they can decide action
   - have player decide on action based on state
   - internal state (cards held)
   - external state (position, pot value, actions of other players)
@@ -2642,36 +3247,59 @@ def test_round_minimum_bet_equal_to_sum_of_bets() -> None:
 - also have a bunch of functions that act on hand objects
 - should join them together in holy matrimony/encapsulation
 ***** TODO deal_cards apparently isn't used anywhere, delete
-***** Player Updates
-****** Change player function names to calculate_bet, call etc
-****** Make use of state object to decide action
-***** Dealer Updates
-****** Add dealer get action function
-****** Add dealer logic for round structure
-****** Add dealing of cards to start_round
-***** Deck Object
-****** Move discard pile to deck object
-****** Move replenish_cards and update_cards to dealer object
-***** Round Structure
-****** bet/call/fold in order
-****** discard cards
-****** get new cards
-****** bet/call/fold in order
-****** finish round
-  - award pot
-  - reset deck and cards
-  - log player/dealer state
+**** Player Updates
+***** Change player function names to calculate_bet, call etc
+***** DONE Make use of state object to decide action
+**** Dealer Updates
+***** DONE Add dealer get action function
+***** Add dealer logic for round structure
+***** DONE Add dealing of cards to start_round
+**** Deck Object
+***** Move discard pile to deck object
+***** Move replenish_cards and update_cards to dealer object
+**** Round Structure
+***** bet/call/fold in order
+- Almost done, just need to handle the case where all but one player folds     
+***** discard cards
+***** get new cards
+***** bet/call/fold in order
+***** finish round
+ - award pot
+ - reset deck and cards
+ - log player/dealer state
+
+**** Card API
+***** TODO change equality function to make 10H and 10S equal
+- Use this to simplify logic in hand scoring etc
+- note that gt method and eq method are very different (gt only uses
+  rank)
+**** Hand API
+
+***** DONE Fix Set[Card] issue
+- I only added this to make hypothesis work, but it's ugly and stupid
+- Fix the hypothesis test so that the type can be List[Card]
+- move logic in __init__ to separate function (validate_hand)
+  
+****** TODO Fix hand equality 
+- If same cards are in different order, will return False incorrectly
+- in general, it's impossible for two hands to be equal as it requires
+  the exact same cards
+- This is clearly impossible
+****** TODO make sure that __iter__ and __next__ actually work (they look kinda weird)
 
 
-** Design Thoughts
+** Design Thoughts :noexport:
 
 - I can see that the deal_cards API is not great
 - I have to do lots of jiggery-pokery to actually run the test
 - it's much harder than for the other functions
 
-- I probably need a dealer abstraction to hold the deck and the discard pile. 
-- in general, i could probably just call the Deck with the players to deal
-- note that the rules for dealing differ based on the stage of the game
+- I probably need a dealer abstraction to hold the deck and the
+  discard pile.
+- in general, i could probably just call the Deck with the players to
+  deal
+- note that the rules for dealing differ based on the stage of the
+  game
 - Useful overview of basic rules [[https://www.bigfishgames.com/blog/casino/poker-guide/poker-gameplay/][here]]
 - seems that cards will always be dealt one at a time to each player
 - normally around to the left
@@ -2713,3 +3341,4 @@ I should figure out how to do this for R and other languages.
 # org-src-preserve-indentation: t
 # org-edit-src-content-indentation: 4
 # End:
+
