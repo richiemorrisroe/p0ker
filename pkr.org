@@ -796,7 +796,7 @@ game this paper presents an approach towards solving this problem
 - DeepStack uses "continual re-solving" (hopefully this will make more
   sense when I have details)
 
-*  Testing :noexport:
+* COMMENT Testing                                                
 
 I need some tests, as I now have no idea what I was getting at before
 :(
