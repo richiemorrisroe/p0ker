@@ -300,6 +300,7 @@ def convert_rank_enum_to_integer(ranks) -> Dict[Rank, int]:
     return rank_ints
 
 
+
 def random_choice(upper: int, lower: int) -> int:
     """Choose an int between upper and lower, uniformly at random"""
     x = random.randint(upper, lower)

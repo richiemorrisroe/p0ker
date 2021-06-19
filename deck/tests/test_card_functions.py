@@ -1,4 +1,3 @@
-
 from deck.pkr import (
     Card,
     Player,
@@ -275,7 +274,7 @@ def test_hand_get_rank_from_repeated_cards_no_ranks() -> None:
             Card(Rank(8),Suit(2))])
     hand = make_flush()
     reps = hand.find_repeated_cards()
-    assert get_ranks_from_repeated_cards(reps) is ()
+    assert get_ranks_from_repeated_cards(reps) == ()
 
 def test_hand_get_rank_from_repeated_cards_multiple_ranks_max_is_ace() -> None:
     hand = Hand([Card(Rank(14), Suit(1)), Card(Rank(14),Suit(2)),
