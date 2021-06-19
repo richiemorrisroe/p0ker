@@ -796,7 +796,7 @@ game this paper presents an approach towards solving this problem
 - DeepStack uses "continual re-solving" (hopefully this will make more
   sense when I have details)
 
-*  Testing
+*  Testing :noexport:
 
 I need some tests, as I now have no idea what I was getting at before
 :(
@@ -3227,8 +3227,29 @@ def test_player_can_pass_in_action_argument_to_send_action():
     
 
 #+end_src
+* What is this?
 
-** Next Steps
+  This is an attempt at building a poker simulator (five-card stud) in
+  Python.  It began as an attempt to get better at Python, but ended
+  up as an attempt to become better at software engineering.
+
+  The code is pretty rigourously unit-tested, but has no documentation
+  (in contrast to other work, which has docs but is not well unit-tested). 
+
+  I've ended up learning a bunch of stuff about Python, managing
+  complexity and TDD (along with property based testing and linting). 
+
+  This is a side-project, so by definition is not done.
+
+  That being said, I'm reasonably close to being able to run a betting
+  round between n players and one dealer. 
+
+  One day, if I have time [fn:1], I hope to get this working with my
+  objected-oriented design, and expose a Gym API so that I could try
+  RL alogorithms on it. That would be cool, and if it ever happens, I
+  promise to update this README within six months of the date of that happening! 
+  
+* Next Steps
    
 *** DONE Add round to dealer object
 
@@ -3334,7 +3355,9 @@ pygraph
 The resulting graph seems useful.
 I should figure out how to do this for R and other languages. 
 
+* Footnotes
 
+[fn:1] i recently had a child, it's unlikely that I'll have this time 
 # Local Variables:
 # org-src-preserve-indentation: t
 # org-edit-src-content-indentation: 4
