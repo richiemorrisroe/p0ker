@@ -1,13 +1,13 @@
-g
+
 # Table of Contents
 
-1.  [What is this?](#orga739aee)
-2.  [Next Steps](#orgfd50768)
-        1.  [Add round to dealer object](#orgc308238)
+1.  [What is this?](#org4bfc5bc)
+2.  [Next Steps](#org04242bc)
+        1.  [Add round to dealer object](#org8342041)
 
 
 
-<a id="orga739aee"></a>
+<a id="org4bfc5bc"></a>
 
 # What is this?
 
@@ -32,12 +32,12 @@ RL alogorithms on it. That would be cool, and if it ever happens, I
 promise to update this README within six months of the date of that happening! 
 
 
-<a id="orgfd50768"></a>
+<a id="org04242bc"></a>
 
 # Next Steps
 
 
-<a id="orgc308238"></a>
+<a id="org8342041"></a>
 
 ### DONE Add round to dealer object
 
@@ -61,11 +61,11 @@ promise to update this README within six months of the date of that happening!
     -   also have a bunch of functions that act on hand objects
     -   should join them together in holy matrimony/encapsulation
     
-    1.  TODO deal<sub>cards</sub> apparently isn't used anywhere, delete
+    1.  TODO deal\_cards apparently isn't used anywhere, delete
 
 6.  Player Updates
 
-    1.  Change player function names to calculate<sub>bet</sub>, call etc
+    1.  Change player function names to calculate\_bet, call etc
     
     2.  DONE Make use of state object to decide action
 
@@ -75,13 +75,13 @@ promise to update this README within six months of the date of that happening!
     
     2.  Add dealer logic for round structure
     
-    3.  DONE Add dealing of cards to start<sub>round</sub>
+    3.  DONE Add dealing of cards to start\_round
 
 8.  Deck Object
 
     1.  Move discard pile to deck object
     
-    2.  Move replenish<sub>cards</sub> and update<sub>cards</sub> to dealer object
+    2.  Move replenish\_cards and update\_cards to dealer object
 
 9.  Round Structure
 
@@ -115,7 +115,7 @@ promise to update this README within six months of the date of that happening!
     
         -   I only added this to make hypothesis work, but it's ugly and stupid
         -   Fix the hypothesis test so that the type can be List[Card]
-        -   move logic in <span class="underline"><span class="underline">init</span></span> to separate function (validate<sub>hand</sub>)
+        -   move logic in <span class="underline"><span class="underline">init</span></span> to separate function (validate\_hand)
         
         1.  TODO Fix hand equality
         

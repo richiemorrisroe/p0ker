@@ -1,3 +1,4 @@
+
 from copy import deepcopy
 from enum import Enum, IntEnum
 import logging
@@ -9,7 +10,7 @@ import sys
 from typing import Union, List, Dict, Tuple, Optional, Set, Any
 
 
-logging.basicConfig(filename="test.log", encoding='utf-8', level=logging.INFO)
+logging.basicConfig(filename="test.log", level=logging.INFO)
 # root = logging.getLogger()
 # handler = logging.StreamHandler(sys.stdout)
 # handler.setLevel(logging.INFO)
@@ -89,7 +90,7 @@ class Card:
 class Hand:
     """A hand holds cards from a particular deck"""
 
-    def __init__(self, cards: List[Card]) -> None:
+    def __init__(self, cards:Union[Card, List[Card]]) -> None:
         all_cards = [x for x in cards if isinstance(x, Card)]
         cards_set = set(cards)
         if len(all_cards) != len(cards):
@@ -141,10 +142,13 @@ class Hand:
         else:
             self.cards.append(card)
 
-    def count(self, suit_or_rank=None):
+    def count(self, suit_or_rank='suit'):
         """Take either a list of suits of ranks and returns
         a dict with the counts of each.
         Used as input to checking functions"""
+        vals = suit_or_rank
+        if not suit_or_rank:
+            suit_or_rank = "suits"
         suits, ranks = self.split_cards()
         if suit_or_rank == "suits":
             vals = suits
@@ -242,7 +246,7 @@ class Hand:
         flush = hand.is_flush()
         straight = hand.is_straight()
         pairs = hand.find_repeated_cards()
-
+        handscore, scorename = scores['NOTHING'], 'NOTHING' 
         suits, ranks = self.split_cards()
         max_rank = max(list(convert_rank_enum_to_integer(ranks)))
         ranks = get_ranks_from_repeated_cards(pairs)
@@ -265,23 +269,23 @@ class Hand:
         return handscore, scorename
 
     def check_for_kind_of_pair(self, pairs, scores, ranks_int):
-        if len(pairs) >= 1:
-            vals = pairs.values()
-            if max(vals) == 2 and len(pairs) == 1:
-                handscore = scores["PAIR"] + ranks_int[0]
-                scorename = "PAIR"
-            if max(vals) == 2 and len(pairs) == 2:
-                handscore = scores["TWO-PAIR"] + ranks_int[0] + ranks_int[1]
-                scorename = "TWO-PAIR"
-            if max(vals) == 3 and len(pairs) == 1:
-                handscore = scores["THREE-OF-A-KIND"] + ranks_int[0]
-                scorename = "THREE-OF-A-KIND"
-            if max(vals) == 3 and len(pairs) == 2:
-                handscore = scores["FULL-HOUSE"] + ranks_int[0] + ranks_int[1]
-                scorename = "FULL-HOUSE"
-            if max(vals) == 4:
-                handscore = scores["FOUR-OF-A-KIND"] + ranks_int[0]
-                scorename = "FOUR-OF-A-KIND"
+        handscore, scorename = scores['NOTHING'], 'NOTHING'
+        vals = pairs.values()
+        if max(vals) == 2 and len(pairs) == 1:
+            handscore = scores["PAIR"] + ranks_int[0]
+            scorename = "PAIR"
+        if max(vals) == 2 and len(pairs) == 2:
+            handscore = scores["TWO-PAIR"] + ranks_int[0] + ranks_int[1]
+            scorename = "TWO-PAIR"
+        if max(vals) == 3 and len(pairs) == 1:
+            handscore = scores["THREE-OF-A-KIND"] + ranks_int[0]
+            scorename = "THREE-OF-A-KIND"
+        if max(vals) == 3 and len(pairs) == 2:
+            handscore = scores["FULL-HOUSE"] + ranks_int[0] + ranks_int[1]
+            scorename = "FULL-HOUSE"
+        if max(vals) == 4:
+            handscore = scores["FOUR-OF-A-KIND"] + ranks_int[0]
+            scorename = "FOUR-OF-A-KIND"
         return handscore, scorename
 
     def get_suits(self) -> List[Suit]:
@@ -291,7 +295,7 @@ class Hand:
         return suits
 
 
-def get_ranks_from_repeated_cards(reps) -> List[Rank]:
+def get_ranks_from_repeated_cards(reps:dict) -> Tuple[Rank]:
 
     result = tuple(reps.keys())
     return result
@@ -360,7 +364,7 @@ class Deck:
     def shuffle(self) -> None:
         shuffle(self._cards)
 
-    def deal(self, num_cards):
+    def deal(self, num_cards) -> Union[Card,List[Card]]:
         if num_cards < 1:
             raise ValueError("cannot be dealt less than 1 card")
         if num_cards == 1:

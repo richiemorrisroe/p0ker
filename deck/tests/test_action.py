@@ -140,3 +140,28 @@ def test_player_can_only_take_a_valid_action():
     p1_action = p1.send_action(state)
     val_act = [a.action() for a in state["valid_actions"]]
     assert p1_action.action() in val_act
+
+
+# def test_dealer_can_take_one_action_from_all_players() -> None:
+#     dealer = Dealer()
+#     list_players = dealer.start_game(3)
+#     round = dealer.start_round(list_players)
+#     for player in list_players:
+#         dealer.take_action(player)
+#         state = dealer.update_state(round)
+#     # assert state is None
+#     assert len(state['actions']) == len(list_players)
+
+def test_dealer_can_validate_action() -> None:
+    dealer = Dealer()
+    list_players = dealer.start_game(4)
+    round = dealer.start_round(list_players)
+    first_player = list_players[0]
+    state = dealer.update_state(round)
+    action = first_player.send_action(state)
+    print(action)
+    assert dealer.is_valid_action(action) is True
+
+    
+def test_dealer_ends_round_if_all_but_one_player_has_folded():
+    pass

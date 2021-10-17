@@ -1,5 +1,6 @@
 #+PROPERTY: header-args:R  :session *R*
 #+PROPERTY: header-args:python    :exports code
+#+OPTIONS: ^:nil
 * COMMENT P0ker
 - In which I write a card deck
 - Plan is to implement poker
@@ -1802,15 +1803,7 @@ def test_dealer_associates_player_name_with_action() -> None:
     # assert state_1['action'][p1_name] is not None
 
 
-# def test_dealer_can_take_one_action_from_all_players() -> None:
-#     dealer = Dealer()
-#     list_players = dealer.start_game(3)
-#     round = dealer.start_round(list_players)
-#     for player in list_players:
-#         dealer.take_action(player)
-#         state = dealer.update_state(round)
-#     # assert state is None
-#     assert len(state['actions']) == len(list_players)
+
 
 
 def test_action_is_one_of_four_actions():
@@ -3082,17 +3075,6 @@ def test_dealer_start_game_creates_n_players() -> None:
     n_players = 3
     players = dealer.start_game(n_players=n_players)
     assert len(players) == 3
-
-
-# def test_dealer_can_validate_action() -> None:
-#     dealer = Dealer()
-#     list_players = dealer.start_game(4)
-#     round = dealer.start_round(list_players)
-#     first_player = list_players[0]
-#     state = dealer.update_state(round)
-#     action = first_player.send_action(state)
-#     print(action)
-#     assert dealer.is_valid_action(action) is True
 
 
 
