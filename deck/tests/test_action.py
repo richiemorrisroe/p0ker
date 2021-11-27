@@ -61,15 +61,15 @@ def test_dealer_associates_player_name_with_action() -> None:
     # assert state_1['action'][p1_name] is not None
 
 
-# def test_dealer_can_take_one_action_from_all_players() -> None:
-#     dealer = Dealer()
-#     list_players = dealer.start_game(3)
-#     round = dealer.start_round(list_players)
-#     for player in list_players:
-#         dealer.take_action(player)
-#         state = dealer.update_state(round)
-#     # assert state is None
-#     assert len(state['actions']) == len(list_players)
+def test_dealer_can_take_one_action_from_all_players() -> None:
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    for player in list_players:
+        dealer.take_action(player)
+        state = dealer.update_state(round)
+    # assert state is None
+    assert len(state['actions']) == len(list_players)
 
 
 def test_action_is_one_of_four_actions():
