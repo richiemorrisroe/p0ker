@@ -411,7 +411,7 @@ class PlayerNamer:
 
 class Action:
     def __init__(self, kind: str, amount: int, name: str = None):
-        assert kind in ["BET", "CALL", "RAISE", "FOLD", "CHECK"]
+        assert kind in ["BET", "CALL", "RAISE", "FOLD", "CHECK", "END"]
         self.kind = kind
         self.amount = amount
         self.name = name
@@ -698,7 +698,7 @@ class Dealer:
             player_list.append(player)
         return player_list
 
-    def give_name(self, player):
+    def give_name(self, player) -> Player:
         name = self.player_namer.get_name()
         player.name = name
         return player
@@ -733,7 +733,6 @@ class Dealer:
     def take_action(self, player, action=None) -> None:
         state = self.update_state(self.round)
         if not action:
-
             action = player.send_action(state)
         else:
             action = player.send_action(state, action)
