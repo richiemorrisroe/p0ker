@@ -539,11 +539,14 @@ class Player:
             return False
 
     def decide_action(self, state: Dict[str, Any]) -> Action:
-        logging.info(state)
+        logging.warning(f"state is {state}")
         valid_actions = state["valid_actions"]
-        logging.info(type(valid_actions))
-        action = deepcopy(sample(valid_actions, 1))
-        logging.info(action)
+        logging.info("val action type is {v}".format(v=type(valid_actions)))
+        if len(valid_actions) > 1:
+            action = deepcopy(sample(valid_actions, 1))
+        else:
+            action = deepcopy(valid_actions[0])
+        logging.info(f"action is {action}")
         action_pop = action.pop()
         actual_action = action_pop.action()
         action = actual_action
@@ -642,18 +645,19 @@ class Round:
             Action("FOLD", 0),
             Action("RAISE", self.ante * 2),
         ]
+        end_state = Action("END", 0)
         if self.get_position() == 0:
             return no_bet_state
-        print(self.get_actions())
+        logging.info("actions are {a}".format(a=self.get_actions()))
         kinds = [a.kind for a in self.get_actions()]
         amounts = [a.amount for a in self.get_actions()]
         actions = {kind: amount for kind, amount in zip(kinds, amounts)}
         names = [a.name for a in self.get_actions()]
-        print(actions)
+        logging.info("actions are {actions}")
         if any(kinds) == "BET":
             return some_bet_state
         if all(kinds) == "FOLD" and self.position == self.num_players:
-            return 1
+            return None
 
     def update_state(self) -> Dict[str, Any]:
         potval = self.get_pot_value()
@@ -778,7 +782,7 @@ class Dealer:
     def get_state(self, Round: Round):
         return self.update_state(Round)
 
-    def is_valid_action(self, action, state=None) -> bool:
+    def is_valid_action(self, action:Action, state=None) -> bool:
         is_valid = action.is_valid()
         if not is_valid:
             return False
