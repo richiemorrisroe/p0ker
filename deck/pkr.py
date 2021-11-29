@@ -7,6 +7,7 @@ from random import shuffle, sample
 import random
 import sys
 from typing import Union, List, Dict, Tuple, Optional, Set, Any, Collection
+from collections import defaultdict
 
 
 logging.basicConfig(filename="test.log", level=logging.INFO)
@@ -539,10 +540,13 @@ class Player:
             return False
 
     def decide_action(self, state: Dict[str, Any]) -> Action:
-        logging.warning(f"state is {state}")
+        logging.warning(f"state is {state} for {self.name}")
         valid_actions = state["valid_actions"]
-        logging.info("val action type is {v}".format(v=type(valid_actions)))
-        if len(valid_actions) > 1:
+        logging.warning(
+            "val action type is {v}".format(v=type(valid_actions)))
+        if not valid_actions:
+            raise ValueError("there should always be valid actions")
+        if len(valid_actions) >= 2:
             action = deepcopy(sample(valid_actions, 1))
         else:
             action = deepcopy(valid_actions[0])
@@ -639,13 +643,14 @@ class Round:
         return min_bet
 
     def calculate_valid_actions(self):
-        no_bet_state = [Action("CHECK", 0), Action("BET", self.ante), Action("FOLD", 0)]
+        no_bet_state = [Action("CHECK", 0), Action("BET", self.ante),
+                        Action("FOLD", 0)]
         some_bet_state = [
             Action("BET", self.ante + self.min_bet),
             Action("FOLD", 0),
-            Action("RAISE", self.ante * 2),
+            Action("RAISE", (self.ante + self.min_bet) * 2),
         ]
-        end_state = Action("END", 0)
+        end_state = [Action("END", 0)]
         if self.get_position() == 0:
             return no_bet_state
         logging.info("actions are {a}".format(a=self.get_actions()))
@@ -653,11 +658,25 @@ class Round:
         amounts = [a.amount for a in self.get_actions()]
         actions = {kind: amount for kind, amount in zip(kinds, amounts)}
         names = [a.name for a in self.get_actions()]
-        logging.info("actions are {actions}")
-        if any(kinds) == "BET":
+        print(f"kinds are {kinds}")
+        kind_count = {"CHECK":0, "BET":0, "FOLD":0, "RAISE":0, "END":0}
+        for kind in kinds:
+            try:
+                kind_count[kind] += 1
+            except KeyError:
+                kind_count[kind] = 1
+        print(f"kind_count is {kind_count}")
+        if kind_count['BET']>0:
+            logging.warning(f"some bet state is {some_bet_state}")
             return some_bet_state
-        if all(kinds) == "FOLD" and self.position == self.num_players:
-            return None
+        
+        if all(kinds) == 'CHECK' or all(kinds) == 'FOLD':
+            logging.warning(f"no bet state is {no_bet_state}")
+            return no_bet_state
+        
+        if all(kinds) == "FOLD" and self.position == self.num_players-1:
+            logging.warning(f"end state is {end_state}")
+            return end_state
 
     def update_state(self) -> Dict[str, Any]:
         potval = self.get_pot_value()
@@ -733,6 +752,8 @@ class Dealer:
     def take_action(self, player, action=None) -> None:
         state = self.update_state(self.round)
         if not action:
+            state = self.update_state(self.round)
+            logging.warning(f"take_action state is {state}")
             action = player.send_action(state)
         else:
             action = player.send_action(state, action)

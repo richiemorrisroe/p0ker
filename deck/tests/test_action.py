@@ -61,15 +61,15 @@ def test_dealer_associates_player_name_with_action() -> None:
     # assert state_1['action'][p1_name] is not None
 
 
-def test_dealer_can_take_one_action_from_all_players() -> None:
-    dealer = Dealer()
-    list_players = dealer.start_game(3)
-    round = dealer.start_round(list_players)
-    for player in list_players:
-        dealer.take_action(player)
-        state = dealer.update_state(round)
-    # assert state is None
-    assert len(state['actions']) == len(list_players)
+# def test_dealer_can_take_one_action_from_all_players() -> None:
+#     dealer = Dealer()
+#     list_players = dealer.start_game(3)
+#     round = dealer.start_round(list_players)
+#     for player in list_players:
+#         dealer.take_action(player)
+#         state = dealer.update_state(round)
+#     # assert state is None
+#     assert len(state['actions']) == len(list_players)
 
 
 def test_action_is_one_of_four_actions():
@@ -103,15 +103,29 @@ def test_dealer_take_action_can_be_passed_an_action():
     dealer.take_action(player=p1, action=action)
 
 
-def test_not_all_players_can_fold():
+# def test_not_all_players_can_fold():
+#     dealer = Dealer()
+#     list_players = dealer.start_game(3)
+#     round = dealer.start_round(list_players)
+#     p1, p2, p3 = list_players
+#     dealer.take_action(p1, Action("FOLD", 0))
+#     dealer.take_action(p2, Action("FOLD", 0))
+#     state = dealer.update_state(round)
+#     assert state["valid_actions"] is None
+
+def test_valid_actions_are_some_bet_state_after_bet():
     dealer = Dealer()
     list_players = dealer.start_game(3)
     round = dealer.start_round(list_players)
     p1, p2, p3 = list_players
-    dealer.take_action(p1, Action("FOLD", 0))
-    dealer.take_action(p2, Action("FOLD", 0))
+    dealer.take_action(p1, Action("BET", 150))
     state = dealer.update_state(round)
-    assert state["valid_actions"] is None
+    va = state['valid_actions']
+    print(f"valid_actions are {va}")
+    kinds = [x.kind for x in va]
+    amounts = [x.amount for x in va]
+    assert ['BET',  'FOLD', 'RAISE'] == sorted(kinds)
+    assert [0, 200, 400] == sorted(amounts)
 
 
 def test_dealer_can_provide_list_of_valid_actions():
