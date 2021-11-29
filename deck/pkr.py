@@ -488,7 +488,7 @@ class Player:
     def bet(self, bet=None) -> float:
         def check_bet(bet, stash):
             if bet > stash:
-                print("got here")
+                logging.warning("got here")
                 raise ValueError(
                     "can only bet {max_stash}, you bet {bet}".format(
                         max_stash=stash, bet=bet
@@ -640,7 +640,7 @@ class Round:
                     sum_bets += action.amount
 
             if len(actions) > 1:
-                print(actions)
+                logging.warning(actions)
                 for action in actions:
                     kind = action.kind
                     amount = action.amount
@@ -668,14 +668,15 @@ class Round:
         amounts = [a.amount for a in self.get_actions()]
         actions = {kind: amount for kind, amount in zip(kinds, amounts)}
         names = [a.name for a in self.get_actions()]
-        print(f"kinds are {kinds}")
+        logging.warning(f"names are {names}")
+        logging.warning(f"kinds are {kinds}")
         kind_count = {"CHECK":0, "BET":0, "FOLD":0, "RAISE":0, "END":0}
         for kind in kinds:
             try:
                 kind_count[kind] += 1
             except KeyError:
                 kind_count[kind] = 1
-        print(f"kind_count is {kind_count}")
+        logging.warning(f"kind_count is {kind_count}")
         if kind_count['BET']>0:
             logging.warning(f"some bet state is {some_bet_state}")
             return some_bet_state
@@ -791,7 +792,7 @@ class Dealer:
         for player in players:
             score, sname = player.hand.score()
             scores[player.name] = score
-        print(scores)
+        logging.warning(scores)
         # maxscore = max(scores.items())
         return scores
 
