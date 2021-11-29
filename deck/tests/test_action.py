@@ -112,6 +112,19 @@ def test_dealer_take_action_can_be_passed_an_action():
 #     dealer.take_action(p2, Action("FOLD", 0))
 #     state = dealer.update_state(round)
 #     assert state["valid_actions"] is None
+def test_all_but_one_player_folding_ends_round():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    rc = dealer.round_count
+    print(f"round_count is {rc}")
+    p1, p2, p3 = list_players
+    dealer.take_action(p1, Action("FOLD", 0))
+    dealer.take_action(p2, Action("FOLD", 0))
+    state = dealer.update_state(round)
+    print("round_count is {rc}".format(rc=dealer.round_count))
+    assert dealer.round_count == 1
+
 
 def test_valid_actions_are_some_bet_state_after_bet():
     dealer = Dealer()

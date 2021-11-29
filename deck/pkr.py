@@ -684,7 +684,7 @@ class Round:
             logging.warning(f"no bet state is {no_bet_state}")
             return no_bet_state
         
-        if all(kinds) == "FOLD" and self.position == self.num_players-1:
+        if kind_count['FOLD'] == self.num_players - 1:
             logging.warning(f"end state is {end_state}")
             return end_state
 
@@ -815,8 +815,11 @@ class Dealer:
 
     def update_state(self, round):
         state = round.update_state()
-        if state["valid_actions"] == "END":
-            self.end_round()
+        if state['valid_actions']:
+            if len(state["valid_actions"]) == 1:
+                va = state['valid_actions'].pop()
+                logging.warning(f"va is {va}")
+                self.end_round(round)
         return state
 
     def get_state(self, Round: Round):
