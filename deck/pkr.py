@@ -804,9 +804,11 @@ class Dealer:
         return r
 
     def end_round(self, round) -> None:
+        names = self.player_names
         pot = round.get_pot_value()
         actions = round.get_actions()
-
+        
+        logging.info(f"pot is {pot}; actions are {actions}")
         self.round_count += 1
 
     def take_discards(self, cards: List[Card]) -> None:
