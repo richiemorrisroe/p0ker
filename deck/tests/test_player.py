@@ -241,3 +241,9 @@ def test_round_adds_player_state() -> None:
     p1, p2, p3 = list_players
     action = p1.decide_action(state)
     assert p1.send_action(state) is not None
+
+def test_player_pay_works_with_a_negative_argument():
+    p = Player()
+    stash = p.stash
+    p.pay(-100)
+    assert p.stash == stash + 100
