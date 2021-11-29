@@ -418,7 +418,14 @@ class Action:
         self.name = name
 
     def __repr__(self):
-        return f"Action({self.name!r}, {self.kind!r}, {self.amount!r})"
+        return f"""Action(kind={self.kind!r}, amount={self.amount!r}, name={self.name!r})"""
+
+    # def __eq__(self, other):
+    #     if self.kind == other.kind and self.amount == other.amount and self.name == other.name:
+    #         return True
+    #     else:
+    #         return False
+
 
     def get_name(self):
         return self.name
