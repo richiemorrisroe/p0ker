@@ -759,6 +759,16 @@ class Dealer:
         self.deck = deck
         return player
 
+    def update_round(self, players:List[Player], round=None):
+        if not round:
+            round = self.round
+        state = round.update_state()
+        valid_actions = state['valid_actions']
+        # if len(valid_actions) == 1 and valid_actions[0].action='END':
+            
+        return 1
+            
+
     def take_action(self, player, action=None) -> None:
         state = self.update_state(self.round)
         if not action:

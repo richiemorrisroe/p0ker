@@ -1,4 +1,4 @@
-from deck.pkr import Dealer, Deck, Player, deal_cards, random_choice, Round
+from deck.pkr import Dealer, Deck, Player, deal_cards, random_choice, Round, Action
 import pytest
 
 
@@ -115,7 +115,18 @@ def test_dealer_start_game_creates_n_players() -> None:
     dealer = Dealer()
     n_players = 3
     players = dealer.start_game(n_players=n_players)
-    assert len(players) == 3
+    assert len(players) == n_players
+
+def test_dealer_update_round_exists():
+    dealer = Dealer()
+    players = dealer.start_game(3)
+    r = dealer.start_round(players)
+    p1, p2, p3 = players
+    dealer.take_action(p1, Action("FOLD", 0))
+    dealer.take_action(p2, Action("FOLD", 0))
+    state = dealer.update_state(r)
+    print(f"round is {r}")
+    assert dealer.update_round(players=players, round=r) is not None
 
 
 # def test_dealer_can_validate_action() -> None:
