@@ -587,6 +587,16 @@ class Round:
         self.actions: List[Action] = []
         self.turn = 0
 
+    def __repr__(self):
+        repr_string = f"""Round(
+        pot={self.pot},
+        position={self.position},
+        ante={self.ante},
+        num_players={self.num_players},
+        min_bet = {self.min_bet}
+        actions = {self.actions}"""
+        return repr_string
+
     def add_to_pot(self, bet) -> None:
         self.pot += bet
 
