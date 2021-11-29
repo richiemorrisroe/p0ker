@@ -448,7 +448,7 @@ class Action:
 
 
 class Player:
-    def __init__(self, hand=None, stash=None):
+    def __init__(self, hand=None, stash=None, name=None):
 
         if hand is None:
             self.hand = Hand([])
@@ -458,6 +458,8 @@ class Player:
             self.stash = 5000
         else:
             self.stash = stash
+        if name:
+            self.name = name
         self.score = 0
         self.minbet = 10
         self.randnum = random.randint(0, 100)
@@ -586,6 +588,8 @@ class Round:
         self.min_bet = 0
         self.actions: List[Action] = []
         self.turn = 0
+        self.player_names: List[str] = [p.name for p in players]
+        
 
     def __repr__(self):
         repr_string = f"""Round(
@@ -802,6 +806,7 @@ class Dealer:
         players = self.round.get_blinds(players)
         players = self.deals(players)
         names = [p.name for p in players]
+        self.player_names = names
         return r
 
     def end_round(self, round) -> None:
