@@ -695,8 +695,14 @@ class Round:
         if all(kinds) == 'CHECK' or all(kinds) == 'FOLD':
             logging.warning(f"no bet state is {no_bet_state}")
             return no_bet_state
-        
-        if kind_count['FOLD'] == self.num_players - 1:
+        logging.warning(f"player num is {self.num_players}")
+        if kind_count['FOLD'] == (self.num_players - 1):
+            losers = [a.name for a in \
+                      self.get_actions() if a.action == 'FOLD']
+            winner = [name for name in self.player_names if name not in losers].pop()
+            logging.warning(f"winner is {winner}")
+            
+            end_state = [Action(kind="END", amount=0, name=winner)]
             logging.warning(f"end state is {end_state}")
             return end_state
 
@@ -776,9 +782,15 @@ class Dealer:
             round = self.round
         state = round.update_state()
         valid_actions = state['valid_actions']
-        # if len(valid_actions) == 1 and valid_actions[0].action='END':
-            
-        return 1
+        print(f"va in update_round is {valid_actions}")
+        if len(valid_actions) == 1 and valid_actions[0].action=='END':
+            winner = valid_actions[0].name
+            winning_player = [p for p in players if p.name == winner].pop()
+            amount_to_pay = -1*state['pot_value']
+            logging.warning(f"amout to pay is {amount_to_pay}")
+            winning_player.pay(amount_to_pay)
+            return players
+        return players
             
 
     def take_action(self, player, action=None) -> None:
@@ -832,9 +844,10 @@ class Dealer:
         state = round.update_state()
         if state['valid_actions']:
             if len(state["valid_actions"]) == 1:
-                va = state['valid_actions'].pop()
+                va = state['valid_actions']
                 logging.warning(f"va is {va}")
                 self.end_round(round)
+        logging.warning(f"state in update_state is {state}")
         return state
 
     def get_state(self, Round: Round):

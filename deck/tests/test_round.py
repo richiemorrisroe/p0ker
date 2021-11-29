@@ -9,8 +9,8 @@ def test_dealer_round_is_round() -> None:
 
 
 def test_round_exists() -> None:
-    p1 = Player()
-    p2 = Player()
+    p1 = Player(name="richie")
+    p2 = Player(name="libbie")
     r = Round(100, [p1, p2])
     assert r is not None
 
@@ -130,3 +130,31 @@ def test_player_can_pass_in_action_argument_to_send_action():
     # print(state)
     action = p1.send_action(state=state, action=Action("BET", 100))
     assert action.action() == "BET" and action.amount == 100
+
+def test_round_stores_player_names_in_order():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    state = dealer.update_state(round)
+    p_names = [p.name for p in list_players]
+    assert round.player_names == p_names
+
+
+def test_round_returns_winning_name_with_end_state_action():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    rc = dealer.round_count
+    p1, p2, p3 = list_players
+    dealer.take_action(p1, Action("FOLD", 0))
+    dealer.take_action(p2, Action("FOLD", 0))
+    state = dealer.update_state(round)
+    winning_name = p3.name
+    print(f"state in test_round is {state}")
+    va = state['valid_actions'].pop()
+    print(f"va is {va!r}")
+    assert va.kind == 'END'
+    assert va.amount == 0
+    assert va.name == winning_name
+                                            
+

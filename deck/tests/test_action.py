@@ -126,6 +126,7 @@ def test_all_but_one_player_folding_ends_round_and_updates_player_stashes():
     dealer.take_action(p1, Action("FOLD", 0))
     dealer.take_action(p2, Action("FOLD", 0))
     state = dealer.update_state(round)
+    p1, p2, p3 = dealer.update_round(round=round, players=[p1, p2, p3])
     print("round_count is {rc}".format(rc=dealer.round_count))
     assert p3.stash > max([p2.stash,p3.stash])    
 
