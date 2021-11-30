@@ -14,21 +14,20 @@ def test_dealer_has_deck() -> None:
 
 def test_dealer_pot_is_zero() -> None:
     dealer = Dealer()
-    p1, p2 = dealer.start_game(2)
-    list_players = [p1, p2]
-    round = dealer.start_round(list_players)
+    dict_players = dealer.start_game(2)
+    round = dealer.start_round(dict_players)
     pot = round.get_pot_value()
-    assert pot == dealer.ante * len(list_players)
+    assert pot == dealer.ante * len(dict_players)
 
 
 def test_dealer_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
     lp = [p1, p2]
+    lp = {'richie':p1, 'libbie':p2}
     dealer = Dealer()
     original_len = len(dealer.deck)
-    list_players = dealer.deals(lp)
-    p1, p2 = list_players
+    dict_players = dealer.deals(lp)
     assert len(dealer.deck) == 42
 
 
@@ -41,7 +40,8 @@ def test_dealer_discard_pile_update() -> None:
     d = Dealer()
     p1 = Player()
     p2 = Player()
-    p1, p2 = d.deals([p1, p2])
+    lp = {'richie':p1, 'libbie':p2}
+    p1, p2 = d.deals(lp).values()
     discard = p1.discard()
     len_discard = len(discard)
     d.take_discards(discard)
@@ -50,9 +50,9 @@ def test_dealer_discard_pile_update() -> None:
 
 def test_round_state_gets_updated() -> None:
     d = Dealer()
-    p1, p2 = d.start_game(2)
-    lp = d.start_round([p1, p2])
-    state = d.get_state(lp)
+    dp = d.start_game(2)
+    round = d.start_round(dp)
+    state = d.get_state(round)
     from pprint import pprint
 
     pprint(state)
@@ -61,9 +61,9 @@ def test_round_state_gets_updated() -> None:
 
 def test_round_update_state() -> None:
     dealer = Dealer()
-    list_players = dealer.start_game(n_players=3)
-    round = dealer.start_round(list_players)
-    player_1, player_2, player_3 = list_players
+    dict_players = dealer.start_game(n_players=3)
+    round = dealer.start_round(dict_players)
+    player_1, player_2, player_3 = dict_players.values()
     state1 = round.update_state()
     dealer.take_action(player_1)
     state2 = round.update_state()
@@ -72,10 +72,10 @@ def test_round_update_state() -> None:
 
 def test_dealer_ask_for_action() -> None:
     dealer = Dealer()
-    p1, p2, p3 = dealer.start_game(3)
-    list_players = [p1, p2, p3]
-    round = dealer.start_round(list_players)
+    dict_players = dealer.start_game(3)
+    round = dealer.start_round(dict_players)
     state = dealer.get_state(round)
+    p1, p2, p3 = dict_players.values()
     p1_action = p1.decide_action(state)
     p2_action = p2.decide_action(state)
     p3_action = p3.decide_action(state)
@@ -121,7 +121,7 @@ def test_dealer_update_round_exists():
     dealer = Dealer()
     players = dealer.start_game(3)
     r = dealer.start_round(players)
-    p1, p2, p3 = players
+    p1, p2, p3 = players.values()
     dealer.take_action(p1, Action("FOLD", 0))
     dealer.take_action(p2, Action("FOLD", 0))
     state = dealer.update_state(r)
