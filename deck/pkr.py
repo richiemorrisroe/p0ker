@@ -779,19 +779,22 @@ class Dealer:
         self.deck = deck
         return player
 
-    def update_round(self, players:List[Player], round=None):
+    def update_round(self, players:Dict[str, Player],
+                     round:Optional[Round]=None):
         logging.warning(f"players is {players}")
         if not round:
             round = self.round
         state = round.update_state()
         valid_actions = state['valid_actions']
         print(f"va in update_round is {valid_actions}")
-        if len(valid_actions) == 1 and valid_actions[0].action=='END':
+        if len(valid_actions) == 1 and valid_actions[0].kind=='END':
             winner = valid_actions[0].name
-            winning_player = [p for p in players if p.name == winner].pop()
+            
             amount_to_pay = -1*state['pot_value']
             logging.warning(f"amout to pay is {amount_to_pay}")
-            winning_player.pay(amount_to_pay)
+            logging.warning("player[winner] is {p}"
+                            .format(p=players[winner]))
+            players[winner].pay(amount_to_pay)
             return players
         return players
             
