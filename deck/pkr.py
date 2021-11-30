@@ -476,8 +476,8 @@ class Player:
         # it's a little tricksy
 
     def __repr__(self) -> str:
-        fstring = "Player(stash = {stash}, score={score}, hand = {hand})"
-        return fstring.format(stash=self.stash, score=self.score, hand=self.hand)
+        fstring = f"Player(name = {self.name}, stash = {self.stash}, score={self.score}, hand = {self.hand})"
+        return fstring
 
     def __len__(self) -> int:
         return 1
@@ -778,6 +778,7 @@ class Dealer:
         return player
 
     def update_round(self, players:List[Player], round=None):
+        logging.warning(f"players is {players}")
         if not round:
             round = self.round
         state = round.update_state()
