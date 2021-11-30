@@ -567,7 +567,7 @@ class Player:
             amount = random.randint(state["min_bet"], state["min_bet"] + 100)
         if action == "FOLD" or action == "CHECK":
             amount = 0
-        return Action(action, amount)
+        return Action(kind=action, amount=amount)
 
     def send_action(self, state=None, action: Action = None):
         if not action:
@@ -587,7 +587,7 @@ class Player:
 
 
 class Round:
-    def __init__(self, ante, players: List[Player]) -> None:
+    def __init__(self, ante, players: Dict[str, Player]) -> None:
         self.pot = 0
         self.position = 0
         self.ante = ante
@@ -595,7 +595,7 @@ class Round:
         self.min_bet = 0
         self.actions: List[Action] = []
         self.turn = 0
-        self.player_names: List[str] = [p.name for p in players]
+        self.player_names: List[str] = list(players.keys())
         
 
     def __repr__(self):
@@ -628,9 +628,9 @@ class Round:
         self.actions.append(action)
         self.update_state()
 
-    def get_blinds(self, players: List[Player]) -> List[Player]:
+    def get_blinds(self, players: Dict[str, Player]) -> List[Player]:
         pot = 0
-        for player in players:
+        for name, player in players.items():
             self.add_to_pot(player.pay(self.ante))
         return players
 
@@ -736,14 +736,16 @@ class Dealer:
         self.player_namer = PlayerNamer()
         self.player_names = []
 
-    def start_game(self, n_players: int) -> List[Player]:
-        player_list = []
+    def start_game(self, n_players: int) -> Dict[str, Player]:
+        player_dict = {}
         self.round_count = 0
         for _ in range(0, n_players):
             player = Player()
             player = self.give_name(player)
-            player_list.append(player)
-        return player_list
+            player_dict[player.name] = player
+        logging.warning(f"player_dict is {player_dict}")
+        return player_dict
+    
 
     def give_name(self, player) -> Player:
         name = self.player_namer.get_name()
@@ -757,13 +759,13 @@ class Dealer:
             name=self.name, ante=self.ante, maxdrop=self.maxdrop, pot=pot
         )
 
-    def deals(self, players: List[Player]) -> List[Player]:
+    def deals(self, players: Dict[str, Player]) -> Dict[str, Player]:
         """Takes a list of players (normally empty lists)
         and deals each of them five cards,
         returning the updated lists"""
         deck = self.deck
         for i in range(0, 5):
-            for player in players:
+            for name, player in players.items():
                 card = deck.deal(num_cards=1)
                 player.add_card(card)
         return players
@@ -813,19 +815,20 @@ class Dealer:
 
     def compare(self, players):
         scores = {}
-        for player in players:
+        for name, player in players.items():
             score, sname = player.hand.score()
-            scores[player.name] = score
+            scores[name] = score
         logging.warning(scores)
         # maxscore = max(scores.items())
         return scores
 
-    def start_round(self, players: List[Player] = None) -> Round:
+    def start_round(self, players: Dict[str, Player] = None) -> Round:
+        logging.warning(f"players passed to start_round={players}")
         r = Round(self.ante, players)
         self.round = r
         players = self.round.get_blinds(players)
         players = self.deals(players)
-        names = [p.name for p in players]
+        names = list(players.keys())
         self.player_names = names
         return r
 
