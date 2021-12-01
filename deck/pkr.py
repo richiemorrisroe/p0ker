@@ -561,8 +561,11 @@ class Player:
             action = deepcopy(valid_actions[0])
         logging.info(f"action is {action}")
         action_pop = action.pop()
+        logging.warning(f"selected action for {self.name} is {action_pop}")
         actual_action = action_pop.action()
+        amount = action_pop.amount
         action = actual_action
+        logging.warning(f"{self.name} action is {action}")
         if action == "BET":
             amount = random.randint(state["min_bet"], state["min_bet"] + 100)
         if action == "FOLD" or action == "CHECK":
@@ -667,6 +670,8 @@ class Round:
         return min_bet
 
     def calculate_valid_actions(self):
+        state = self.update_state()
+        position = state['position']
         no_bet_state = [Action("CHECK", 0), Action("BET", self.ante),
                         Action("FOLD", 0)]
         some_bet_state = [
@@ -695,7 +700,7 @@ class Round:
             logging.warning(f"some bet state is {some_bet_state}")
             return some_bet_state
         
-        if all(kinds) == 'CHECK' or all(kinds) == 'FOLD':
+        if kind_count['CHECK'] + kind_count['FOLD'] == position:
             logging.warning(f"no bet state is {no_bet_state}")
             return no_bet_state
         logging.warning(f"player num is {self.num_players}")
