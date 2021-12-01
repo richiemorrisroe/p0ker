@@ -114,10 +114,13 @@ def test_all_but_one_player_folding_ends_round():
     rc = dealer.round_count
     print(f"round_count is {rc}")
     p1, p2, p3 = list_players.values()
+    pnames = list(list_players.keys())
+    dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
     dealer.take_action(p1, Action("FOLD", 0))
     dealer.take_action(p2, Action("FOLD", 0))
     state = dealer.update_state(round)
     print("round_count is {rc}".format(rc=dealer.round_count))
+    players = dealer.update_round(dp)
     assert dealer.round_count == 1
 
 def test_all_but_one_player_folding_ends_round_and_updates_player_stashes():
@@ -135,7 +138,22 @@ def test_all_but_one_player_folding_ends_round_and_updates_player_stashes():
     dp2 = dealer.update_round(round=round, players=dp)
     p1, p2, p3 = dp2.values()
     print("round_count is {rc}".format(rc=dealer.round_count))
-    assert p3.stash > max([p1.stash,p2.stash])    
+    assert p3.stash > max([p1.stash,p2.stash])
+
+def test_pot_is_reduced_to_zero_after_round_ends():
+    dealer = Dealer()
+    list_players = dealer.start_game(3)
+    round = dealer.start_round(list_players)
+    rc = dealer.round_count
+    print(f"round_count is {rc}")
+    p1, p2, p3 = list_players.values()
+    dealer.take_action(p1, Action("FOLD", 0))
+    dealer.take_action(p2, Action("FOLD", 0))
+    pnames = list(list_players.keys())
+    dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
+    state = dealer.update_state(round)
+    dp2 = dealer.update_round(players=dp)
+    assert dealer.round.get_pot_value() == 0
 
 def test_valid_actions_are_some_bet_state_after_bet():
     dealer = Dealer()

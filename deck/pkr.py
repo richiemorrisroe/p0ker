@@ -614,10 +614,13 @@ class Round:
     def get_pot_value(self):
         return self.pot
 
+    def zero_pot(self):
+        self.pot = 0
+
     def get_position(self):
         return self.position
-
     def set_position(self, position) -> None:
+
         self.position = position
 
     def get_actions(self):
@@ -789,13 +792,8 @@ class Dealer:
         print(f"va in update_round is {valid_actions}")
         if len(valid_actions) == 1 and valid_actions[0].kind=='END':
             winner = valid_actions[0].name
-            
-            amount_to_pay = -1*state['pot_value']
-            logging.warning(f"amout to pay is {amount_to_pay}")
-            logging.warning("player[winner] is {p}"
-                            .format(p=players[winner]))
-            players[winner].pay(amount_to_pay)
-            return players
+            players = self.end_round(round=self.round, players=players)
+        
         return players
             
 
@@ -835,25 +833,31 @@ class Dealer:
         self.player_names = names
         return r
 
-    def end_round(self, round) -> None:
+    def end_round(self, round=None, players=None) -> None:
+        if not round:
+            round = self.round
+        # if len(valid_actions)==1 and valid_actions[0].kind == 'END':
+        valid_actions = round.update_state()['valid_actions']
+        winner = valid_actions[0].name
         names = self.player_names
-        pot = round.get_pot_value()
+        pot_value = round.get_pot_value()
         actions = round.get_actions()
-        
-        logging.info(f"pot is {pot}; actions are {actions}")
+        amount_to_pay = -1*pot_value
+        logging.warning(f"amout to pay is {amount_to_pay}")
+        logging.warning("player[winner] is {p}"
+                        .format(p=players[winner]))
+        players[winner].pay(amount_to_pay)
         self.round_count += 1
+        self.round.zero_pot()
+        return players
+        
 
     def take_discards(self, cards: List[Card]) -> None:
         for card in cards:
             self.discard_pile.append(card)
 
-    def update_state(self, round):
+    def update_state(self, round:Round):
         state = round.update_state()
-        if state['valid_actions']:
-            if len(state["valid_actions"]) == 1:
-                va = state['valid_actions']
-                logging.warning(f"va is {va}")
-                self.end_round(round)
         logging.warning(f"state in update_state is {state}")
         return state
 
