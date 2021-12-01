@@ -670,8 +670,7 @@ class Round:
         return min_bet
 
     def calculate_valid_actions(self):
-        state = self.update_state()
-        position = state['position']
+        position = self.get_position()
         no_bet_state = [Action("CHECK", 0), Action("BET", self.ante),
                         Action("FOLD", 0)]
         some_bet_state = [
@@ -680,7 +679,7 @@ class Round:
             Action("RAISE", (self.ante + self.min_bet) * 2),
         ]
         end_state = [Action("END", 0)]
-        if self.get_position() == 0:
+        if position == 0:
             return no_bet_state
         logging.info("actions are {a}".format(a=self.get_actions()))
         kinds = [a.kind for a in self.get_actions()]
@@ -696,6 +695,16 @@ class Round:
             except KeyError:
                 kind_count[kind] = 1
         logging.warning(f"kind_count is {kind_count}")
+        if kind_count['FOLD'] == (self.num_players - 1):
+            losers = [a.name for a in \
+                      self.get_actions() if a.action == 'FOLD']
+            winner = [name for name in self.player_names
+                      if name not in losers].pop()
+            logging.warning(f"winner is {winner}")
+            
+            end_state = [Action(kind="END", amount=0, name=winner)]
+            logging.warning(f"end state is {end_state}")
+            return end_state
         if kind_count['BET']>0:
             logging.warning(f"some bet state is {some_bet_state}")
             return some_bet_state
@@ -704,15 +713,7 @@ class Round:
             logging.warning(f"no bet state is {no_bet_state}")
             return no_bet_state
         logging.warning(f"player num is {self.num_players}")
-        if kind_count['FOLD'] == (self.num_players - 1):
-            losers = [a.name for a in \
-                      self.get_actions() if a.action == 'FOLD']
-            winner = [name for name in self.player_names if name not in losers].pop()
-            logging.warning(f"winner is {winner}")
-            
-            end_state = [Action(kind="END", amount=0, name=winner)]
-            logging.warning(f"end state is {end_state}")
-            return end_state
+        
 
     def update_state(self) -> Dict[str, Any]:
         potval = self.get_pot_value()
