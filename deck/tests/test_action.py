@@ -196,6 +196,7 @@ def test_dealer_can_take_one_action_from_all_players() -> None:
     for name, player in list_players.items():
         dealer.take_action(player)
         state = dealer.update_state(round)
+        dealer.update_round(players=list_players)
     # assert state is None
     assert len(state['actions']) == len(list_players)
 

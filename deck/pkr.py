@@ -437,7 +437,7 @@ class Action:
             raise ValueError("cannot overwrite name")
 
     def is_valid(self) -> bool:
-        assert self.kind in ["BET", "CALL", "RAISE", "FOLD", "CHECK"]
+        assert self.kind in ["BET", "CALL", "RAISE", "FOLD", "CHECK", "END"]
         if self.kind == "BET" and self.amount == 0:
             return False
         if self.kind == "FOLD" and self.amount > 0:
@@ -557,13 +557,16 @@ class Player:
             raise ValueError("there should always be valid actions")
         if len(valid_actions) >= 2:
             action = deepcopy(sample(valid_actions, 1))
+            action_pop = action.pop()
+            logging.debug(f"selected action for {self.name} is {action_pop}")
+            actual_action = action_pop.action()
+            amount = action_pop.amount
         else:
-            action = deepcopy(valid_actions[0])
-        logging.debug(f"action is {action}")
-        action_pop = action.pop()
-        logging.debug(f"selected action for {self.name} is {action_pop}")
-        actual_action = action_pop.action()
-        amount = action_pop.amount
+            action_obj = deepcopy(valid_actions[0])
+            actual_action = action_obj.action()
+            amount = action_obj.amount
+            logging.debug(f"action_object is {action_obj}")
+        
         action = actual_action
         logging.debug(f"{self.name} action is {action}")
         if action == "BET":
