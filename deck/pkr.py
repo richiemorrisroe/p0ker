@@ -666,7 +666,7 @@ class Round:
                     kind = action.kind
                     amount = action.amount
                     logging.debug(f"action is {kind} and amount is {amount}")
-                    if kind == "BET":
+                    if kind == "BET" or kind == "RAISE":
                         sum_bets += amount
                         logging.debug(f"sum bets is now {sum_bets}")
             logging.debug(f"sum_bet is {sum_bets}")

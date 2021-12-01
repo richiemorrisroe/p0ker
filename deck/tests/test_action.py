@@ -217,3 +217,13 @@ def test_bet_causes_minimum_bet_to_increase(dealer_3_players):
     state = dealer.update_state(round)
     assert state['min_bet'] == 400
 
+def test_raise_causes_minimum_bet_to_increase(dealer_3_players):
+    dealer, players, round = dealer_3_players
+    p1, p2, p3 = players.values()
+    dealer.take_action(p1, Action("BET", 100))
+    dealer.take_action(p2, Action("RAISE", 200))
+    pnames = list(players.keys())
+    dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
+    state = dealer.update_state(round)
+    assert state['min_bet'] == 400    
+
