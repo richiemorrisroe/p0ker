@@ -552,7 +552,7 @@ class Player:
         logging.warning(f"state is {state} for {self.name}")
         valid_actions = state["valid_actions"]
         logging.warning(
-            "val action type is {v}".format(v=type(valid_actions)))
+            "val actions  are {v}".format(v=valid_actions))
         if not valid_actions:
             raise ValueError("there should always be valid actions")
         if len(valid_actions) >= 2:
