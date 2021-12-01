@@ -111,6 +111,22 @@ def test_all_but_one_player_folding_ends_round(dealer_3_players):
     players = dealer.update_round(dp)
     assert dealer.round_count == 1
 
+def test_check_action_keeps_no_bet_state(dealer_3_players):
+    dealer, players, round = dealer_3_players
+    p1, p2, p3 = players.values()
+    pnames = list(players.keys())
+    dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
+    dealer.take_action(p1, Action("CHECK", 0))
+    dealer.take_action(p2, Action("CHECK", 0))
+    state = dealer.update_state(round)
+    valid_actions = state['valid_actions']
+    players = dealer.update_round(dp)
+    actions = [action.action() for action in valid_actions]
+    assert actions == ['CHECK', 'BET', 'FOLD']
+
+
+
+    
 def test_all_but_one_player_folding_ends_round_and_updates_player_stashes(dealer_3_players):
     dealer, players, round = dealer_3_players
     rc = dealer.round_count

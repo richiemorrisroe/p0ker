@@ -497,7 +497,7 @@ class Player:
     def bet(self, bet=None) -> float:
         def check_bet(bet, stash):
             if bet > stash:
-                logging.warning("got here")
+                logging.debug("got here")
                 raise ValueError(
                     "can only bet {max_stash}, you bet {bet}".format(
                         max_stash=stash, bet=bet
@@ -549,9 +549,9 @@ class Player:
             return False
 
     def decide_action(self, state: Dict[str, Any]) -> Action:
-        logging.warning(f"state is {state} for {self.name}")
+        logging.debug(f"state is {state} for {self.name}")
         valid_actions = state["valid_actions"]
-        logging.warning(
+        logging.debug(
             "val actions  are {v}".format(v=valid_actions))
         if not valid_actions:
             raise ValueError("there should always be valid actions")
@@ -559,13 +559,13 @@ class Player:
             action = deepcopy(sample(valid_actions, 1))
         else:
             action = deepcopy(valid_actions[0])
-        logging.info(f"action is {action}")
+        logging.debug(f"action is {action}")
         action_pop = action.pop()
-        logging.warning(f"selected action for {self.name} is {action_pop}")
+        logging.debug(f"selected action for {self.name} is {action_pop}")
         actual_action = action_pop.action()
         amount = action_pop.amount
         action = actual_action
-        logging.warning(f"{self.name} action is {action}")
+        logging.debug(f"{self.name} action is {action}")
         if action == "BET":
             amount = random.randint(state["min_bet"], state["min_bet"] + 100)
         if action == "FOLD" or action == "CHECK":
@@ -649,7 +649,7 @@ class Round:
         actions = self.get_actions()
 
         if actions:
-            logging.warning(f"actions are {actions}")
+            logging.debug(f"actions are {actions}")
             sum_bets = min_bet
             if len(actions) == 1:
                 action = actions[0]
@@ -657,14 +657,14 @@ class Round:
                     sum_bets += action.amount
 
             if len(actions) > 1:
-                logging.warning(actions)
+                logging.debug(actions)
                 for action in actions:
                     kind = action.kind
                     amount = action.amount
-                    logging.info(f"action is {kind} and amount is {amount}")
+                    logging.debug(f"action is {kind} and amount is {amount}")
                     if action == "BET":
                         sum_bets += amount
-            logging.info(f"sum_bet is {sum_bets}")
+            logging.debug(f"sum_bet is {sum_bets}")
             min_bet = sum_bets
         self.min_bet = min_bet
         return min_bet
@@ -681,38 +681,38 @@ class Round:
         end_state = [Action("END", 0)]
         if position == 0:
             return no_bet_state
-        logging.info("actions are {a}".format(a=self.get_actions()))
+        logging.debug("actions are {a}".format(a=self.get_actions()))
         kinds = [a.kind for a in self.get_actions()]
         amounts = [a.amount for a in self.get_actions()]
         actions = {kind: amount for kind, amount in zip(kinds, amounts)}
         names = [a.name for a in self.get_actions()]
-        logging.warning(f"names are {names}")
-        logging.warning(f"kinds are {kinds}")
+        logging.debug(f"names are {names}")
+        logging.debug(f"kinds are {kinds}")
         kind_count = {"CHECK":0, "BET":0, "FOLD":0, "RAISE":0, "END":0}
         for kind in kinds:
             try:
                 kind_count[kind] += 1
             except KeyError:
                 kind_count[kind] = 1
-        logging.warning(f"kind_count is {kind_count}")
+        logging.debug(f"kind_count is {kind_count}")
         if kind_count['FOLD'] == (self.num_players - 1):
             losers = [a.name for a in \
                       self.get_actions() if a.action == 'FOLD']
             winner = [name for name in self.player_names
                       if name not in losers].pop()
-            logging.warning(f"winner is {winner}")
+            logging.debug(f"winner is {winner}")
             
             end_state = [Action(kind="END", amount=0, name=winner)]
-            logging.warning(f"end state is {end_state}")
+            logging.debug(f"end state is {end_state}")
             return end_state
         if kind_count['BET']>0:
-            logging.warning(f"some bet state is {some_bet_state}")
+            logging.debug(f"some bet state is {some_bet_state}")
             return some_bet_state
         
         if kind_count['CHECK'] + kind_count['FOLD'] == position:
-            logging.warning(f"no bet state is {no_bet_state}")
+            logging.debug(f"no bet state is {no_bet_state}")
             return no_bet_state
-        logging.warning(f"player num is {self.num_players}")
+        logging.debug(f"player num is {self.num_players}")
         
 
     def update_state(self) -> Dict[str, Any]:
@@ -752,7 +752,7 @@ class Dealer:
             player = Player()
             player = self.give_name(player)
             player_dict[player.name] = player
-        logging.warning(f"player_dict is {player_dict}")
+        logging.debug(f"player_dict is {player_dict}")
         return player_dict
     
 
@@ -790,7 +790,7 @@ class Dealer:
 
     def update_round(self, players:Dict[str, Player],
                      round:Optional[Round]=None):
-        logging.warning(f"players is {players}")
+        logging.debug(f"players is {players}")
         if not round:
             round = self.round
         state = round.update_state()
@@ -807,7 +807,7 @@ class Dealer:
         state = self.update_state(self.round)
         if not action:
             state = self.update_state(self.round)
-            logging.warning(f"take_action state is {state}")
+            logging.debug(f"take_action state is {state}")
             action = player.send_action(state)
         else:
             action = player.send_action(state, action)
@@ -825,12 +825,12 @@ class Dealer:
         for name, player in players.items():
             score, sname = player.hand.score()
             scores[name] = score
-        logging.warning(scores)
+        logging.debug(scores)
         # maxscore = max(scores.items())
         return scores
 
     def start_round(self, players: Dict[str, Player] = None) -> Round:
-        logging.warning(f"players passed to start_round={players}")
+        logging.debug(f"players passed to start_round={players}")
         r = Round(self.ante, players)
         self.round = r
         players = self.round.get_blinds(players)
@@ -849,8 +849,8 @@ class Dealer:
         pot_value = round.get_pot_value()
         actions = round.get_actions()
         amount_to_pay = -1*pot_value
-        logging.warning(f"amout to pay is {amount_to_pay}")
-        logging.warning("player[winner] is {p}"
+        logging.debug(f"amout to pay is {amount_to_pay}")
+        logging.debug("player[winner] is {p}"
                         .format(p=players[winner]))
         players[winner].pay(amount_to_pay)
         self.round_count += 1
@@ -864,7 +864,7 @@ class Dealer:
 
     def update_state(self, round:Round):
         state = round.update_state()
-        logging.warning(f"state in update_state is {state}")
+        logging.debug(f"state in update_state is {state}")
         return state
 
     def get_state(self, Round: Round):
