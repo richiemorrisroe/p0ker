@@ -654,6 +654,7 @@ class Round:
         if actions:
             logging.debug(f"actions are {actions}")
             sum_bets = min_bet
+            logging.debug(f"sum bets starts at {sum_bets}")
             if len(actions) == 1:
                 action = actions[0]
                 if action == "BET":
@@ -665,10 +666,12 @@ class Round:
                     kind = action.kind
                     amount = action.amount
                     logging.debug(f"action is {kind} and amount is {amount}")
-                    if action == "BET":
+                    if kind == "BET":
                         sum_bets += amount
+                        logging.debug(f"sum bets is now {sum_bets}")
             logging.debug(f"sum_bet is {sum_bets}")
             min_bet = sum_bets
+            logging.debug(f"min_bet is now {min_bet}")
         self.min_bet = min_bet
         return min_bet
 

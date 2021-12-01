@@ -189,23 +189,31 @@ def test_player_can_only_take_a_valid_action(dealer_3_players):
     assert p1_action.action() in val_act
 
 
-def test_dealer_can_take_one_action_from_all_players() -> None:
-    dealer = Dealer()
-    list_players = dealer.start_game(3)
-    round = dealer.start_round(list_players)
-    for name, player in list_players.items():
+def test_dealer_can_take_one_action_from_all_players(dealer_3_players) -> None:
+    dealer, players, round = dealer_3_players
+    for name, player in players.items():
         dealer.take_action(player)
         state = dealer.update_state(round)
-        dealer.update_round(players=list_players)
+        dealer.update_round(players=players)
     # assert state is None
-    assert len(state['actions']) == len(list_players)
+    assert len(state['actions']) == len(players)
 
 def test_dealer_can_validate_action(dealer_3_players) -> None:
-    dealer = Dealer()
-    players = dealer.start_game(4)
-    round = dealer.start_round(players)
+    dealer, players, round = dealer_3_players
     first_player = list(players.values())[0]
     state = dealer.update_state(round)
     action = first_player.send_action(state)
     print(action)
     assert dealer.is_valid_action(action) is True
+
+
+def test_bet_causes_minimum_bet_to_increase(dealer_3_players):
+    dealer, players, round = dealer_3_players
+    p1, p2, p3 = players.values()
+    dealer.take_action(p1, Action("BET", 100))
+    dealer.take_action(p2, Action("BET", 200))
+    pnames = list(players.keys())
+    dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
+    state = dealer.update_state(round)
+    assert state['min_bet'] == 400
+
