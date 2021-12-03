@@ -566,11 +566,13 @@ class Player:
             actual_action = action_obj.action()
             amount = action_obj.amount
             logging.debug(f"action_object is {action_obj}")
-        
+        logging.debug(f"{self.name} stash is {self.stash}")
         action = actual_action
         logging.debug(f"{self.name} action is {action}")
         if action == "BET":
             amount = random.randint(state["min_bet"], state["min_bet"] + 100)
+        if action == "RAISE":
+            pass
         if action == "FOLD" or action == "CHECK":
             amount = 0
         return Action(kind=action, amount=amount)
@@ -580,6 +582,7 @@ class Player:
             action = self.decide_action(state)
         player_name = self.name
         action.set_name(player_name)
+        self.stash -= action.amount
         # action = {"name": player_name, "action" : action}
         return action
 
