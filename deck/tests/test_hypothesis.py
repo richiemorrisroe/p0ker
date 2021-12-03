@@ -37,10 +37,10 @@ def test_fuzz_Dealer(name, ante) -> None:
     deck.pkr.Dealer(name=name, ante=ante)
 
 
-# @given(name=st.just("poker"), ante=st.just(100), players=st.integers(1, 10))
-# def test_fuzz_Dealer_start_game(name, ante, players):
-#     dealer = deck.pkr.Dealer(name=name, ante=ante)
-#     players = dealer.start_game(integers)
+@given(name=st.just("poker"), ante=st.just(100), players=st.integers(1, 10))
+def test_fuzz_Dealer_start_game(name, ante, players):
+    dealer = deck.pkr.Dealer(name=name, ante=ante)
+    players = dealer.start_game(players)
 
 @pytest.mark.slow
 @given(name=st.just("poker"), ante=st.just(100), n_players=st.integers(1, 10))
@@ -48,3 +48,33 @@ def test_fuzz_Dealer_start_round(name, ante, n_players: int) -> None:
     dealer = deck.pkr.Dealer(name=name, ante=ante)
     players = dealer.start_game(n_players)
     players = dealer.start_round(players)
+
+
+@pytest.mark.slow
+@given(name=st.just("poker"), ante=st.just(100), n_players=st.integers(2, 10))
+def test_dealer_maintains_total_value_of_stash(name,
+                                               ante,
+                                               n_players: int) -> None:
+    dealer = deck.pkr.Dealer(name=name, ante=ante)
+    players = dealer.start_game(n_players)
+    round = dealer.start_round(players)
+    players = dealer.update_round(players)
+    stashes = [p.stash for _, p in players.items()]
+    pot_value = round.get_pot_value()
+    assert sum(stashes) + pot_value == n_players * 5000
+
+    
+@given(name=st.just("poker"), ante=st.just(100), n_players=st.integers(2, 10))
+def test_dealer_maintains_total_number_of_cards(name,
+                                               ante,
+                                               n_players: int) -> None:
+    dealer = deck.pkr.Dealer(name=name, ante=ante)
+    players = dealer.start_game(n_players)
+    round = dealer.start_round(players)
+    players = dealer.update_round(players)
+    card_count = [len(p.hand) for _, p in players.items()]
+    deck_length = len(dealer.deck)
+    discard_pile_length = len(dealer.discard_pile)
+    assert sum(card_count) + deck_length + discard_pile_length == 52
+    
+    
