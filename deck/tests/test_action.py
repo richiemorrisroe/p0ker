@@ -227,6 +227,19 @@ def test_raise_causes_minimum_bet_to_increase(dealer_3_players):
     state = dealer.update_state(round)
     assert state['min_bet'] == 400
 
+def test_update_round_ensures_that_all_players_bet_equal_amounts(dealer_3_players):
+    dealer, players, round = dealer_3_players
+    p1, p2, p3 = players.values()
+    dealer.take_action(p1, Action("BET", 100))
+    dealer.take_action(p2, Action("RAISE", 200))
+    dealer.take_action(p3, Action("BET", 300))
+    pnames = list(players.keys())
+    dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
+    state = dealer.update_state(round)
+    dp = dealer.update_round(players=players)
+    pv = round.get_pot_value()
+    assert pv == 1200    
+
 def test_raise_reduces_player_stashes(dealer_3_players):
     dealer, players, round = dealer_3_players
     p1, p2, p3 = players.values()

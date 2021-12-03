@@ -728,6 +728,7 @@ class Round:
         potval = self.get_pot_value()
         position = self.get_position()
         min_bet = self.get_minimum_bet()
+        max_bet = self.get_maximum_bet()
         actions = self.get_actions()
         valid_actions: List[Action] = self.calculate_valid_actions()
         return deepcopy(
@@ -808,7 +809,8 @@ class Dealer:
         if len(valid_actions) == 1 and valid_actions[0].kind=='END':
             winner = valid_actions[0].name
             players = self.end_round(round=self.round, players=players)
-        
+        if position == self.round.num_players:
+            pass
         return players
             
 
@@ -818,9 +820,12 @@ class Dealer:
             state = self.update_state(self.round)
             logging.debug(f"take_action state is {state}")
             action = player.send_action(state)
+            amount = action.amount
+            self.round.add_to_pot(amount)
         else:
             action = player.send_action(state, action)
-
+            amount = action.amount
+            self.round.add_to_pot(amount)
         if self.is_valid_action(action):
             self.accept_action(action)
         else:
