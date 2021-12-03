@@ -678,6 +678,18 @@ class Round:
         self.min_bet = min_bet
         return min_bet
 
+    def get_maximum_bet(self):
+        actions = self.get_actions()
+        bets = {action.kind:action.amount
+                for action in actions if action.kind == 'BET'
+                or action.kind == 'RAISE'}
+        if len(bets) >= 1:
+            max_bet = max(list(bets.values()))
+        else:
+            max_bet = 0
+        return max_bet
+        
+
     def calculate_valid_actions(self):
         position = self.get_position()
         no_bet_state = [Action("CHECK", 0), Action("BET", self.ante),
@@ -809,6 +821,7 @@ class Dealer:
         if len(valid_actions) == 1 and valid_actions[0].kind=='END':
             winner = valid_actions[0].name
             players = self.end_round(round=self.round, players=players)
+        position = self.round.get_position()
         if position == self.round.num_players:
             pass
         return players
