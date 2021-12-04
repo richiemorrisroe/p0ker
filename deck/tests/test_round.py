@@ -1,4 +1,4 @@
-from deck.pkr import Round, Dealer, Player, random_choice, Action
+from deck.pkr import Action, Actions, Dealer, Player, random_choice, Round
 from .fixtures import dealer_3_players
 
 def test_dealer_round_is_round() -> None:
@@ -170,3 +170,12 @@ def test_get_maximum_bet_is_the_max_of_bet_or_raise(dealer_3_players):
     dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
     state = dealer.update_state(round)
     assert state['max_bet'] == 300
+
+def test_round_actions_is_actions(dealer_3_players):
+    dealer, players, round = dealer_3_players
+    p1, p2, p3 = players.values()
+    dealer.take_action(p1, Action("BET", 100))
+    dealer.take_action(p2, Action("RAISE", 200))
+    dealer.take_action(p3, Action("BET", 300))
+    assert isinstance(round.actions, Actions)
+                       

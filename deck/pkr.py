@@ -453,7 +453,12 @@ class Actions:
         self.action_list = list()
         for action in actions:
             self.action_list.append(action)
+            
         self.update_actions()
+        if not self.kind_count:
+            self.kind_count = {"CHECK":0, "BET":0,
+                               "FOLD":0, "RAISE":0, "END":0}
+
 
     def __len__(self):
         return len(self.action_list)
@@ -480,6 +485,7 @@ class Actions:
         logging.debug(f"kind_count is {kind_count}")
         self.kind_count = kind_count
         return kind_count
+
     
 
 class Player:
@@ -630,7 +636,7 @@ class Round:
         self.ante = ante
         self.num_players = len(players)
         self.min_bet = 0
-        self.actions: List[Action] = []
+        self.actions: Actions = Actions(actions=[])
         self.turn = 0
         self.player_names: List[str] = list(players.keys())
         
@@ -665,7 +671,7 @@ class Round:
 
     def set_action(self, action) -> None:
         self.set_position(self.get_position() + 1)
-        self.actions.append(action)
+        self.actions.update(action)
         self.update_state()
 
     def get_blinds(self, players: Dict[str, Player]) -> List[Player]:

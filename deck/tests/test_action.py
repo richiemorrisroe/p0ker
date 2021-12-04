@@ -266,3 +266,9 @@ def test_actions_has_action_count():
     actions = Actions(actions=[Action("BET", 100, name="richie")])
     assert actions.kind_count == {"CHECK":0, "BET":1,
                                   "FOLD":0, "RAISE":0, "END":0}
+
+def test_actions_can_take_empty_actions():
+    actions = Actions(actions=[])
+    assert actions.action_list == []
+
+
