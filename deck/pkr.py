@@ -748,6 +748,7 @@ class Round:
                 "pot_value": potval,
                 "position": position,
                 "min_bet": min_bet,
+                "max_bet" : max_bet,
                 "actions": actions,
                 "valid_actions": valid_actions,
             }
