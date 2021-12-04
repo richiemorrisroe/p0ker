@@ -1,6 +1,6 @@
 import pytest
 
-from deck.pkr import random_hand, Player, Dealer, Action
+from deck.pkr import Action, Actions, Dealer, Player, random_hand
 from .fixtures import dealer_3_players
 
 def test_player_send_action(dealer_3_players) -> None:
@@ -227,18 +227,18 @@ def test_raise_causes_minimum_bet_to_increase(dealer_3_players):
     state = dealer.update_state(round)
     assert state['min_bet'] == 400
 
-def test_update_round_ensures_that_all_players_bet_equal_amounts(dealer_3_players):
-    dealer, players, round = dealer_3_players
-    p1, p2, p3 = players.values()
-    dealer.take_action(p1, Action("BET", 100))
-    dealer.take_action(p2, Action("RAISE", 200))
-    dealer.take_action(p3, Action("BET", 300))
-    pnames = list(players.keys())
-    dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
-    state = dealer.update_state(round)
-    dp = dealer.update_round(players=players)
-    pv = round.get_pot_value()
-    assert pv == 1200    
+# def test_update_round_ensures_that_all_players_bet_equal_amounts(dealer_3_players):
+#     dealer, players, round = dealer_3_players
+#     p1, p2, p3 = players.values()
+#     dealer.take_action(p1, Action("BET", 100))
+#     dealer.take_action(p2, Action("RAISE", 200))
+#     dealer.take_action(p3, Action("BET", 300))
+#     pnames = list(players.keys())
+#     dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
+#     state = dealer.update_state(round)
+#     dp = dealer.update_round(players=players)
+#     pv = round.get_pot_value()
+#     assert pv == 1200    
 
 def test_raise_reduces_player_stashes(dealer_3_players):
     dealer, players, round = dealer_3_players
@@ -251,3 +251,18 @@ def test_raise_reduces_player_stashes(dealer_3_players):
     assert p1.stash == 4800 and p2.stash == 4700
     
 
+def test_actions_object_exists():
+    actions = Actions(actions=[Action("BET", 100, name="richie")])
+    assert actions is not None
+
+
+def test_actions_has_add_action():
+    actions = Actions(actions=[Action("BET", 100, name="richie")])
+    actions.update(Action("RAISE", 200, name = "libbie"))
+    # assert len(actions) == 2
+    assert len(actions) == 2
+
+def test_actions_has_action_count():
+    actions = Actions(actions=[Action("BET", 100, name="richie")])
+    assert actions.kind_count == {"CHECK":0, "BET":1,
+                                  "FOLD":0, "RAISE":0, "END":0}

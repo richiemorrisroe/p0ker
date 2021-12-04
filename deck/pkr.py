@@ -417,14 +417,9 @@ class Action:
         self.amount = amount
         self.name = name
 
+
     def __repr__(self):
         return f"""Action(kind={self.kind!r}, amount={self.amount!r}, name={self.name!r})"""
-
-    # def __eq__(self, other):
-    #     if self.kind == other.kind and self.amount == other.amount and self.name == other.name:
-    #         return True
-    #     else:
-    #         return False
 
 
     def get_name(self):
@@ -453,6 +448,39 @@ class Action:
     def amount(self):
         return self.amount
 
+class Actions:
+    def __init__(self, actions):
+        self.action_list = list()
+        for action in actions:
+            self.action_list.append(action)
+        self.update_actions()
+
+    def __len__(self):
+        return len(self.action_list)
+    
+
+    def __getitem__(self, idx):
+        return self.action_list[idx]
+                        
+    
+    def update(self, action):
+        self.action_list.append(action)
+        self.update_actions()
+
+    def update_actions(self):
+        kinds = [a.kind for a in self.action_list]
+        amounts = [a.amount for a in self.action_list]
+        actions = {kind: amount for kind, amount in zip(kinds, amounts)}
+        kind_count = {"CHECK":0, "BET":0, "FOLD":0, "RAISE":0, "END":0}
+        for kind in kinds:
+            try:
+                kind_count[kind] += 1
+            except KeyError:
+                kind_count[kind] = 1
+        logging.debug(f"kind_count is {kind_count}")
+        self.kind_count = kind_count
+        return kind_count
+    
 
 class Player:
     def __init__(self, hand=None, stash=None, name=None):
