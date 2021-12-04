@@ -271,4 +271,7 @@ def test_actions_can_take_empty_actions():
     actions = Actions(actions=[])
     assert actions.action_list == []
 
+def test_actions_has_a_get_bets_function():
+    actions = Actions([Action("BET", 100, name="richie")])
+    assert actions.get_bets() is not None
 

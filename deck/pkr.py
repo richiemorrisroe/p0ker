@@ -472,6 +472,13 @@ class Actions:
         self.action_list.append(action)
         self.update_actions()
 
+    def get_bets(self):
+        bets = []
+        for action in self.action_list:
+            if action.kind == "BET" or action.kind == "RAISE":
+                bets.append(action)
+        return bets
+
     def update_actions(self):
         kinds = [a.kind for a in self.action_list]
         amounts = [a.amount for a in self.action_list]
@@ -687,8 +694,9 @@ class Round:
             min_bet = self.min_bet
 
         actions = self.get_actions()
-
-        if actions:
+        if actions.kind_count["BET"] == 0:
+            return min_bet
+        if actions.kind_count["BET"] > 0:
             logging.debug(f"actions are {actions}")
             sum_bets = min_bet
             logging.debug(f"sum bets starts at {sum_bets}")
