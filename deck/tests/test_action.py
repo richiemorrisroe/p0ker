@@ -207,7 +207,7 @@ def test_dealer_can_validate_action(dealer_3_players) -> None:
     assert dealer.is_valid_action(action) is True
 
 
-def test_bet_causes_minimum_bet_to_increase(dealer_3_players):
+def test_bet_causes_sum_bets_to_increase(dealer_3_players):
     dealer, players, round = dealer_3_players
     p1, p2, p3 = players.values()
     dealer.take_action(p1, Action("BET", 100))
@@ -215,9 +215,9 @@ def test_bet_causes_minimum_bet_to_increase(dealer_3_players):
     pnames = list(players.keys())
     dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
     state = dealer.update_state(round)
-    assert state['min_bet'] == 400
+    assert state['sum_bets'] == 300
 
-def test_raise_causes_minimum_bet_to_increase(dealer_3_players):
+def test_raise_causes_sum_bets_to_increase(dealer_3_players):
     dealer, players, round = dealer_3_players
     p1, p2, p3 = players.values()
     dealer.take_action(p1, Action("BET", 100))
@@ -225,7 +225,7 @@ def test_raise_causes_minimum_bet_to_increase(dealer_3_players):
     pnames = list(players.keys())
     dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
     state = dealer.update_state(round)
-    assert state['min_bet'] == 400
+    assert state['sum_bets'] == 300
 
 # def test_update_round_ensures_that_all_players_bet_equal_amounts(dealer_3_players):
 #     dealer, players, round = dealer_3_players
@@ -274,4 +274,6 @@ def test_actions_can_take_empty_actions():
 def test_actions_has_a_get_bets_function():
     actions = Actions([Action("BET", 100, name="richie")])
     assert actions.get_bets() is not None
+
+
 

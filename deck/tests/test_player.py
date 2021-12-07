@@ -250,3 +250,4 @@ def test_player_pay_works_with_a_negative_argument():
     stash = p.stash
     p.pay(-100)
     assert p.stash == stash + 100
+

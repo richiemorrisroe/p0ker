@@ -687,6 +687,21 @@ class Round:
             self.add_to_pot(player.pay(self.ante))
         return players
 
+    def get_sum_bets(self):
+        actions = self.get_actions()
+        sum_bets = 0
+        if actions.kind_count["BET"] == 0:
+            return sum_bets
+        if actions.kind_count["BET"] > 0:
+            logging.debug(f"actions are {actions}")
+            sum_bets = 0
+            bets = actions.get_bets()
+            logging.debug(f"bets are {bets}")
+            for bet in bets:
+                sum_bets += bet.amount
+        return sum_bets
+        
+
     def get_minimum_bet(self):
         if self.turn == 0:
             min_bet = self.ante
@@ -694,39 +709,17 @@ class Round:
             min_bet = self.min_bet
 
         actions = self.get_actions()
-        if actions.kind_count["BET"] == 0:
-            return min_bet
-        if actions.kind_count["BET"] > 0:
-            logging.debug(f"actions are {actions}")
-            sum_bets = min_bet
-            logging.debug(f"sum bets starts at {sum_bets}")
-            if len(actions) == 1:
-                action = actions[0]
-                if action == "BET":
-                    sum_bets += action.amount
+        sum_bets = self.get_sum_bets()
 
-            if len(actions) > 1:
-                logging.debug(actions)
-                for action in actions:
-                    kind = action.kind
-                    amount = action.amount
-                    logging.debug(f"action is {kind} and amount is {amount}")
-                    if kind == "BET" or kind == "RAISE":
-                        sum_bets += amount
-                        logging.debug(f"sum bets is now {sum_bets}")
-            logging.debug(f"sum_bet is {sum_bets}")
-            min_bet = sum_bets
-            logging.debug(f"min_bet is now {min_bet}")
         self.min_bet = min_bet
+        self.sum_bets = sum_bets
         return min_bet
 
     def get_maximum_bet(self):
         actions = self.get_actions()
-        bets = {action.kind:action.amount
-                for action in actions if action.kind == 'BET'
-                or action.kind == 'RAISE'}
+        bets = actions.get_bets()
         if len(bets) >= 1:
-            max_bet = max(list(bets.values()))
+            max_bet = max([a.amount for a in bets])
         else:
             max_bet = 0
         return max_bet
@@ -734,6 +727,7 @@ class Round:
 
     def calculate_valid_actions(self):
         position = self.get_position()
+        actions = self.get_actions()
         no_bet_state = [Action("CHECK", 0), Action("BET", self.ante),
                         Action("FOLD", 0)]
         some_bet_state = [
@@ -745,18 +739,8 @@ class Round:
         if position == 0:
             return no_bet_state
         logging.debug("actions are {a}".format(a=self.get_actions()))
-        kinds = [a.kind for a in self.get_actions()]
-        amounts = [a.amount for a in self.get_actions()]
-        actions = {kind: amount for kind, amount in zip(kinds, amounts)}
-        names = [a.name for a in self.get_actions()]
-        logging.debug(f"names are {names}")
-        logging.debug(f"kinds are {kinds}")
-        kind_count = {"CHECK":0, "BET":0, "FOLD":0, "RAISE":0, "END":0}
-        for kind in kinds:
-            try:
-                kind_count[kind] += 1
-            except KeyError:
-                kind_count[kind] = 1
+
+        kind_count = actions.kind_count
         logging.debug(f"kind_count is {kind_count}")
         if kind_count['FOLD'] == (self.num_players - 1):
             losers = [a.name for a in \
@@ -782,6 +766,7 @@ class Round:
         potval = self.get_pot_value()
         position = self.get_position()
         min_bet = self.get_minimum_bet()
+        sum_bets = self.get_sum_bets()
         max_bet = self.get_maximum_bet()
         actions = self.get_actions()
         valid_actions: List[Action] = self.calculate_valid_actions()
@@ -790,6 +775,7 @@ class Round:
                 "pot_value": potval,
                 "position": position,
                 "min_bet": min_bet,
+                "sum_bets": sum_bets,
                 "max_bet" : max_bet,
                 "actions": actions,
                 "valid_actions": valid_actions,
