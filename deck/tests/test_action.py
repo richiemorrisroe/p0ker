@@ -279,3 +279,9 @@ def test_actions_has_a_get_bets_function():
 def test_actions_has_a_maximum_bet_function():
     actions = Actions([Action("BET", 100, name="richie")])
     assert actions.max_bet() == 100
+
+def test_actions_has_a_sum_bet_function():
+    actions = Actions([Action("BET", 100, name="richie"),
+                       Action("RAISE", 200, name="libbie")])
+    assert actions.sum_bets() == 300
+    assert actions.max_bet() == 200

@@ -487,6 +487,17 @@ class Actions:
             max_bet = 0
         return max_bet
 
+    def sum_bets(self):
+        sum_bets = 0
+        if self.kind_count["BET"] == 0:
+            return sum_bets
+        if self.kind_count["BET"] > 0:
+            bets = self.get_bets()
+            logging.debug(f"bets are {bets}")
+            for bet in bets:
+                sum_bets += bet.amount
+        return sum_bets
+
     def update_actions(self):
         kinds = [a.kind for a in self.action_list]
         amounts = [a.amount for a in self.action_list]
@@ -696,19 +707,7 @@ class Round:
         return players
 
     def get_sum_bets(self):
-        actions = self.get_actions()
-        sum_bets = 0
-        if actions.kind_count["BET"] == 0:
-            return sum_bets
-        if actions.kind_count["BET"] > 0:
-            logging.debug(f"actions are {actions}")
-            sum_bets = 0
-            bets = actions.get_bets()
-            logging.debug(f"bets are {bets}")
-            for bet in bets:
-                sum_bets += bet.amount
-        return sum_bets
-        
+        return self.actions.sum_bets()
 
     def get_minimum_bet(self):
         if self.turn == 0:
@@ -716,22 +715,11 @@ class Round:
         else:
             min_bet = self.min_bet
 
-        actions = self.get_actions()
-        sum_bets = self.get_sum_bets()
-
         self.min_bet = min_bet
-        self.sum_bets = sum_bets
         return min_bet
 
     def get_maximum_bet(self):
         return self.actions.max_bet()
-        # actions = self.get_actions()
-        # bets = actions.get_bets()
-        # if len(bets) >= 1:
-        #     max_bet = max([a.amount for a in bets])
-        # else:
-        #     max_bet = 0
-        # return max_bet
         
 
     def calculate_valid_actions(self):
