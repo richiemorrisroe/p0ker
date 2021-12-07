@@ -479,6 +479,14 @@ class Actions:
                 bets.append(action)
         return bets
 
+    def max_bet(self):
+        bets = self.get_bets()
+        if len(bets) >= 1:
+            max_bet = max([a.amount for a in bets])
+        else:
+            max_bet = 0
+        return max_bet
+
     def update_actions(self):
         kinds = [a.kind for a in self.action_list]
         amounts = [a.amount for a in self.action_list]
@@ -716,13 +724,14 @@ class Round:
         return min_bet
 
     def get_maximum_bet(self):
-        actions = self.get_actions()
-        bets = actions.get_bets()
-        if len(bets) >= 1:
-            max_bet = max([a.amount for a in bets])
-        else:
-            max_bet = 0
-        return max_bet
+        return self.actions.max_bet()
+        # actions = self.get_actions()
+        # bets = actions.get_bets()
+        # if len(bets) >= 1:
+        #     max_bet = max([a.amount for a in bets])
+        # else:
+        #     max_bet = 0
+        # return max_bet
         
 
     def calculate_valid_actions(self):

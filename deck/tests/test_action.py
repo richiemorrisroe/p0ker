@@ -276,4 +276,6 @@ def test_actions_has_a_get_bets_function():
     assert actions.get_bets() is not None
 
 
-
+def test_actions_has_a_maximum_bet_function():
+    actions = Actions([Action("BET", 100, name="richie")])
+    assert actions.max_bet() == 100
