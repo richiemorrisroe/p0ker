@@ -412,7 +412,7 @@ class PlayerNamer:
 
 class Action:
     def __init__(self, kind: str, amount: int, name: str = None):
-        assert kind in ["BET", "CALL", "RAISE", "FOLD", "CHECK", "END"]
+        assert kind in ["BET", "CALL", "RAISE", "FOLD", "CHECK", "MATCH", "END"]
         self.kind = kind
         self.amount = amount
         self.name = name
@@ -466,6 +466,10 @@ class Actions:
 
     def __getitem__(self, idx):
         return self.action_list[idx]
+
+    def __repr__(self):
+        s = ",".join([repr(a) for a in self.action_list])
+        return s
                         
     
     def update(self, action):
@@ -732,6 +736,8 @@ class Round:
             Action("FOLD", 0),
             Action("RAISE", (self.ante + self.min_bet) * 2),
         ]
+
+            
         end_state = [Action("END", 0)]
         if position == 0:
             return no_bet_state
@@ -853,7 +859,7 @@ class Dealer:
         return players
             
 
-    def take_action(self, player, action=None) -> None:
+    def take_action(self, player:Player, action=None) -> None:
         state = self.update_state(self.round)
         if not action:
             state = self.update_state(self.round)

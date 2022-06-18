@@ -229,6 +229,7 @@ def test_raise_causes_sum_bets_to_increase(dealer_3_players):
 
 # def test_update_round_ensures_that_all_players_bet_equal_amounts(dealer_3_players):
 #     dealer, players, round = dealer_3_players
+#     print("pv is {pv}".format(pv=dealer.get_state(round)['pot_value']))
 #     p1, p2, p3 = players.values()
 #     dealer.take_action(p1, Action("BET", 100))
 #     dealer.take_action(p2, Action("RAISE", 200))
@@ -285,3 +286,16 @@ def test_actions_has_a_sum_bet_function():
                        Action("RAISE", 200, name="libbie")])
     assert actions.sum_bets() == 300
     assert actions.max_bet() == 200
+
+# def test_multiple_rounds_can_be_run(dealer_3_players):
+#     dealer, players, round = dealer_3_players
+#     for player in players:
+#         dealer.take_action(player)
+#     round = dealer.update_state(round)
+def test_actions_prints_list_of_actions():
+    actions = Actions([Action("BET", 100, name="richie")])
+    assert actions.__repr__() is not None
+
+def test_match_action_exists():
+    match = Action("MATCH", 100)
+    assert isinstance(match, Action)
