@@ -418,6 +418,17 @@ class Action:
         self.name = name
 
 
+    def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, Action):
+            return False
+
+        elif self.kind==__o.kind and self.amount == __o.amount and self.name == __o.name:
+            return True
+
+        else:
+            return False
+
+
     def __repr__(self):
         return f"""Action(kind={self.kind!r}, amount={self.amount!r}, name={self.name!r})"""
 
@@ -737,6 +748,10 @@ class Round:
             Action("RAISE", (self.ante + self.min_bet) * 2),
         ]
 
+        match_fold_state = [
+            Action("MATCH", 100),
+            Action("FOLD", 0),
+            Action("RAISE", 200)]
             
         end_state = [Action("END", 0)]
         if position == 0:
@@ -755,9 +770,15 @@ class Round:
             end_state = [Action(kind="END", amount=0, name=winner)]
             logging.debug(f"end state is {end_state}")
             return end_state
+        
+        if kind_count['BET'] > 0 and kind_count['RAISE'] > 0:
+            return match_fold_state
+        
         if kind_count['BET']>0:
             logging.debug(f"some bet state is {some_bet_state}")
             return some_bet_state
+
+
         
         if kind_count['CHECK'] + kind_count['FOLD'] == position:
             logging.debug(f"no bet state is {no_bet_state}")

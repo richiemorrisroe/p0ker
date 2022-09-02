@@ -299,3 +299,15 @@ def test_actions_prints_list_of_actions():
 def test_match_action_exists():
     match = Action("MATCH", 100)
     assert isinstance(match, Action)
+
+def test_greater_bet_or_raise_creates_match_or_fold_state(dealer_3_players):
+    match_fold_state = [Action("MATCH", 100),
+                        Action("FOLD", 0),
+                        Action("RAISE", 200)]
+    dealer, players, round = dealer_3_players
+    print("pv is {pv}".format(pv=dealer.get_state(round)['pot_value']))
+    p1, p2, p3 = players.values()
+    dealer.take_action(p1, Action("BET", 100))
+    dealer.take_action(p2, Action("RAISE", 200))
+    valid_actions = dealer.update_state(round)['valid_actions']
+    assert valid_actions == match_fold_state

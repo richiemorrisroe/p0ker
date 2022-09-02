@@ -3286,6 +3286,7 @@ def test_player_can_pass_in_action_argument_to_send_action():
 - in general, it's impossible for two hands to be equal as it requires
   the exact same cards
 - This is clearly impossible
+- define hand equality as hand1.score()==hand2.score()
 ****** TODO make sure that __iter__ and __next__ actually work (they look kinda weird)
 
 

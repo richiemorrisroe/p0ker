@@ -1,4 +1,5 @@
 from deck.pkr import Player, random_hand, Card, Suit, Rank, Dealer, Hand, Round
+from .fixtures import dealer_3_players
 import pytest
 
 
@@ -251,3 +252,7 @@ def test_player_pay_works_with_a_negative_argument():
     p.pay(-100)
     assert p.stash == stash + 100
 
+
+def test_player_keeps_a_record_of_actions_taken(dealer_3_players):
+    dealer, players, round = dealer_3_players
+    pass
