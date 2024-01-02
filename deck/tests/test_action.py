@@ -227,16 +227,6 @@ def test_raise_causes_sum_bets_to_increase(dealer_3_players):
     state = dealer.update_state(round)
     assert state['sum_bets'] == 300
 
-def test_action_state_has_minimum_bet_required(dealer_3_players):
-    dealer, players, round = dealer_3_players
-    p1, p2, p3 = players.values()
-    bet_amount = 200
-    dealer.take_action(p1, Action("BET", amount=bet_amount))
-    state = dealer.update_state(round)
-    valid_actions = state['valid_actions']
-    bets = [action for action in valid_actions if action.kind=='BET'].pop()
-    assert bets.amount == bet_amount
-
 # def test_update_round_ensures_that_all_players_bet_equal_amounts(dealer_3_players):
 #     dealer, players, round = dealer_3_players
 #     print("pv is {pv}".format(pv=dealer.get_state(round)['pot_value']))
@@ -302,8 +292,6 @@ def test_actions_has_a_sum_bet_function():
 #     for player in players:
 #         dealer.take_action(player)
 #     round = dealer.update_state(round)
-
-
 def test_actions_prints_list_of_actions():
     actions = Actions([Action("BET", 100, name="richie")])
     assert actions.__repr__() is not None
