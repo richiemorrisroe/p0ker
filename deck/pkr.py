@@ -5,9 +5,9 @@ import math
 from pprint import pprint
 from random import shuffle, sample
 import random
-import sys
-from typing import Union, List, Dict, Tuple, Optional, Set, Any, Collection
-from collections import defaultdict
+
+from typing import Union, List, Dict, Tuple, Optional, Any, Collection
+
 
 
 logging.basicConfig(filename="test.log", level=logging.INFO)
@@ -442,7 +442,7 @@ class Action:
             raise ValueError("cannot overwrite name")
 
     def is_valid(self) -> bool:
-        assert self.kind in ["BET", "CALL", "RAISE", "FOLD", "CHECK", "END"]
+        assert self.kind in ["BET", "CALL", "RAISE", "FOLD", "CHECK", "END", "MATCH"]
         if self.kind == "BET" and self.amount == 0:
             return False
         if self.kind == "FOLD" and self.amount > 0:
