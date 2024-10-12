@@ -999,8 +999,6 @@ def make_flush(suit: Optional[Suit] = None) -> Hand:
 
 def print_source(function) -> None:
     import inspect
-    import pprint
-
     pprint.pprint(inspect.getsource(function))
 
 
