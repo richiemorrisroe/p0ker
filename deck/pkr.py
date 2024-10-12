@@ -8,8 +8,6 @@ import random
 
 from typing import Union, List, Dict, Tuple, Optional, Any, Collection
 
-
-
 logging.basicConfig(filename="test.log", level=logging.INFO)
 # root = logging.getLogger()
 # handler = logging.StreamHandler(sys.stdout)
@@ -221,7 +219,8 @@ class Hand:
 
     def find_repeated_cards(self):
         """Check if there are any repeated cards in a list of suits or ranks.
-        Return the elements which are repeated if so, an empty dictionary otherwise"""
+        Return the elements which are repeated if so, an empty dictionary
+        otherwise"""
         suits, ranks = self.split_cards()
         res = {}
         counts = self.count("ranks")
@@ -296,7 +295,6 @@ class Hand:
 
 
 def get_ranks_from_repeated_cards(reps: dict) -> Tuple[Rank]:
-
     result = tuple(reps.keys())
     return result
 
@@ -423,14 +421,16 @@ class Action:
         if not isinstance(__o, Action):
             return False
 
-        elif self.kind == __o.kind and self.amount == __o.amount and self.name == __o.name:
+        elif (self.kind == __o.kind and self.amount == __o.amount
+              and self.name == __o.name):
             return True
 
         else:
             return False
 
     def __repr__(self):
-        return f"""Action(kind={self.kind!r}, amount={self.amount!r}, name={self.name!r})"""
+        return f"""Action(kind={self.kind!r}, amount={self.amount!r},
+        name={self.name!r})"""
 
     def get_name(self):
         return self.name
@@ -442,7 +442,8 @@ class Action:
             raise ValueError("cannot overwrite name")
 
     def is_valid(self) -> bool:
-        assert self.kind in ["BET", "CALL", "RAISE", "FOLD", "CHECK", "END", "MATCH"]
+        assert self.kind in ["BET", "CALL", "RAISE", "FOLD",
+                             "CHECK", "END", "MATCH"]
         if self.kind == "BET" and self.amount == 0:
             return False
         if self.kind == "FOLD" and self.amount > 0:
@@ -512,8 +513,6 @@ class Actions:
 
     def update_actions(self):
         kinds = [a.kind for a in self.action_list]
-        amounts = [a.amount for a in self.action_list]
-        actions = {kind: amount for kind, amount in zip(kinds, amounts)}
         kind_count = {"CHECK": 0, "BET": 0, "FOLD": 0, "RAISE": 0, "END": 0}
         for kind in kinds:
             try:
@@ -547,7 +546,8 @@ class Player:
         # it's a little tricksy
 
     def __repr__(self) -> str:
-        fstring = f"Player(name = {self.name}, stash = {self.stash}, score={self.score}, hand = {self.hand})"
+        fstring = f"""Player(name = {self.name}, stash = {self.stash},
+        score={self.score}, hand = {self.hand})"""
         return fstring
 
     def __len__(self) -> int:
@@ -712,7 +712,6 @@ class Round:
         self.update_state()
 
     def get_blinds(self, players: Dict[str, Player]) -> List[Player]:
-        pot = 0
         for name, player in players.items():
             self.add_to_pot(player.pay(self.ante))
         return players
@@ -952,7 +951,8 @@ class Dealer:
             return True
 
 
-def deal_cards(dealer: Dealer, players: List[Player]) -> Tuple[Dealer, List[Player]]:
+def deal_cards(dealer: Dealer,
+               players: List[Player]) -> Tuple[Dealer, List[Player]]:
     """Takes a list of players (normally empty lists)
     and deals each of them five cards,
     returning the updated lists"""
@@ -977,7 +977,8 @@ def anyrep(ranks) -> bool:
 
 
 def make_straight(start: int) -> Hand:
-    """This can produce a straight flush, of suit random_suit and starting at Rank start"""
+    """This can produce a straight flush, of suit random_suit and starting at
+    Rank start"""
     hand = []
     if not start:
         start = 7
@@ -1015,7 +1016,7 @@ def discard_cards(hand: Hand) -> Tuple[List[Card], List[Card]]:
         return keep, discard
     suits, ranks = hand.split_cards()
     this_score, handname = hand.score()
-    if handname == "STRAIGHT" or handname == "FLUSH" or handname == "STRAIGHT-FLUSH":
+    if (handname == "STRAIGHT" or handname == "FLUSH" or handname == "STRAIGHT-FLUSH"):
         keep = hand.cards
         discard = []
     if handname == "NOTHING":
