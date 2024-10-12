@@ -411,8 +411,9 @@ class PlayerNamer:
 
 class Action:
     def __init__(self, kind: str, amount: int, name: str = None):
-        assert kind in ["BET", "CALL", "RAISE",
-                        "FOLD", "CHECK", "MATCH", "END"]
+        if kind not in ["BET", "CALL", "RAISE",
+                        "FOLD", "CHECK", "MATCH", "END"]:
+            raise ValueError(f"{kind} is not a valid action")
         self.kind = kind
         self.amount = amount
         self.name = name
@@ -442,8 +443,9 @@ class Action:
             raise ValueError("cannot overwrite name")
 
     def is_valid(self) -> bool:
-        assert self.kind in ["BET", "CALL", "RAISE", "FOLD",
-                             "CHECK", "END", "MATCH"]
+        if self.kind not in ["BET", "CALL", "RAISE", "FOLD",
+                             "CHECK", "END", "MATCH"]:
+            raise ValueError(f"{self.kind} is not valid")
         if self.kind == "BET" and self.amount == 0:
             return False
         if self.kind == "FOLD" and self.amount > 0:
