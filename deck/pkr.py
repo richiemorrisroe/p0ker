@@ -264,7 +264,8 @@ class Hand:
             handscore = scores["NOTHING"] + max_rank
             scorename = "NOTHING"
         if len(pairs) > 0:
-            handscore, scorename = self.check_for_kind_of_pair(pairs, scores, ranks_int)
+            handscore, scorename = self.check_for_kind_of_pair(
+                pairs, scores, ranks_int)
         return handscore, scorename
 
     def check_for_kind_of_pair(self, pairs, scores, ranks_int):
@@ -412,26 +413,24 @@ class PlayerNamer:
 
 class Action:
     def __init__(self, kind: str, amount: int, name: str = None):
-        assert kind in ["BET", "CALL", "RAISE", "FOLD", "CHECK", "MATCH", "END"]
+        assert kind in ["BET", "CALL", "RAISE",
+                        "FOLD", "CHECK", "MATCH", "END"]
         self.kind = kind
         self.amount = amount
         self.name = name
-
 
     def __eq__(self, __o: object) -> bool:
         if not isinstance(__o, Action):
             return False
 
-        elif self.kind==__o.kind and self.amount == __o.amount and self.name == __o.name:
+        elif self.kind == __o.kind and self.amount == __o.amount and self.name == __o.name:
             return True
 
         else:
             return False
 
-
     def __repr__(self):
         return f"""Action(kind={self.kind!r}, amount={self.amount!r}, name={self.name!r})"""
-
 
     def get_name(self):
         return self.name
@@ -459,21 +458,20 @@ class Action:
     def amount(self):
         return self.amount
 
+
 class Actions:
     def __init__(self, actions):
         self.action_list = list()
         for action in actions:
             self.action_list.append(action)
-            
+
         self.update_actions()
         if not self.kind_count:
-            self.kind_count = {"CHECK":0, "BET":0,
-                               "FOLD":0, "RAISE":0, "END":0}
-
+            self.kind_count = {"CHECK": 0, "BET": 0,
+                               "FOLD": 0, "RAISE": 0, "END": 0}
 
     def __len__(self):
         return len(self.action_list)
-    
 
     def __getitem__(self, idx):
         return self.action_list[idx]
@@ -481,8 +479,7 @@ class Actions:
     def __repr__(self):
         s = ",".join([repr(a) for a in self.action_list])
         return s
-                        
-    
+
     def update(self, action):
         self.action_list.append(action)
         self.update_actions()
@@ -517,7 +514,7 @@ class Actions:
         kinds = [a.kind for a in self.action_list]
         amounts = [a.amount for a in self.action_list]
         actions = {kind: amount for kind, amount in zip(kinds, amounts)}
-        kind_count = {"CHECK":0, "BET":0, "FOLD":0, "RAISE":0, "END":0}
+        kind_count = {"CHECK": 0, "BET": 0, "FOLD": 0, "RAISE": 0, "END": 0}
         for kind in kinds:
             try:
                 kind_count[kind] += 1
@@ -527,7 +524,6 @@ class Actions:
         self.kind_count = kind_count
         return kind_count
 
-    
 
 class Player:
     def __init__(self, hand=None, stash=None, name=None):
@@ -680,7 +676,6 @@ class Round:
         self.actions: Actions = Actions(actions=[])
         self.turn = 0
         self.player_names: List[str] = list(players.keys())
-        
 
     def __repr__(self):
         repr_string = f"""Round(
@@ -703,6 +698,7 @@ class Round:
 
     def get_position(self):
         return self.position
+
     def set_position(self, position) -> None:
 
         self.position = position
@@ -735,7 +731,6 @@ class Round:
 
     def get_maximum_bet(self):
         return self.actions.max_bet()
-        
 
     def calculate_valid_actions(self):
         position = self.get_position()
@@ -752,7 +747,7 @@ class Round:
             Action("MATCH", 100),
             Action("FOLD", 0),
             Action("RAISE", 200)]
-            
+
         end_state = [Action("END", 0)]
         if position == 0:
             return no_bet_state
@@ -761,30 +756,27 @@ class Round:
         kind_count = actions.kind_count
         logging.debug(f"kind_count is {kind_count}")
         if kind_count['FOLD'] == (self.num_players - 1):
-            losers = [a.name for a in \
+            losers = [a.name for a in
                       self.get_actions() if a.action == 'FOLD']
             winner = [name for name in self.player_names
                       if name not in losers].pop()
             logging.debug(f"winner is {winner}")
-            
+
             end_state = [Action(kind="END", amount=0, name=winner)]
             logging.debug(f"end state is {end_state}")
             return end_state
-        
+
         if kind_count['BET'] > 0 and kind_count['RAISE'] > 0:
             return match_fold_state
-        
-        if kind_count['BET']>0:
+
+        if kind_count['BET'] > 0:
             logging.debug(f"some bet state is {some_bet_state}")
             return some_bet_state
 
-
-        
         if kind_count['CHECK'] + kind_count['FOLD'] == position:
             logging.debug(f"no bet state is {no_bet_state}")
             return no_bet_state
         logging.debug(f"player num is {self.num_players}")
-        
 
     def update_state(self) -> Dict[str, Any]:
         potval = self.get_pot_value()
@@ -800,7 +792,7 @@ class Round:
                 "position": position,
                 "min_bet": min_bet,
                 "sum_bets": sum_bets,
-                "max_bet" : max_bet,
+                "max_bet": max_bet,
                 "actions": actions,
                 "valid_actions": valid_actions,
             }
@@ -829,7 +821,6 @@ class Dealer:
             player_dict[player.name] = player
         logging.debug(f"player_dict is {player_dict}")
         return player_dict
-    
 
     def give_name(self, player) -> Player:
         name = self.player_namer.get_name()
@@ -857,30 +848,30 @@ class Dealer:
     def update_cards(self, player):
         if len(player) > 1:
             raise ValueError(
-                "update cards only takes one player, not {x}".format(x=len(player))
+                "update cards only takes one player, not {x}".format(
+                    x=len(player))
             )
         deck, player = replenish_cards(self.deck, player)
         self.deck = deck
         return player
 
-    def update_round(self, players:Dict[str, Player],
-                     round:Optional[Round]=None):
+    def update_round(self, players: Dict[str, Player],
+                     round: Optional[Round] = None):
         logging.debug(f"players is {players}")
         if not round:
             round = self.round
         state = round.update_state()
         valid_actions = state['valid_actions']
         print(f"va in update_round is {valid_actions}")
-        if len(valid_actions) == 1 and valid_actions[0].kind=='END':
+        if len(valid_actions) == 1 and valid_actions[0].kind == 'END':
             winner = valid_actions[0].name
             players = self.end_round(round=self.round, players=players)
         position = self.round.get_position()
         if position == self.round.num_players:
             pass
         return players
-            
 
-    def take_action(self, player:Player, action=None) -> None:
+    def take_action(self, player: Player, action=None) -> None:
         state = self.update_state(self.round)
         if not action:
             state = self.update_state(self.round)
@@ -931,18 +922,17 @@ class Dealer:
         amount_to_pay = -1*pot_value
         logging.debug(f"amout to pay is {amount_to_pay}")
         logging.debug("player[winner] is {p}"
-                        .format(p=players[winner]))
+                      .format(p=players[winner]))
         players[winner].pay(amount_to_pay)
         self.round_count += 1
         self.round.zero_pot()
         return players
-        
 
     def take_discards(self, cards: List[Card]) -> None:
         for card in cards:
             self.discard_pile.append(card)
 
-    def update_state(self, round:Round):
+    def update_state(self, round: Round):
         state = round.update_state()
         logging.debug(f"state in update_state is {state}")
         return state
@@ -950,7 +940,7 @@ class Dealer:
     def get_state(self, Round: Round):
         return self.update_state(Round)
 
-    def is_valid_action(self, action:Action, state=None) -> bool:
+    def is_valid_action(self, action: Action, state=None) -> bool:
         is_valid = action.is_valid()
         if not is_valid:
             return False
