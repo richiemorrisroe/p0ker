@@ -456,7 +456,7 @@ class Action:
     def get_action(self):
         return self.kind
 
-    def amount(self):
+    def get_amount(self):
         return self.amount
 
 
