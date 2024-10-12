@@ -1,4 +1,4 @@
-from deck.pkr import Dealer, Deck, Player, deal_cards, random_choice, Round, Action
+from deck.pkr import Dealer, Deck, Player, Action
 import pytest
 
 
@@ -24,7 +24,7 @@ def test_dealer_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
     lp = [p1, p2]
-    lp = {'richie':p1, 'libbie':p2}
+    lp = {'richie': p1, 'libbie': p2}
     dealer = Dealer()
     original_len = len(dealer.deck)
     dict_players = dealer.deals(lp)
