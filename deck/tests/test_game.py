@@ -1,6 +1,8 @@
 from deck.pkr import Dealer, Deck, Player, Action
 import pytest
 
+import logging
+
 
 def test_dealer_is_dealer() -> None:
     dealer = Dealer()
@@ -127,6 +129,20 @@ def test_dealer_update_round_exists():
     state = dealer.update_state(r)
     print(f"round is {r}")
     assert dealer.update_round(players=players, round=r) is not None
+
+def test_dealer_stores_completed_rounds():
+    pass
+    # implemnent when you can end a round
+    # dealer = Dealer()
+    # players = dealer.start_game(3)
+    # r = dealer.start_round(players)
+    # p1, p2, p3 = players.values()
+    # dealer.take_action(p1, Action("FOLD", 0))
+    # dealer.take_action(p2, Action("FOLD", 0))
+    # state = dealer.update_state(r)
+    # logging.info(f"{players=}")
+    # dealer.end_round()
+    # assert len(dealer.old_rounds) == 1
 
 
 # def test_dealer_can_validate_action() -> None:

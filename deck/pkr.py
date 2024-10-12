@@ -453,7 +453,7 @@ class Action:
         else:
             return True
 
-    def action(self):
+    def get_action(self):
         return self.kind
 
     def amount(self):
@@ -465,11 +465,9 @@ class Actions:
         self.action_list = list()
         for action in actions:
             self.action_list.append(action)
-
         self.update_actions()
         if not self.kind_count:
-            self.kind_count = {"CHECK": 0, "BET": 0,
-                               "FOLD": 0, "RAISE": 0, "END": 0}
+            self.kind_count = {"CHECK": 0, "BET": 0, "FOLD": 0, "RAISE": 0, "END": 0}
 
     def __len__(self):
         return len(self.action_list)
@@ -568,7 +566,6 @@ class Player:
     def bet(self, bet=None) -> float:
         def check_bet(bet, stash):
             if bet > stash:
-                logging.debug("got here")
                 raise ValueError(
                     "can only bet {max_stash}, you bet {bet}".format(
                         max_stash=stash, bet=bet
@@ -623,18 +620,18 @@ class Player:
         logging.debug(f"state is {state} for {self.name}")
         valid_actions = state["valid_actions"]
         logging.debug(
-            "val actions  are {v}".format(v=valid_actions))
+        f"{valid_actions=}")
         if not valid_actions:
             raise ValueError("there should always be valid actions")
         if len(valid_actions) >= 2:
             action = deepcopy(sample(valid_actions, 1))
             action_pop = action.pop()
             logging.debug(f"selected action for {self.name} is {action_pop}")
-            actual_action = action_pop.action()
+            actual_action = action_pop.get_action()
             amount = action_pop.amount
         else:
             action_obj = deepcopy(valid_actions[0])
-            actual_action = action_obj.action()
+            actual_action = action_obj.get_action()
             amount = action_obj.amount
             logging.debug(f"action_object is {action_obj}")
         logging.debug(f"{self.name} stash is {self.stash}")
@@ -756,7 +753,7 @@ class Round:
         logging.debug(f"kind_count is {kind_count}")
         if kind_count['FOLD'] == (self.num_players - 1):
             losers = [a.name for a in
-                      self.get_actions() if a.action == 'FOLD']
+                      self.get_actions() if a.get_action == 'FOLD']
             winner = [name for name in self.player_names
                       if name not in losers].pop()
             logging.debug(f"winner is {winner}")
@@ -828,10 +825,9 @@ class Dealer:
 
     def __repr__(self) -> str:
         pot = self.round.get_pot_value()
-        fstring = "Game({name}, ante={ante}, maxdrop={maxdrop},pot={pot})"
-        return fstring.format(
-            name=self.name, ante=self.ante, maxdrop=self.maxdrop, pot=pot
-        )
+        return f"""Game({self.name}, ante={self.ante},
+        maxdrop={self.maxdrop},pot={self.pot})"""
+
 
     def deals(self, players: Dict[str, Player]) -> Dict[str, Player]:
         """Takes a list of players (normally empty lists)

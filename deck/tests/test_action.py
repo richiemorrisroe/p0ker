@@ -8,7 +8,7 @@ def test_player_send_action(dealer_3_players) -> None:
     p1, p2, _ = players.values()
     state = dealer.update_state(round)
     action = p1.decide_action(state)
-    assert action.action() in ["CALL", "BET", "FOLD", "RAISE", "CHECK"]
+    assert action.get_action() in ["CALL", "BET", "FOLD", "RAISE", "CHECK"]
 
 
 def test_action_can_get_name():
@@ -121,7 +121,7 @@ def test_check_action_keeps_no_bet_state(dealer_3_players):
     state = dealer.update_state(round)
     valid_actions = state['valid_actions']
     players = dealer.update_round(dp)
-    actions = [action.action() for action in valid_actions]
+    actions = [action.get_action() for action in valid_actions]
     assert actions == ['CHECK', 'BET', 'FOLD']
 
 
@@ -176,7 +176,7 @@ def test_dealer_can_provide_list_of_valid_actions(dealer_3_players):
 def test_dealer_only_check_bet_and_fold_possible_for_first_player(dealer_3_players):
     dealer, players, round = dealer_3_players
     state = dealer.update_state(round)
-    valid_actions = [a.action() for a in state["valid_actions"]]
+    valid_actions = [a.get_action() for a in state["valid_actions"]]
     assert ["CHECK", "BET", "FOLD"] == valid_actions
 
 
@@ -185,8 +185,8 @@ def test_player_can_only_take_a_valid_action(dealer_3_players):
     state = dealer.update_state(round)
     p1, _, _ = players.values()
     p1_action = p1.send_action(state)
-    val_act = [a.action() for a in state["valid_actions"]]
-    assert p1_action.action() in val_act
+    val_act = [a.get_action() for a in state["valid_actions"]]
+    assert p1_action.get_action() in val_act
 
 
 def test_dealer_can_take_one_action_from_all_players(dealer_3_players) -> None:

@@ -131,7 +131,7 @@ def test_player_can_pass_in_action_argument_to_send_action():
     p1, _, _ = list_players.values()
     # print(state)
     action = p1.send_action(state=state, action=Action("BET", 100))
-    assert action.action() == "BET" and action.amount == 100
+    assert action.get_action() == "BET" and action.amount == 100
 
 def test_round_stores_player_names_in_order():
     dealer = Dealer()
@@ -179,3 +179,4 @@ def test_round_actions_is_actions(dealer_3_players):
     dealer.take_action(p3, Action("BET", 300))
     assert isinstance(round.actions, Actions)
                        
+
