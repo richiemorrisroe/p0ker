@@ -6,7 +6,7 @@ from pprint import pprint
 from random import shuffle, sample
 import random
 
-from typing import Union, List, Dict, Tuple, Optional, Any, Collection
+from typing import Union, List, Dict, Tuple, Optional, Any, Collection, Sequence
 
 logging.basicConfig(filename="test.log", level=logging.INFO)
 # root = logging.getLogger()
@@ -88,7 +88,7 @@ class Card:
 class Hand:
     """A hand holds cards from a particular deck"""
 
-    def __init__(self, cards: Collection[Card]) -> None:
+    def __init__(self, cards: list[Card]) -> None:
         all_cards = [x for x in cards if isinstance(x, Card)]
         cards_set = set(cards)
         if len(all_cards) != len(cards):
@@ -217,7 +217,7 @@ class Hand:
         else:
             return False
 
-    def find_repeated_cards(self):
+    def find_repeated_cards(self) -> Dict[Any, Any]:
         """Check if there are any repeated cards in a list of suits or ranks.
         Return the elements which are repeated if so, an empty dictionary
         otherwise"""
@@ -338,6 +338,7 @@ def random_hand() -> Hand:
     Returns a list of Card objects"""
     deck = Deck()
     hand = deck.deal(num_cards=5)
+    logging.warning(f"{hand=}")
     return Hand(hand)
 
 
@@ -410,7 +411,7 @@ class PlayerNamer:
 
 
 class Action:
-    def __init__(self, kind: str, amount: int, name: str = None):
+    def __init__(self, kind: str, amount: int, name: str| None = None):
         if kind not in ["BET", "CALL", "RAISE",
                         "FOLD", "CHECK", "MATCH", "END"]:
             raise ValueError(f"{kind} is not a valid action")
@@ -455,10 +456,10 @@ class Action:
         else:
             return True
 
-    def get_action(self):
+    def get_action(self) -> str:
         return self.kind
 
-    def get_amount(self):
+    def get_amount(self) -> int:
         return self.amount
 
 
@@ -648,7 +649,7 @@ class Player:
             amount = 0
         return Action(kind=action, amount=amount)
 
-    def send_action(self, state=None, action: Action = None):
+    def send_action(self, state: Dict | None =None, action: Action | None = None):
         if not action:
             action = self.decide_action(state)
         player_name = self.name
@@ -806,7 +807,7 @@ class Dealer:
         deck = Deck()
         self.deck = deck
         self.round = None
-        self.discard_pile = []
+        self.discard_pile : List[Card] = []
         self.round_count = 0
         self.player_namer = PlayerNamer()
         self.player_names = []
@@ -897,7 +898,7 @@ class Dealer:
         # maxscore = max(scores.items())
         return scores
 
-    def start_round(self, players: Dict[str, Player] = None) -> Round:
+    def start_round(self, players: Dict[str, Player]) -> Round:
         logging.debug(f"players passed to start_round={players}")
         r = Round(self.ante, players)
         self.round = r
