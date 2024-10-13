@@ -469,7 +469,8 @@ class Actions:
             self.action_list.append(action)
         self.update_actions()
         if not self.kind_count:
-            self.kind_count = {"CHECK": 0, "BET": 0, "FOLD": 0, "RAISE": 0, "END": 0}
+            self.kind_count = {"CHECK": 0, "BET": 0, "FOLD": 0, "RAISE": 0,
+                               "MATCH": 0,  "END": 0}
 
     def __len__(self):
         return len(self.action_list)
@@ -826,9 +827,8 @@ class Dealer:
         return player
 
     def __repr__(self) -> str:
-        pot = self.round.get_pot_value()
         return f"""Game({self.name}, ante={self.ante},
-        maxdrop={self.maxdrop},pot={self.pot})"""
+        maxdrop={self.maxdrop})"""
 
 
     def deals(self, players: Dict[str, Player]) -> Dict[str, Player]:

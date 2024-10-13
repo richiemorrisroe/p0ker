@@ -3,6 +3,7 @@ import pytest
 from deck.pkr import Action, Actions, Dealer, Player, random_hand
 from .fixtures import dealer_3_players
 
+
 def test_player_send_action(dealer_3_players) -> None:
     dealer, players, round = dealer_3_players
     p1, p2, _ = players.values()
@@ -103,7 +104,7 @@ def test_all_but_one_player_folding_ends_round(dealer_3_players):
     print(f"round_count is {rc}")
     p1, p2, p3 = players.values()
     pnames = list(players.keys())
-    dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
+    dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
     dealer.take_action(p1, Action("FOLD", 0))
     dealer.take_action(p2, Action("FOLD", 0))
     state = dealer.update_state(round)
@@ -111,11 +112,12 @@ def test_all_but_one_player_folding_ends_round(dealer_3_players):
     players = dealer.update_round(dp)
     assert dealer.round_count == 1
 
+
 def test_check_action_keeps_no_bet_state(dealer_3_players):
     dealer, players, round = dealer_3_players
     p1, p2, p3 = players.values()
     pnames = list(players.keys())
-    dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
+    dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
     dealer.take_action(p1, Action("CHECK", 0))
     dealer.take_action(p2, Action("CHECK", 0))
     state = dealer.update_state(round)
@@ -125,8 +127,6 @@ def test_check_action_keeps_no_bet_state(dealer_3_players):
     assert actions == ['CHECK', 'BET', 'FOLD']
 
 
-
-    
 def test_all_but_one_player_folding_ends_round_and_updates_player_stashes(dealer_3_players):
     dealer, players, round = dealer_3_players
     rc = dealer.round_count
@@ -136,11 +136,12 @@ def test_all_but_one_player_folding_ends_round_and_updates_player_stashes(dealer
     dealer.take_action(p2, Action("FOLD", 0))
     state = dealer.update_state(round)
     pnames = list(players.keys())
-    dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
+    dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
     dp2 = dealer.update_round(round=round, players=dp)
     p1, p2, p3 = dp2.values()
     print("round_count is {rc}".format(rc=dealer.round_count))
-    assert p3.stash > max([p1.stash,p2.stash])
+    assert p3.stash > max([p1.stash, p2.stash])
+
 
 def test_pot_is_reduced_to_zero_after_round_ends(dealer_3_players):
     dealer, players, round = dealer_3_players
@@ -149,10 +150,11 @@ def test_pot_is_reduced_to_zero_after_round_ends(dealer_3_players):
     dealer.take_action(p1, Action("FOLD", 0))
     dealer.take_action(p2, Action("FOLD", 0))
     pnames = list(players.keys())
-    dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
+    dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
     state = dealer.update_state(round)
     dp2 = dealer.update_round(players=dp)
     assert dealer.round.get_pot_value() == 0
+
 
 def test_valid_actions_are_some_bet_state_after_bet(dealer_3_players):
     dealer, players, round = dealer_3_players
@@ -198,6 +200,7 @@ def test_dealer_can_take_one_action_from_all_players(dealer_3_players) -> None:
     # assert state is None
     assert len(state['actions']) == len(players)
 
+
 def test_dealer_can_validate_action(dealer_3_players) -> None:
     dealer, players, round = dealer_3_players
     first_player = list(players.values())[0]
@@ -213,9 +216,10 @@ def test_bet_causes_sum_bets_to_increase(dealer_3_players):
     dealer.take_action(p1, Action("BET", 100))
     dealer.take_action(p2, Action("BET", 200))
     pnames = list(players.keys())
-    dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
+    dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
     state = dealer.update_state(round)
     assert state['sum_bets'] == 300
+
 
 def test_raise_causes_sum_bets_to_increase(dealer_3_players):
     dealer, players, round = dealer_3_players
@@ -223,7 +227,7 @@ def test_raise_causes_sum_bets_to_increase(dealer_3_players):
     dealer.take_action(p1, Action("BET", 100))
     dealer.take_action(p2, Action("RAISE", 200))
     pnames = list(players.keys())
-    dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
+    dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
     state = dealer.update_state(round)
     assert state['sum_bets'] == 300
 
@@ -239,7 +243,8 @@ def test_raise_causes_sum_bets_to_increase(dealer_3_players):
 #     state = dealer.update_state(round)
 #     dp = dealer.update_round(players=players)
 #     pv = round.get_pot_value()
-#     assert pv == 1200    
+#     assert pv == 1200
+
 
 def test_raise_reduces_player_stashes(dealer_3_players):
     dealer, players, round = dealer_3_players
@@ -247,10 +252,10 @@ def test_raise_reduces_player_stashes(dealer_3_players):
     dealer.take_action(p1, Action("BET", 100))
     dealer.take_action(p2, Action("RAISE", 200))
     pnames = list(players.keys())
-    dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
+    dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
     state = dealer.update_state(round)
     assert p1.stash == 4800 and p2.stash == 4700
-    
+
 
 def test_actions_object_exists():
     actions = Actions(actions=[Action("BET", 100, name="richie")])
@@ -259,18 +264,21 @@ def test_actions_object_exists():
 
 def test_actions_has_add_action():
     actions = Actions(actions=[Action("BET", 100, name="richie")])
-    actions.update(Action("RAISE", 200, name = "libbie"))
+    actions.update(Action("RAISE", 200, name="libbie"))
     # assert len(actions) == 2
     assert len(actions) == 2
 
+
 def test_actions_has_action_count():
     actions = Actions(actions=[Action("BET", 100, name="richie")])
-    assert actions.kind_count == {"CHECK":0, "BET":1,
-                                  "FOLD":0, "RAISE":0, "END":0}
+    assert actions.kind_count == {"CHECK": 0, "BET": 1,
+                                  "FOLD": 0, "RAISE": 0, "END": 0}
+
 
 def test_actions_can_take_empty_actions():
     actions = Actions(actions=[])
     assert actions.action_list == []
+
 
 def test_actions_has_a_get_bets_function():
     actions = Actions([Action("BET", 100, name="richie")])
@@ -280,6 +288,7 @@ def test_actions_has_a_get_bets_function():
 def test_actions_has_a_maximum_bet_function():
     actions = Actions([Action("BET", 100, name="richie")])
     assert actions.max_bet() == 100
+
 
 def test_actions_has_a_sum_bet_function():
     actions = Actions([Action("BET", 100, name="richie"),
@@ -292,13 +301,17 @@ def test_actions_has_a_sum_bet_function():
 #     for player in players:
 #         dealer.take_action(player)
 #     round = dealer.update_state(round)
+
+
 def test_actions_prints_list_of_actions():
     actions = Actions([Action("BET", 100, name="richie")])
     assert actions.__repr__() is not None
 
+
 def test_match_action_exists():
     match = Action("MATCH", 100)
     assert isinstance(match, Action)
+
 
 def test_greater_bet_or_raise_creates_match_or_fold_state(dealer_3_players):
     match_fold_state = [Action("MATCH", 100),
