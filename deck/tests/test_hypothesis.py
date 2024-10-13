@@ -47,7 +47,7 @@ def test_fuzz_Dealer_start_game(name, ante, players):
 def test_fuzz_Dealer_start_round(name, ante, n_players: int) -> None:
     dealer = deck.pkr.Dealer(name=name, ante=ante)
     players = dealer.start_game(n_players)
-    players = dealer.start_round(players)
+    round = dealer.start_round(players)
 
 
 @pytest.mark.slow
@@ -58,7 +58,7 @@ def test_dealer_maintains_total_value_of_stash(name,
     dealer = deck.pkr.Dealer(name=name, ante=ante)
     players = dealer.start_game(n_players)
     round = dealer.start_round(players)
-    players = dealer.update_round(players)
+    players = dealer.update_round(players, round)
     stashes = [p.stash for _, p in players.items()]
     pot_value = round.get_pot_value()
     assert sum(stashes) + pot_value == n_players * 5000
@@ -71,7 +71,7 @@ def test_dealer_maintains_total_number_of_cards(name,
     dealer = deck.pkr.Dealer(name=name, ante=ante)
     players = dealer.start_game(n_players)
     round = dealer.start_round(players)
-    players = dealer.update_round(players)
+    players = dealer.update_round(players, round)
     card_count = [len(p.hand) for _, p in players.items()]
     deck_length = len(dealer.deck)
     discard_pile_length = len(dealer.discard_pile)

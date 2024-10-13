@@ -337,7 +337,7 @@ def random_hand() -> Hand:
     two cards having the same rank & suit.
     Returns a list of Card objects"""
     deck = Deck()
-    hand = deck.deal(num_cards=5)
+    hand: list[Card] = deck.deal(num_cards=5)
     logging.warning(f"{hand=}")
     return Hand(hand)
 
@@ -363,14 +363,13 @@ class Deck:
     def shuffle(self) -> None:
         shuffle(self._cards)
 
-    def deal(self, num_cards) -> Union[Card, List[Card]]:
+    def deal(self, num_cards) -> Card | list[Card]:
         if num_cards < 1:
             raise ValueError("cannot be dealt less than 1 card")
         if num_cards == 1:
             cards = self._cards[0]
-            self._cards = self._cards[1:]
+            self._cards = self._cards[num_cards:]
         else:
-
             cards = self._cards[0:num_cards]
             self._cards = self._cards[num_cards:]
         return cards
@@ -662,7 +661,7 @@ class Player:
         self.stash -= amount
         return amount
 
-    def add_card(self, card: Card) -> None:
+    def add_card(self, card: Card | list[Card]) -> None:
         self.hand.add_card(card)
         return None
 
@@ -806,11 +805,11 @@ class Dealer:
         self.maxdrop = 3
         deck = Deck()
         self.deck = deck
-        self.round = None
+        self.round: Round | None = None
         self.discard_pile : List[Card] = []
         self.round_count = 0
         self.player_namer = PlayerNamer()
-        self.player_names = []
+        self.player_names: list[str] = []
 
     def start_game(self, n_players: int) -> Dict[str, Player]:
         player_dict = {}
@@ -830,7 +829,6 @@ class Dealer:
     def __repr__(self) -> str:
         return f"""Game({self.name}, ante={self.ante},
         maxdrop={self.maxdrop})"""
-
 
     def deals(self, players: Dict[str, Player]) -> Dict[str, Player]:
         """Takes a list of players (normally empty lists)
@@ -854,19 +852,18 @@ class Dealer:
         return player
 
     def update_round(self, players: Dict[str, Player],
-                     round: Optional[Round] = None):
+                     round: Round):
         logging.debug(f"players is {players}")
-        if not round:
-            round = self.round
         state = round.update_state()
         valid_actions = state['valid_actions']
         print(f"va in update_round is {valid_actions}")
         if len(valid_actions) == 1 and valid_actions[0].kind == 'END':
             winner = valid_actions[0].name
             players = self.end_round(round=self.round, players=players)
-        position = self.round.get_position()
-        if position == self.round.num_players:
+        position = round.get_position()
+        if position == round.num_players:
             pass
+        self.round = round
         return players
 
     def take_action(self, player: Player, action=None) -> None:
@@ -908,9 +905,9 @@ class Dealer:
         self.player_names = names
         return r
 
-    def end_round(self, round=None, players=None) -> None:
-        if not round:
-            round = self.round
+    def end_round(self, round:Round, players: Dict[str, Player]) -> Dict[str, Player]:
+        # if not round:
+        #     round = self.round
         # if len(valid_actions)==1 and valid_actions[0].kind == 'END':
         valid_actions = round.update_state()['valid_actions']
         winner = valid_actions[0].name
@@ -1023,7 +1020,7 @@ def discard_cards(hand: Hand) -> Tuple[List[Card], List[Card]]:
         keep = [card for card in hand if card not in three_cards]
         discard = [card for card in hand if card in three_cards]
     else:
-        keep = []
+        keep: list[Card] = []
         discard = []
         for card in hand:
             old_score = this_score
@@ -1036,7 +1033,6 @@ def discard_cards(hand: Hand) -> Tuple[List[Card], List[Card]]:
             if old_score < score_new:
                 raise ValueError("something has gone very wrong")
         discard = [c for c in hand if c not in keep]
-
     return keep, discard
 
 

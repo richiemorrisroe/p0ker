@@ -25,7 +25,7 @@ def test_dealer_pot_is_zero() -> None:
 def test_dealer_deal_cards() -> None:
     p1 = Player()
     p2 = Player()
-    lp = [p1, p2]
+    # lp = [p1, p2]
     lp = {'richie': p1, 'libbie': p2}
     dealer = Dealer()
     original_len = len(dealer.deck)

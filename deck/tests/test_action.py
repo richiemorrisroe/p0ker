@@ -57,17 +57,6 @@ def test_dealer_associates_player_name_with_action(dealer_3_players) -> None:
     # assert state_1['action'][p1_name] is not None
 
 
-def test_dealer_can_take_one_action_from_all_players() -> None:
-    dealer = Dealer()
-    list_players = dealer.start_game(3)
-    round = dealer.start_round(list_players)
-    for player in list_players:
-        dealer.take_action(player)
-        state = dealer.update_state(round)
-    # assert state is None
-    assert len(state['actions']) == len(list_players)
-
-
 def test_action_is_one_of_four_actions():
     bet = Action(kind="BET", amount=100)
     assert isinstance(bet, Action)
@@ -109,7 +98,7 @@ def test_all_but_one_player_folding_ends_round(dealer_3_players):
     dealer.take_action(p2, Action("FOLD", 0))
     state = dealer.update_state(round)
     print("round_count is {rc}".format(rc=dealer.round_count))
-    players = dealer.update_round(dp)
+    players = dealer.update_round(dp, round)
     assert dealer.round_count == 1
 
 
@@ -122,7 +111,7 @@ def test_check_action_keeps_no_bet_state(dealer_3_players):
     dealer.take_action(p2, Action("CHECK", 0))
     state = dealer.update_state(round)
     valid_actions = state['valid_actions']
-    players = dealer.update_round(dp)
+    players = dealer.update_round(dp, round)
     actions = [action.get_action() for action in valid_actions]
     assert actions == ['CHECK', 'BET', 'FOLD']
 
@@ -152,7 +141,7 @@ def test_pot_is_reduced_to_zero_after_round_ends(dealer_3_players):
     pnames = list(players.keys())
     dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
     state = dealer.update_state(round)
-    dp2 = dealer.update_round(players=dp)
+    dp2 = dealer.update_round(players=dp, round=round)
     assert dealer.round.get_pot_value() == 0
 
 
@@ -196,7 +185,7 @@ def test_dealer_can_take_one_action_from_all_players(dealer_3_players) -> None:
     for name, player in players.items():
         dealer.take_action(player)
         state = dealer.update_state(round)
-        dealer.update_round(players=players)
+        dealer.update_round(players=players, round=round)
     # assert state is None
     assert len(state['actions']) == len(players)
 
