@@ -20,7 +20,6 @@ dependencies:
   - flake8=3.8.4=py_0
   - importlib-metadata=2.0.0=py_1
   - iniconfig=1.1.1=pyh9f0ad1d_0
-  - ipython=7.19.0=py39hef51801_0
   - ipython_genutils=0.2.0=py_1
   - isort=5.6.4=py_0
   - jedi=0.17.2=py39hf3d152e_1
@@ -80,7 +79,6 @@ dependencies:
     - dataclasses==0.6
     - hypothesis==5.41.1
     - libcst==0.3.14
-    - p0ker==0.0.1
     - pathspec==0.8.0
     - pyre-check==0.0.58
     - pyre-extensions==0.0.19
