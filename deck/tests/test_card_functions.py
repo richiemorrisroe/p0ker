@@ -10,7 +10,6 @@ from deck.pkr import (
     anyrep,
     make_straight,
     make_flush,
-    discard_cards,
     Dealer,
     Round,
     get_ranks_from_repeated_cards,
@@ -321,7 +320,7 @@ def test_discard_cards() -> None:
             Card(Rank(7), Suit(4)),
         ]
     )
-    keep, discarded = discard_cards(testhand)
+    keep, discarded = testhand.discard()
     assert len(keep) == 3 and len(discarded) == 2
 
 
@@ -335,17 +334,17 @@ def test_discard_cards_nothing() -> None:
             Card(Rank(11), Suit(2)),
         ]
     )
-    keep, discarded = discard_cards(testhand)
+    keep, discarded = testhand.discard()
     assert len(keep) == 2 and len(discarded) == 3
 
 
 def test_discard_cards_straight() -> None:
     straight = make_straight(5)
-    keep, discarded = discard_cards(straight)
+    keep, discarded = straight.discard()
     assert len(keep) == 5
 
 
 def test_discard_cards_flush() -> None:
     flush = make_flush()
-    keep, discarded = discard_cards(flush)
+    keep, discarded = flush.discard()
     assert len(discarded) == 0

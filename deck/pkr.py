@@ -293,6 +293,43 @@ class Hand:
             suits.append(card.get_suit())
         return suits
 
+    def discard(self) -> Tuple[List[Card], List[Card]]:
+        """Discard cards that do not add to the value of the hand. Ignores the
+        possibility of straights or flushes.
+        Keeps any pairs etc, otherwise
+        keeps the highest numeric cards and discards the rest.
+        In any case, will discard no more than three cards."""
+        # if not isinstance(hand, Hand):
+        #     hand = Hand(hand)
+        hand = self.cards
+        if len(hand) <= 3:
+            keep, discard = hand, []
+            return keep, discard
+        suits, ranks = self.split_cards()
+        this_score, handname = self.score()
+        if (handname == "STRAIGHT" or handname == "FLUSH" or handname == "STRAIGHT-FLUSH"):
+            keep = self.cards
+            discard = []
+        if handname == "NOTHING":
+            three_cards = random.sample(list(hand), 3)
+            keep = [card for card in hand if card not in three_cards]
+            discard = [card for card in hand if card in three_cards]
+        else:
+            keep: list[Card] = []
+            discard = []
+            for card in hand:
+                old_score = this_score
+                new_hand = Hand([c for c in hand if c != card])
+                score_new, _ = new_hand.score()
+                if old_score > score_new:
+                    keep.append(card)
+                if old_score == score_new:
+                    discard.append(card)
+                if old_score < score_new:
+                    raise ValueError("something has gone very wrong")
+                discard = [c for c in hand if c not in keep]
+        return keep, discard
+
 
 def get_ranks_from_repeated_cards(reps: dict) -> Tuple[Rank]:
     result = tuple(reps.keys())
@@ -563,7 +600,7 @@ class Player:
             return self.score
 
     def discard(self) -> List[Card]:
-        self.hand, discard = discard_cards(self.hand)
+        self.hand, discard = self.hand.discard()
         return discard
 
     def bet(self, bet=None) -> float:
@@ -999,41 +1036,7 @@ def print_source(function) -> None:
     pprint.pprint(inspect.getsource(function))
 
 
-def discard_cards(hand: Hand) -> Tuple[List[Card], List[Card]]:
-    """Discard cards that do not add to the value of the hand. Ignores the
-    possibility of straights or flushes.
-    Keeps any pairs etc, otherwise
-    keeps the highest numeric cards and discards the rest.
-    In any case, will discard no more than three cards."""
-    # if not isinstance(hand, Hand):
-    #     hand = Hand(hand)
-    if len(hand) <= 3:
-        keep, discard = hand, []
-        return keep, discard
-    suits, ranks = hand.split_cards()
-    this_score, handname = hand.score()
-    if (handname == "STRAIGHT" or handname == "FLUSH" or handname == "STRAIGHT-FLUSH"):
-        keep = hand.cards
-        discard = []
-    if handname == "NOTHING":
-        three_cards = random.sample(list(hand), 3)
-        keep = [card for card in hand if card not in three_cards]
-        discard = [card for card in hand if card in three_cards]
-    else:
-        keep: list[Card] = []
-        discard = []
-        for card in hand:
-            old_score = this_score
-            new_hand = Hand([c for c in hand if c != card])
-            score_new, _ = new_hand.score()
-            if old_score > score_new:
-                keep.append(card)
-            if old_score == score_new:
-                discard.append(card)
-            if old_score < score_new:
-                raise ValueError("something has gone very wrong")
-        discard = [c for c in hand if c not in keep]
-    return keep, discard
+
 
 
 def replenish_cards(deck, player):

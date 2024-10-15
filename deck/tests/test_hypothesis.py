@@ -23,7 +23,7 @@ def test_fuzz_Hand(cards) -> None:
 @given(hand=st.builds(random_hand))
 def test_fuzz_discard_cards(hand: Hand) -> None:
     assume(len(hand) <= 5)
-    deck.pkr.discard_cards(hand=hand)
+    hand.discard()
 
 
 @given(hand=st.builds(random_hand))
