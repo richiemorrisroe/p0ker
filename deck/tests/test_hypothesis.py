@@ -63,7 +63,7 @@ def test_dealer_maintains_total_value_of_stash(name,
     pot_value = round.get_pot_value()
     assert sum(stashes) + pot_value == n_players * 5000
 
-    
+
 @given(name=st.just("poker"), ante=st.just(100), n_players=st.integers(2, 10))
 def test_dealer_maintains_total_number_of_cards(name,
                                                ante,
@@ -76,5 +76,3 @@ def test_dealer_maintains_total_number_of_cards(name,
     deck_length = len(dealer.deck)
     discard_pile_length = len(dealer.discard_pile)
     assert sum(card_count) + deck_length + discard_pile_length == 52
-    
-    
