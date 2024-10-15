@@ -146,6 +146,11 @@ def test_player_add_card_to_hand() -> None:
     p.add_card(c)
     assert len(p.hand) == 1
 
+def test_player_always_has_a_name() -> None:
+    player = Player()
+    assert player.name is not None
+
+    
 
 def test_player_has_name() -> None:
     dealer = Dealer()

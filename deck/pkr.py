@@ -412,42 +412,34 @@ class Deck:
         return cards
 
 
-# class PlayerNamer():
-#     def __init__(names):
-#         if not names:
-#             names = set(["Liam","Emma","Noah","Olivia","William","Ava",
-#                 "James","Isabella","Oliver","Sophia"])
-#     def get_name(self):
-#         return(self.names.pop())
 
 
-class PlayerNamer:
-    def __init__(self, names=None):
-        if not names:
-            self.names = [
-                "Liam",
-                "Emma",
-                "Noah",
-                "Olivia",
-                "William",
-                "Ava",
-                "James",
-                "Isabella",
-                "Oliver",
-                "Sophia",
-            ]
-        else:
-            self.names = names
+def get_name() -> str:
+    """We want to ensure that each player has a different name but the player object can
+    pick it (rather than the Dealer). This seems like a relatively simple approach
+    TURN THIS INTO A GENERATOR"""
+    names = [
+            "Liam", "Emma", "Noah", "Olivia", "William",
+            "Ava", "James", "Isabella", "Oliver", "Sophia",
+        ]
+    if len(names)==0:
+        names = [
+            "Liam", "Emma", "Noah", "Olivia", "William",
+            "Ava", "James", "Isabella", "Oliver", "Sophia",
+        ]
+    while names:
+        rand_choice = random.randint(0, len(names) - 1)
+        name = names.pop(rand_choice)
+        yield name
+    yield name
 
-    def get_name(self) -> str:
-        length_names = len(self.names)
-        rand_choice = random_choice(0, length_names - 1)
-        name = self.names.pop(rand_choice)
-        return name
-
+def get_player_name():
+    player_name =  next(get_name())
+    logging.info(f"{player_name=}")
+    return player_name
 
 class Action:
-    def __init__(self, kind: str, amount: int, name: str| None = None):
+    def __init__(self, kind: str, amount: int, name: str | None = None):
         if kind not in ["BET", "CALL", "RAISE",
                         "FOLD", "CHECK", "MATCH", "END"]:
             raise ValueError(f"{kind} is not a valid action")
@@ -574,7 +566,10 @@ class Player:
         else:
             self.stash = stash
         if name:
+            logging.warning(f"passing {name=}")
             self.name = name
+        else:
+            self.name = get_player_name()
         self.score = 0
         self.minbet = 10
         self.randnum = random.randint(0, 100)
@@ -660,7 +655,7 @@ class Player:
         logging.debug(f"state is {state} for {self.name}")
         valid_actions = state["valid_actions"]
         logging.debug(
-        f"{valid_actions=}")
+            f"{valid_actions=}")
         if not valid_actions:
             raise ValueError("there should always be valid actions")
         if len(valid_actions) >= 2:
@@ -685,7 +680,7 @@ class Player:
             amount = 0
         return Action(kind=action, amount=amount)
 
-    def send_action(self, state: Dict | None =None, action: Action | None = None):
+    def send_action(self, state: Dict | None = None, action: Action | None = None):
         if not action:
             action = self.decide_action(state)
         player_name = self.name
@@ -843,23 +838,29 @@ class Dealer:
         deck = Deck()
         self.deck = deck
         self.round: Round | None = None
-        self.discard_pile : List[Card] = []
+        self.discard_pile: List[Card] = []
         self.round_count = 0
-        self.player_namer = PlayerNamer()
-        self.player_names: list[str] = []
+        # self.player_namer = PlayerNamer()
+        # self.player_names: list[str] = []
 
     def start_game(self, n_players: int) -> Dict[str, Player]:
         player_dict = {}
         self.round_count = 0
-        for _ in range(0, n_players):
+        for x in range(0, n_players):
+            logging.info(f"{x=}")
             player = Player()
-            player = self.give_name(player)
             player_dict[player.name] = player
-        logging.debug(f"player_dict is {player_dict}")
+            logging.debug(f"player_dict is {player_dict}")
+            # if not player.name:
+            #     player = self.give_name(player)
+            #     player_dict[player.name] = player
+            # else:
+            #     player_dict[player.name] = player
+        
         return player_dict
 
     def give_name(self, player) -> Player:
-        name = self.player_namer.get_name()
+        name = get_player_name()()
         player.name = name
         return player
 
@@ -942,7 +943,7 @@ class Dealer:
         self.player_names = names
         return r
 
-    def end_round(self, round:Round, players: Dict[str, Player]) -> Dict[str, Player]:
+    def end_round(self, round: Round, players: Dict[str, Player]) -> Dict[str, Player]:
         # if not round:
         #     round = self.round
         # if len(valid_actions)==1 and valid_actions[0].kind == 'END':
@@ -1034,9 +1035,6 @@ def make_flush(suit: Optional[Suit] = None) -> Hand:
 def print_source(function) -> None:
     import inspect
     pprint.pprint(inspect.getsource(function))
-
-
-
 
 
 def replenish_cards(deck, player):
