@@ -59,7 +59,7 @@ def test_dealer_maintains_total_value_of_stash(name,
     players = dealer.start_game(n_players)
     round = dealer.start_round(players)
     players = dealer.update_round(players, round)
-    stashes = [p.stash for _, p in players.items()]
+    stashes = [p.stash for p in players]
     pot_value = round.get_pot_value()
     assert sum(stashes) + pot_value == n_players * 5000
 
@@ -72,7 +72,7 @@ def test_dealer_maintains_total_number_of_cards(name,
     players = dealer.start_game(n_players)
     round = dealer.start_round(players)
     players = dealer.update_round(players, round)
-    card_count = [len(p.hand) for _, p in players.items()]
+    card_count = [len(p.hand) for p in players]
     deck_length = len(dealer.deck)
     discard_pile_length = len(dealer.discard_pile)
     assert sum(card_count) + deck_length + discard_pile_length == 52

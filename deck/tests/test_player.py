@@ -131,11 +131,11 @@ def test_player_cannot_go_into_debt() -> None:
 
 def test_player_can_pay() -> None:
     dealer = Dealer()
-    dict_players = dealer.start_game(2)
+    players = dealer.start_game(2)
 
-    round = dealer.start_round(dict_players)
+    round = dealer.start_round(players)
     ante = dealer.ante
-    p1, _ = dict_players.values()
+    p1, _ = players
     pay_blind = p1.pay(ante)
     assert pay_blind == ante
 
@@ -149,14 +149,14 @@ def test_player_add_card_to_hand() -> None:
 
 def test_player_has_name() -> None:
     dealer = Dealer()
-    dict_players = dealer.start_game(2)
-    assert list(dict_players.keys())[0] is not None
+    players = dealer.start_game(2)
+    assert players[0].name is not None
 
 
 def test_different_players_have_different_names() -> None:
     dealer = Dealer()
-    list_players = dealer.start_game(2)
-    p1_name, p2_name = list_players.keys()
+    players = dealer.start_game(2)
+    p1_name, p2_name = [p.name for p in players]
     assert p1_name != p2_name
 
 
@@ -180,12 +180,11 @@ def test_player_can_have_predetermined_hand() -> None:
         ]
     )
     dealer = Dealer()
-    dp = dealer.start_game(2)
-    p1, p2 = dp.values()
+    players = dealer.start_game(2)
+    p1, p2 = players
     p1.hand = full_house
     p2.hand = twopair
-    dp2 = {'richie':p1, 'libbie':p2}
-    round = dealer.start_round(dp2)
+    round = dealer.start_round([p1, p2])
     assert p1.hand == full_house  # and p2.hand == twopair
 
 
@@ -200,10 +199,9 @@ def test_player_hand_has_class_hand() -> None:
         ]
     )
     dealer = Dealer()
-    p1, p2 = dealer.start_game(2).values()
+    p1, p2 = dealer.start_game(2)
     p1.hand = full_house
-    dp2 = {'richie':p1, 'libbie':p2}
-    round = dealer.start_round(dp2)
+    round = dealer.start_round([p1, p2])
     assert isinstance(p1.hand, Hand) and isinstance(p2.hand, Hand)
 
 
@@ -239,10 +237,10 @@ def test_player_hand_has_class_hand() -> None:
 
 def test_round_adds_player_state() -> None:
     dealer = Dealer()
-    dict_players = dealer.start_game(3)
-    round = dealer.start_round(dict_players)
+    players = dealer.start_game(3)
+    round = dealer.start_round(players)
     state = dealer.get_state(round)
-    p1, p2, p3 = dict_players.values()
+    p1, p2, p3 = players
     action = p1.decide_action(state)
     assert p1.send_action(state) is not None
 

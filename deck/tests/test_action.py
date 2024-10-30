@@ -6,7 +6,7 @@ from .fixtures import dealer_3_players
 
 def test_player_send_action(dealer_3_players) -> None:
     dealer, players, round = dealer_3_players
-    p1, p2, _ = players.values()
+    p1, p2, _ = players
     state = dealer.update_state(round)
     action = p1.decide_action(state)
     assert action.get_action() in ["CALL", "BET", "FOLD", "RAISE", "CHECK"]
@@ -32,7 +32,7 @@ def test_action_cannot_set_name_if_not_none():
 def test_player_action_response_is_action(dealer_3_players) -> None:
     dealer, players, round = dealer_3_players
     state = dealer.update_state(round)
-    p1, p2, p3 = players.values()
+    p1, p2, p3 = players
     action = p1.send_action(state)
     assert isinstance(action, Action)
 
@@ -40,8 +40,8 @@ def test_player_action_response_is_action(dealer_3_players) -> None:
 def test_dealer_updates_state_after_action(dealer_3_players) -> None:
     dealer, players, round = dealer_3_players
     state = round.update_state()
-    player_names = list(players.keys())
-    dealer.take_action(players[player_names[0]])
+    player_names = [p.name for p in players]
+    dealer.take_action(players[0])
     state2 = dealer.get_state(round)
     assert len(state2["actions"]) > len(state["actions"])
 
@@ -49,8 +49,8 @@ def test_dealer_updates_state_after_action(dealer_3_players) -> None:
 def test_dealer_associates_player_name_with_action(dealer_3_players) -> None:
     dealer, players, round = dealer_3_players
     state_0 = round.update_state()
-    player_names = list(players.keys())
-    dealer.take_action(players[player_names[0]])
+    player_names = [p.name for p in players]
+    dealer.take_action(players[0])
     state_1 = round.update_state()
     p1_name = player_names[0]
     assert state_1["actions"][0].name == p1_name
@@ -81,7 +81,7 @@ def test_call_cannot_have_amount_of_zero():
 
 def test_dealer_take_action_can_be_passed_an_action(dealer_3_players):
     dealer, players, round = dealer_3_players
-    p1, p2, _ = players.values()
+    p1, p2, _ = players
     action = Action("FOLD", 0)
     print(action)
     dealer.take_action(player=p1, action=action)
@@ -91,21 +91,21 @@ def test_all_but_one_player_folding_ends_round(dealer_3_players):
     dealer, players, round = dealer_3_players
     rc = dealer.round_count
     print(f"round_count is {rc}")
-    p1, p2, p3 = players.values()
-    pnames = list(players.keys())
+    p1, p2, p3 = players
+    pnames = [p.name for p in players]
     dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
     dealer.take_action(p1, Action("FOLD", 0))
     dealer.take_action(p2, Action("FOLD", 0))
     state = dealer.update_state(round)
     print("round_count is {rc}".format(rc=dealer.round_count))
-    players = dealer.update_round(dp, round)
+    players = dealer.update_round(players, round)
     assert dealer.round_count == 1
 
 
 def test_check_action_keeps_no_bet_state(dealer_3_players):
     dealer, players, round = dealer_3_players
-    p1, p2, p3 = players.values()
-    pnames = list(players.keys())
+    p1, p2, p3 = players
+    pnames = [p.name for p in players]
     dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
     dealer.take_action(p1, Action("CHECK", 0))
     dealer.take_action(p2, Action("CHECK", 0))
@@ -120,14 +120,14 @@ def test_all_but_one_player_folding_ends_round_and_updates_player_stashes(dealer
     dealer, players, round = dealer_3_players
     rc = dealer.round_count
     print(f"round_count is {rc}")
-    p1, p2, p3 = players.values()
+    p1, p2, p3 = players
     dealer.take_action(p1, Action("FOLD", 0))
     dealer.take_action(p2, Action("FOLD", 0))
     state = dealer.update_state(round)
-    pnames = list(players.keys())
-    dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
-    dp2 = dealer.update_round(round=round, players=dp)
-    p1, p2, p3 = dp2.values()
+    pnames = [p.name for p in players]
+    # dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
+    dp2 = dealer.update_round(round=round, players=players)
+    p1, p2, p3 = dp2
     print("round_count is {rc}".format(rc=dealer.round_count))
     assert p3.stash > max([p1.stash, p2.stash])
 
@@ -135,19 +135,18 @@ def test_all_but_one_player_folding_ends_round_and_updates_player_stashes(dealer
 def test_pot_is_reduced_to_zero_after_round_ends(dealer_3_players):
     dealer, players, round = dealer_3_players
     rc = dealer.round_count
-    p1, p2, p3 = players.values()
+    p1, p2, p3 = players
     dealer.take_action(p1, Action("FOLD", 0))
     dealer.take_action(p2, Action("FOLD", 0))
-    pnames = list(players.keys())
-    dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
+    pnames = [p.name for p in players]
     state = dealer.update_state(round)
-    dp2 = dealer.update_round(players=dp, round=round)
+    dp2 = dealer.update_round(players=players, round=round)
     assert dealer.round.get_pot_value() == 0
 
 
 def test_valid_actions_are_some_bet_state_after_bet(dealer_3_players):
     dealer, players, round = dealer_3_players
-    p1, p2, p3 = players.values()
+    p1, p2, p3 = players
     dealer.take_action(p1, Action("BET", 150))
     state = dealer.update_state(round)
     va = state['valid_actions']
@@ -174,7 +173,7 @@ def test_dealer_only_check_bet_and_fold_possible_for_first_player(dealer_3_playe
 def test_player_can_only_take_a_valid_action(dealer_3_players):
     dealer, players, round = dealer_3_players
     state = dealer.update_state(round)
-    p1, _, _ = players.values()
+    p1, _, _ = players
     p1_action = p1.send_action(state)
     val_act = [a.get_action() for a in state["valid_actions"]]
     assert p1_action.get_action() in val_act
@@ -182,7 +181,7 @@ def test_player_can_only_take_a_valid_action(dealer_3_players):
 
 def test_dealer_can_take_one_action_from_all_players(dealer_3_players) -> None:
     dealer, players, round = dealer_3_players
-    for name, player in players.items():
+    for player in players:
         dealer.take_action(player)
         state = dealer.update_state(round)
         dealer.update_round(players=players, round=round)
@@ -192,7 +191,7 @@ def test_dealer_can_take_one_action_from_all_players(dealer_3_players) -> None:
 
 def test_dealer_can_validate_action(dealer_3_players) -> None:
     dealer, players, round = dealer_3_players
-    first_player = list(players.values())[0]
+    first_player = players[0]
     state = dealer.update_state(round)
     action = first_player.send_action(state)
     print(action)
@@ -201,10 +200,10 @@ def test_dealer_can_validate_action(dealer_3_players) -> None:
 
 def test_bet_causes_sum_bets_to_increase(dealer_3_players):
     dealer, players, round = dealer_3_players
-    p1, p2, p3 = players.values()
+    p1, p2, p3 = players
     dealer.take_action(p1, Action("BET", 100))
     dealer.take_action(p2, Action("BET", 200))
-    pnames = list(players.keys())
+    pnames = [p.name for p in players]
     dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
     state = dealer.update_state(round)
     assert state['sum_bets'] == 300
@@ -212,11 +211,9 @@ def test_bet_causes_sum_bets_to_increase(dealer_3_players):
 
 def test_raise_causes_sum_bets_to_increase(dealer_3_players):
     dealer, players, round = dealer_3_players
-    p1, p2, p3 = players.values()
+    p1, p2, p3 = players
     dealer.take_action(p1, Action("BET", 100))
     dealer.take_action(p2, Action("RAISE", 200))
-    pnames = list(players.keys())
-    dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
     state = dealer.update_state(round)
     assert state['sum_bets'] == 300
 
@@ -237,11 +234,9 @@ def test_raise_causes_sum_bets_to_increase(dealer_3_players):
 
 def test_raise_reduces_player_stashes(dealer_3_players):
     dealer, players, round = dealer_3_players
-    p1, p2, p3 = players.values()
+    p1, p2, p3 = players
     dealer.take_action(p1, Action("BET", 100))
     dealer.take_action(p2, Action("RAISE", 200))
-    pnames = list(players.keys())
-    dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
     state = dealer.update_state(round)
     assert p1.stash == 4800 and p2.stash == 4700
 
@@ -307,8 +302,7 @@ def test_greater_bet_or_raise_creates_match_or_fold_state(dealer_3_players):
                         Action("FOLD", 0),
                         Action("RAISE", 200)]
     dealer, players, round = dealer_3_players
-    print("pv is {pv}".format(pv=dealer.get_state(round)['pot_value']))
-    p1, p2, p3 = players.values()
+    p1, p2, p3 = players
     dealer.take_action(p1, Action("BET", 100))
     dealer.take_action(p2, Action("RAISE", 200))
     valid_actions = dealer.update_state(round)['valid_actions']

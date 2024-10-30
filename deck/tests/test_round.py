@@ -11,8 +11,7 @@ def test_dealer_round_is_round() -> None:
 def test_round_exists() -> None:
     p1 = Player(name="richie")
     p2 = Player(name="libbie")
-    dp = {'richie':p1, 'libbie':p2}
-    r = Round(100, dp)
+    r = Round(100, [p1, p2])
     assert r is not None
 
 
@@ -84,7 +83,7 @@ def test_round_returns_players_with_hands() -> None:
     dealer = Dealer()
     dp = dealer.start_game(3)
     round = dealer.start_round(dp)
-    p1, p2, p3 = dp.values()
+    p1, p2, p3 = dp
     assert (len(p1.hand) == 5 and len(p2.hand) == 5
             and len(p3.hand) == 5)
 
@@ -111,10 +110,10 @@ def test_round_minimum_bet_equal_to_sum_of_bets() -> None:
 
 def test_round_can_update_minimum_bet():
     dealer = Dealer()
-    dict_players = dealer.start_game(3)
-    round = dealer.start_round(dict_players)
+    players = dealer.start_game(3)
+    round = dealer.start_round(players)
     state = dealer.update_state(round)
-    p1, p2, p3 = dict_players.values()
+    p1, p2, p3 = players
     action = p1.send_action(state=state, action=Action("BET", 100))
     dealer.accept_action(action)
     state = dealer.update_state(round)
@@ -128,17 +127,17 @@ def test_player_can_pass_in_action_argument_to_send_action():
     list_players = dealer.start_game(3)
     round = dealer.start_round(list_players)
     state = dealer.update_state(round)
-    p1, _, _ = list_players.values()
+    p1, _, _ = list_players
     # print(state)
     action = p1.send_action(state=state, action=Action("BET", 100))
     assert action.get_action() == "BET" and action.amount == 100
 
 def test_round_stores_player_names_in_order():
     dealer = Dealer()
-    dict_players = dealer.start_game(3)
-    round = dealer.start_round(dict_players)
+    players = dealer.start_game(3)
+    round = dealer.start_round(players)
     state = dealer.update_state(round)
-    p_names = list(dict_players.keys())
+    p_names = [p.name for p in players]
     assert round.player_names == p_names
 
 
@@ -147,7 +146,7 @@ def test_round_returns_winning_name_with_end_state_action():
     dict_players = dealer.start_game(3)
     round = dealer.start_round(dict_players)
     rc = dealer.round_count
-    p1, p2, p3 = dict_players.values()
+    p1, p2, p3 = dict_players
     dealer.take_action(p1, Action("FOLD", 0))
     dealer.take_action(p2, Action("FOLD", 0))
     state = dealer.update_state(round)
@@ -162,18 +161,16 @@ def test_round_returns_winning_name_with_end_state_action():
 
 def test_get_maximum_bet_is_the_max_of_bet_or_raise(dealer_3_players):
     dealer, players, round = dealer_3_players
-    p1, p2, p3 = players.values()
+    p1, p2, p3 = players
     dealer.take_action(p1, Action("BET", 100))
     dealer.take_action(p2, Action("RAISE", 200))
     dealer.take_action(p3, Action("BET", 300))
-    pnames = list(players.keys())
-    dp = {name:player for name, player in zip(pnames, [p1, p2, p3])}
     state = dealer.update_state(round)
     assert state['max_bet'] == 300
 
 def test_round_actions_is_actions(dealer_3_players):
     dealer, players, round = dealer_3_players
-    p1, p2, p3 = players.values()
+    p1, p2, p3 = players
     dealer.take_action(p1, Action("BET", 100))
     dealer.take_action(p2, Action("RAISE", 200))
     dealer.take_action(p3, Action("BET", 300))

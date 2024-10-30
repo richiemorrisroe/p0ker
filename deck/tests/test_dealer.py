@@ -23,10 +23,9 @@ def test_dealer_pot_is_zero() -> None:
 
 
 def test_dealer_deal_cards() -> None:
-    p1 = Player()
-    p2 = Player()
-    # lp = [p1, p2]
-    lp = {'richie': p1, 'libbie': p2}
+    p1 = Player(name='richie')
+    p2 = Player(name='libbie')
+    lp = [p1, p2]
     dealer = Dealer()
     original_len = len(dealer.deck)
     dict_players = dealer.deals(lp)
@@ -40,10 +39,10 @@ def test_dealer_discard_pile_exists() -> None:
 
 def test_dealer_discard_pile_update() -> None:
     d = Dealer()
-    p1 = Player()
-    p2 = Player()
-    lp = {'richie':p1, 'libbie':p2}
-    p1, p2 = d.deals(lp).values()
+    p1 = Player(name='libbie')
+    p2 = Player(name='eveline')
+    lp = [p1, p2]
+    p1, p2 = d.deals(lp)
     discard = p1.discard()
     len_discard = len(discard)
     d.take_discards(discard)
@@ -65,7 +64,7 @@ def test_round_update_state() -> None:
     dealer = Dealer()
     dict_players = dealer.start_game(n_players=3)
     round = dealer.start_round(dict_players)
-    player_1, player_2, player_3 = dict_players.values()
+    player_1, player_2, player_3 = dict_players
     state1 = round.update_state()
     dealer.take_action(player_1)
     state2 = round.update_state()
@@ -74,10 +73,10 @@ def test_round_update_state() -> None:
 
 def test_dealer_ask_for_action() -> None:
     dealer = Dealer()
-    dict_players = dealer.start_game(3)
-    round = dealer.start_round(dict_players)
+    players = dealer.start_game(3)
+    round = dealer.start_round(players)
     state = dealer.get_state(round)
-    p1, p2, p3 = dict_players.values()
+    p1, p2, p3 = players
     p1_action = p1.decide_action(state)
     p2_action = p2.decide_action(state)
     p3_action = p3.decide_action(state)
@@ -123,7 +122,7 @@ def test_dealer_update_round_exists():
     dealer = Dealer()
     players = dealer.start_game(3)
     r = dealer.start_round(players)
-    p1, p2, p3 = players.values()
+    p1, p2, p3 = players
     dealer.take_action(p1, Action("FOLD", 0))
     dealer.take_action(p2, Action("FOLD", 0))
     state = dealer.update_state(r)

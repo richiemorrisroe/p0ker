@@ -691,7 +691,7 @@ class Round:
         self.min_bet = 0
         self.actions: Actions = Actions(actions=[])
         self.turn = 0
-        self.player_names: List[str] = list(players.keys())
+        self.player_names: List[str] = [p.name for p in players]
 
     def __repr__(self):
         repr_string = f"""Round(
@@ -728,7 +728,7 @@ class Round:
         self.update_state()
 
     def get_blinds(self, players: Dict[str, Player]) -> List[Player]:
-        for name, player in players.items():
+        for player in players:
             self.add_to_pot(player.pay(self.ante))
         return players
 
@@ -831,19 +831,6 @@ class Dealer:
         # self.player_namer = PlayerNamer()
         # self.player_names: list[str] = []
     def get_player_name(self) -> str:
-        """We want to ensure that each player has a different name but the player object can
-        pick it (rather than the Dealer). This seems like a relatively simple approach
-        TURN THIS INTO A GENERATOR"""
-        # runs = 0
-        # global NAMES
-        # logging.debug(f"{NAMES=}")
-        # if (runs == 0) or runs > 9:
-        #     NAMES = [
-        #         "Liam", "Emma", "Noah", "Olivia", "William",
-        #         "Ava", "James", "Isabella", "Oliver", "Sophia",
-        #     ]
-        #     # else:
-        # names = NAMES
         names = self.player_names
         rand_choice = random.randint(0, len(names) - 1)
         name = names.pop(rand_choice)
@@ -862,13 +849,7 @@ class Dealer:
             players.append(player)
             logging.debug(f"player_dict is {player_dict}")
             logging.debug(f"player_list is {players}")
-          
-        return player_dict
-
-    def give_name(self, player) -> Player:
-        name = get_player_name()()
-        player.name = name
-        return player
+        return players
 
     def __repr__(self) -> str:
         return f"""Game({self.name}, ante={self.ante},
@@ -880,7 +861,7 @@ class Dealer:
         returning the updated lists"""
         deck = self.deck
         for i in range(0, 5):
-            for name, player in players.items():
+            for player in players:
                 card = deck.deal(num_cards=1)
                 player.add_card(card)
         return players
@@ -902,6 +883,7 @@ class Dealer:
         valid_actions = state['valid_actions']
         print(f"va in update_round is {valid_actions}")
         if len(valid_actions) == 1 and valid_actions[0].kind == 'END':
+            logging.warning(f"{valid_actions=}")
             winner = valid_actions[0].name
             players = self.end_round(round=self.round, players=players)
         position = round.get_position()
@@ -932,9 +914,9 @@ class Dealer:
 
     def compare(self, players):
         scores = {}
-        for name, player in players.items():
+        for player in players:
             score, sname = player.hand.score()
-            scores[name] = score
+            scores[player.name] = score
         logging.debug(scores)
         # maxscore = max(scores.items())
         return scores
@@ -945,7 +927,7 @@ class Dealer:
         self.round = r
         players = self.round.get_blinds(players)
         players = self.deals(players)
-        names = list(players.keys())
+        names = [p.name for p in players]
         self.player_names = names
         return r
 
@@ -959,13 +941,17 @@ class Dealer:
         pot_value = round.get_pot_value()
         actions = round.get_actions()
         amount_to_pay = -1*pot_value
+        logging.warning(f"{players=}")
         logging.debug(f"amout to pay is {amount_to_pay}")
-        logging.debug("player[winner] is {p}"
-                      .format(p=players[winner]))
-        players[winner].pay(amount_to_pay)
+        logging.debug("winning player is {p}"
+                      .format(p=winner))
+        winning_player = [p for p in players if p.name==winner][0]
+        other_players = [p for p in players if p.name!=winner]
+        winning_player.pay(amount_to_pay)
+        other_players.append(winning_player)
         self.round_count += 1
         self.round.zero_pot()
-        return players
+        return other_players
 
     def take_discards(self, cards: List[Card]) -> None:
         for card in cards:
