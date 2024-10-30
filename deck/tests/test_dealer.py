@@ -130,6 +130,10 @@ def test_dealer_update_round_exists():
     print(f"round is {r}")
     assert dealer.update_round(players=players, round=r) is not None
 
+def test_dealer_has_player_names():
+    dealer = Dealer()
+    assert dealer.player_names is not None
+
 def test_dealer_stores_completed_rounds():
     pass
     # implemnent when you can end a round

@@ -411,28 +411,10 @@ class Deck:
             self._cards = self._cards[num_cards:]
         return cards
 
-NAMES = [
-    "Liam", "Emma", "Noah", "Olivia", "William",
-    "Ava", "James", "Isabella", "Oliver", "Sophia",
-]
 
 
-def get_name() -> str:
-    """We want to ensure that each player has a different name but the player object can
-    pick it (rather than the Dealer). This seems like a relatively simple approach
-    TURN THIS INTO A GENERATOR"""
-    runs = 0
-    logging.debug(f"{names=}")
-    if (runs == 0) or runs > 9:
-        names = [
-            "Liam", "Emma", "Noah", "Olivia", "William",
-            "Ava", "James", "Isabella", "Oliver", "Sophia",
-        ]
-    # else:
-    rand_choice = random.randint(0, len(names) - 1)
-    name = names.pop(rand_choice)
-    runs += 1
-    yield name
+
+
 
     
 def get_player_name():
@@ -570,8 +552,8 @@ class Player:
         if name:
             logging.warning(f"passing {name=}")
             self.name = name
-        else:
-            self.name = next(get_name())
+        # else:
+        #     self.name = next(get_name())
         self.score = 0
         self.minbet = 10
         self.randnum = random.randint(0, 100)
@@ -842,8 +824,30 @@ class Dealer:
         self.round: Round | None = None
         self.discard_pile: List[Card] = []
         self.round_count = 0
+        self.player_names = ["Liam", "Emma", "Noah", "Olivia", "William",
+                             "Ava", "James", "Isabella", "Oliver", "Sophia",
+                             ]
+        logging.info(f"{self.player_names=}")
         # self.player_namer = PlayerNamer()
         # self.player_names: list[str] = []
+    def get_player_name(self) -> str:
+        """We want to ensure that each player has a different name but the player object can
+        pick it (rather than the Dealer). This seems like a relatively simple approach
+        TURN THIS INTO A GENERATOR"""
+        # runs = 0
+        # global NAMES
+        # logging.debug(f"{NAMES=}")
+        # if (runs == 0) or runs > 9:
+        #     NAMES = [
+        #         "Liam", "Emma", "Noah", "Olivia", "William",
+        #         "Ava", "James", "Isabella", "Oliver", "Sophia",
+        #     ]
+        #     # else:
+        # names = NAMES
+        names = self.player_names
+        rand_choice = random.randint(0, len(names) - 1)
+        name = names.pop(rand_choice)
+        return name
 
     def start_game(self, n_players: int) -> Dict[str, Player]:
         players = []
@@ -851,7 +855,8 @@ class Dealer:
         self.round_count = 0
         for x in range(0, n_players):
             logging.info(f"{x=}")
-            player = Player()
+            name = self.get_player_name()
+            player = Player(name=name)
             logging.warning(f"{player=}")
             player_dict[player.name] = player
             players.append(player)
