@@ -412,16 +412,6 @@ class Deck:
         return cards
 
 
-
-
-
-
-    
-def get_player_name():
-    player_name =  next(get_name())
-    logging.info(f"{player_name=}")
-    return player_name
-
 class Action:
     def __init__(self, kind: str, amount: int, name: str | None = None):
         if kind not in ["BET", "CALL", "RAISE",
@@ -552,8 +542,6 @@ class Player:
         if name:
             logging.warning(f"passing {name=}")
             self.name = name
-        # else:
-        #     self.name = next(get_name())
         self.score = 0
         self.minbet = 10
         self.randnum = random.randint(0, 100)
@@ -830,6 +818,7 @@ class Dealer:
         logging.info(f"{self.player_names=}")
         # self.player_namer = PlayerNamer()
         # self.player_names: list[str] = []
+
     def get_player_name(self) -> str:
         names = self.player_names
         rand_choice = random.randint(0, len(names) - 1)
@@ -945,8 +934,8 @@ class Dealer:
         logging.debug(f"amout to pay is {amount_to_pay}")
         logging.debug("winning player is {p}"
                       .format(p=winner))
-        winning_player = [p for p in players if p.name==winner][0]
-        other_players = [p for p in players if p.name!=winner]
+        winning_player = [p for p in players if p.name == winner][0]
+        other_players = [p for p in players if p.name != winner]
         winning_player.pay(amount_to_pay)
         other_players.append(winning_player)
         self.round_count += 1
