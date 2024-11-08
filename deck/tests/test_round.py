@@ -1,6 +1,7 @@
 from deck.pkr import Action, Actions, Dealer, Player, random_choice, Round
 from .fixtures import dealer_3_players
 
+
 def test_dealer_round_is_round() -> None:
     dealer = Dealer()
     dp = dealer.start_game(2)
@@ -132,11 +133,11 @@ def test_player_can_pass_in_action_argument_to_send_action():
     action = p1.send_action(state=state, action=Action("BET", 100))
     assert action.get_action() == "BET" and action.amount == 100
 
+
 def test_round_stores_player_names_in_order():
     dealer = Dealer()
     players = dealer.start_game(3)
     round = dealer.start_round(players)
-    state = dealer.update_state(round)
     p_names = [p.name for p in players]
     assert round.player_names == p_names
 
@@ -145,7 +146,6 @@ def test_round_returns_winning_name_with_end_state_action():
     dealer = Dealer()
     dict_players = dealer.start_game(3)
     round = dealer.start_round(dict_players)
-    rc = dealer.round_count
     p1, p2, p3 = dict_players
     dealer.take_action(p1, Action("FOLD", 0))
     dealer.take_action(p2, Action("FOLD", 0))
@@ -157,7 +157,7 @@ def test_round_returns_winning_name_with_end_state_action():
     assert va.kind == 'END'
     assert va.amount == 0
     assert va.name == winning_name
-                                            
+
 
 def test_get_maximum_bet_is_the_max_of_bet_or_raise(dealer_3_players):
     dealer, players, round = dealer_3_players
@@ -168,6 +168,7 @@ def test_get_maximum_bet_is_the_max_of_bet_or_raise(dealer_3_players):
     state = dealer.update_state(round)
     assert state['max_bet'] == 300
 
+
 def test_round_actions_is_actions(dealer_3_players):
     dealer, players, round = dealer_3_players
     p1, p2, p3 = players
@@ -175,5 +176,3 @@ def test_round_actions_is_actions(dealer_3_players):
     dealer.take_action(p2, Action("RAISE", 200))
     dealer.take_action(p3, Action("BET", 300))
     assert isinstance(round.actions, Actions)
-                       
-
