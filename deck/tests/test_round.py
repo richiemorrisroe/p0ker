@@ -83,7 +83,7 @@ def test_round_takes_a_list_of_players() -> None:
 def test_round_returns_players_with_hands() -> None:
     dealer = Dealer()
     dp = dealer.start_game(3)
-    round = dealer.start_round(dp)
+    _ = dealer.start_round(dp)
     p1, p2, p3 = dp
     assert (len(p1.hand) == 5 and len(p2.hand) == 5
             and len(p3.hand) == 5)

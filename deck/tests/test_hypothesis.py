@@ -47,7 +47,7 @@ def test_fuzz_Dealer_start_game(name, ante, players):
 def test_fuzz_Dealer_start_round(name, ante, n_players: int) -> None:
     dealer = deck.pkr.Dealer(name=name, ante=ante)
     players = dealer.start_game(n_players)
-    round = dealer.start_round(players)
+    _ = dealer.start_round(players)
 
 
 @pytest.mark.slow

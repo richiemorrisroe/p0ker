@@ -28,8 +28,8 @@ def test_dealer_deal_cards() -> None:
     lp = [p1, p2]
     dealer = Dealer()
     original_len = len(dealer.deck)
-    dict_players = dealer.deals(lp)
-    assert len(dealer.deck) == 42
+    _ = dealer.deals(lp)
+    assert len(dealer.deck) == original_len - (5 * 2)
 
 
 def test_dealer_discard_pile_exists() -> None:
@@ -64,7 +64,7 @@ def test_round_update_state() -> None:
     dealer = Dealer()
     dict_players = dealer.start_game(n_players=3)
     round = dealer.start_round(dict_players)
-    player_1, player_2, player_3 = dict_players
+    player_1, _, _ = dict_players
     state1 = round.update_state()
     dealer.take_action(player_1)
     state2 = round.update_state()
@@ -101,14 +101,14 @@ def test_dealer_update_cards_two_player() -> None:
 def test_dealer_keeps_track_of_completed_rounds() -> None:
     dealer = Dealer()
     list_players = dealer.start_game(2)
-    round = dealer.start_round(list_players)
+    _ = dealer.start_round(list_players)
     assert dealer.round_count is not None
 
 
 def test_dealer_can_compare_players() -> None:
     dealer = Dealer()
     list_players = dealer.start_game(2)
-    round = dealer.start_round(list_players)
+    _ = dealer.start_round(list_players)
     assert dealer.compare(list_players) is not None
 
 
@@ -122,10 +122,10 @@ def test_dealer_update_round_exists():
     dealer = Dealer()
     players = dealer.start_game(3)
     r = dealer.start_round(players)
-    p1, p2, p3 = players
+    p1, p2, _ = players
     dealer.take_action(p1, Action("FOLD", 0))
     dealer.take_action(p2, Action("FOLD", 0))
-    state = dealer.update_state(r)
+    _ = dealer.update_state(r)
     print(f"round is {r}")
     assert dealer.update_round(players=players, round=r) is not None
 
