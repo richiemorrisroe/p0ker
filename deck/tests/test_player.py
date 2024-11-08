@@ -1,4 +1,5 @@
 from deck.pkr import Player, random_hand, Card, Suit, Rank, Dealer, Hand, Round
+from .fixtures import dealer_3_players
 import pytest
 
 
@@ -130,10 +131,11 @@ def test_player_cannot_go_into_debt() -> None:
 
 def test_player_can_pay() -> None:
     dealer = Dealer()
-    p1, p2 = dealer.start_game(2)
+    players = dealer.start_game(2)
 
-    round = dealer.start_round([p1, p2])
+    round = dealer.start_round(players)
     ante = dealer.ante
+    p1, _ = players
     pay_blind = p1.pay(ante)
     assert pay_blind == ante
 
@@ -147,15 +149,15 @@ def test_player_add_card_to_hand() -> None:
 
 def test_player_has_name() -> None:
     dealer = Dealer()
-    list_players = dealer.start_game(2)
-    assert list_players[0].name is not None
+    players = dealer.start_game(2)
+    assert players[0].name is not None
 
 
 def test_different_players_have_different_names() -> None:
     dealer = Dealer()
-    list_players = dealer.start_game(2)
-    p1, p2 = list_players
-    assert p1.name != p2.name
+    players = dealer.start_game(2)
+    p1_name, p2_name = [p.name for p in players]
+    assert p1_name != p2_name
 
 
 def test_player_can_have_predetermined_hand() -> None:
@@ -178,10 +180,10 @@ def test_player_can_have_predetermined_hand() -> None:
         ]
     )
     dealer = Dealer()
-    p1, p2 = dealer.start_game(2)
+    players = dealer.start_game(2)
+    p1, p2 = players
     p1.hand = full_house
     p2.hand = twopair
-
     round = dealer.start_round([p1, p2])
     assert p1.hand == full_house  # and p2.hand == twopair
 
@@ -235,9 +237,20 @@ def test_player_hand_has_class_hand() -> None:
 
 def test_round_adds_player_state() -> None:
     dealer = Dealer()
-    list_players = dealer.start_game(3)
-    round = dealer.start_round(list_players)
+    players = dealer.start_game(3)
+    round = dealer.start_round(players)
     state = dealer.get_state(round)
-    p1, p2, p3 = list_players
+    p1, p2, p3 = players
     action = p1.decide_action(state)
     assert p1.send_action(state) is not None
+
+def test_player_pay_works_with_a_negative_argument():
+    p = Player()
+    stash = p.stash
+    p.pay(-100)
+    assert p.stash == stash + 100
+
+
+def test_player_keeps_a_record_of_actions_taken(dealer_3_players):
+    dealer, players, round = dealer_3_players
+    pass
