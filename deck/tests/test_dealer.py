@@ -134,26 +134,26 @@ def test_dealer_has_player_names():
     assert dealer.player_names is not None
 
 def test_dealer_stores_completed_rounds():
-    pass
-    # implemnent when you can end a round
-    # dealer = Dealer()
-    # players = dealer.start_game(3)
-    # r = dealer.start_round(players)
-    # p1, p2, p3 = players.values()
-    # dealer.take_action(p1, Action("FOLD", 0))
-    # dealer.take_action(p2, Action("FOLD", 0))
-    # state = dealer.update_state(r)
-    # logging.info(f"{players=}")
-    # dealer.end_round()
-    # assert len(dealer.old_rounds) == 1
+    # pass
+    #implemnent when you can end a round
+    dealer = Dealer()
+    players = dealer.start_game(3)
+    r = dealer.start_round(players)
+    p1, p2, p3 = players
+    dealer.take_action(p1, Action("FOLD", 0))
+    dealer.take_action(p2, Action("FOLD", 0))
+    state = dealer.update_state(r)
+    logging.info(f"{players=}")
+    dealer.end_round(r, [p1, p2, p3])
+    assert len(dealer.old_rounds) == 1
 
 
-# def test_dealer_can_validate_action() -> None:
-#     dealer = Dealer()
-#     list_players = dealer.start_game(4)
-#     round = dealer.start_round(list_players)
-#     first_player = list_players[0]
-#     state = dealer.update_state(round)
-#     action = first_player.send_action(state)
-#     print(action)
-#     assert dealer.is_valid_action(action) is True
+def test_dealer_can_validate_action() -> None:
+    dealer = Dealer()
+    list_players = dealer.start_game(4)
+    round = dealer.start_round(list_players)
+    first_player = list_players[0]
+    state = dealer.update_state(round)
+    action = first_player.send_action(state)
+    print(action)
+    assert dealer.is_valid_action(action) is True

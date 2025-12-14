@@ -812,6 +812,7 @@ class Dealer:
         self.round: Round | None = None
         self.discard_pile: List[Card] = []
         self.round_count = 0
+        self.old_rounds: List[Round] = []
         self.player_names = ["Liam", "Emma", "Noah", "Olivia", "William",
                              "Ava", "James", "Isabella", "Oliver", "Sophia",
                              ]
@@ -940,6 +941,7 @@ class Dealer:
         other_players.append(winning_player)
         self.round_count += 1
         self.round.zero_pot()
+        self.old_rounds.append(self.round)
         return other_players
 
     def take_discards(self, cards: List[Card]) -> None:
