@@ -3254,20 +3254,27 @@ def test_player_can_pass_in_action_argument_to_send_action():
 **** Dealer Updates
 ***** DONE Add dealer get action function
 ***** Add dealer logic for round structure
-***** DONE Add dealing of cards to start_round
-**** Deck Object
-***** Move discard pile to deck object
-***** Move replenish_cards and update_cards to dealer object
-**** Round Structure
-***** bet/call/fold in order
-- Almost done, just need to handle the case where all but one player folds     
+****** bet/call/fold in order
+- Almost done, just need to handle the case where all but one player folds
+- One round of betting done
 ***** discard cards
+******* dealer handle new actions (RAISE vs CHECK), (CHECK vs BET)
 ***** get new cards
 ***** bet/call/fold in order
 ***** finish round
  - award pot
  - reset deck and cards
  - log player/dealer state
+
+******* dealer handle dropping players and getting new cards
+- don't take an action from players who have folded
+***** DONE Add dealing of cards to start_round
+**** Deck Object
+***** DONE Move discard pile to deck object
+***** Move replenish_cards and update_cards to dealer object
+**** Round Structure
+
+
 
 **** Card API
 ***** TODO change equality function to make 10H and 10S equal
@@ -3318,6 +3325,9 @@ def test_player_can_pass_in_action_argument_to_send_action():
 - Discard cards needs some love:
 *** DONE i need to make some kind of stash object to hold the discarded cards
 *** DONE should probably exist as something off a Dealer/Game object
+
+
+
 
 *** Visualising Code graph
 
