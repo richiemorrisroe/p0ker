@@ -680,6 +680,8 @@ class Round:
         self.actions: Actions = Actions(actions=[])
         self.turn = 0
         self.player_names: List[str] = [p.name for p in players]
+        self.active_players = players
+        self.bets = {p.name: 0 for p in players}
 
     def __repr__(self):
         repr_string = f"""Round(
@@ -734,6 +736,10 @@ class Round:
 
     def get_maximum_bet(self):
         return self.actions.max_bet()
+
+    def is_betting_over(self) -> bool:
+        # Placeholder for now, will implement actual logic later
+        return True
 
     def calculate_valid_actions(self):
         position = self.get_position()
@@ -943,6 +949,9 @@ class Dealer:
         self.round.zero_pot()
         self.old_rounds.append(self.round)
         return other_players
+
+    def play_round(self):
+        pass
 
     def take_discards(self, cards: List[Card]) -> None:
         for card in cards:

@@ -157,3 +157,17 @@ def test_dealer_can_validate_action() -> None:
     action = first_player.send_action(state)
     print(action)
     assert dealer.is_valid_action(action) is True
+
+def test_play_round_completes_and_declares_winner():
+    dealer = Dealer()
+    players = dealer.start_game(3)
+    initial_stashes = {p.name: p.stash for p in players}
+
+    # This method doesn't exist yet, so this will fail
+    winner = dealer.play_round()
+
+    assert winner is not None
+    assert len(dealer.old_rounds) == 1
+    # Check that the winner's stash has increased by the pot
+    # (which is the sum of antes in this simple case)
+    assert winner.stash > initial_stashes[winner.name]
