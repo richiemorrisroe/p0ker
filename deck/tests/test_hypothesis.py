@@ -5,7 +5,17 @@ from hypothesis import given, assume, strategies as st
 
 
 import deck.pkr
-from deck.pkr import Hand, Card, Player, Round, random_hand
+from deck.pkr import Hand, Card, Player, Round, Rank, Suit, random_hand
+
+card_strategy = st.builds(Card, rank=st.sampled_from(Rank),
+                          suit=st.sampled_from(Suit))
+# This hand_strategy generates hands with unique cards within themselves,
+# but does not model drawing from a single 52-card deck without replacement.
+# For tests requiring this constraint (e.g., multi-player games or deck interactions),
+# a more sophisticated strategy (e.g., using st.composite to draw from a deck)
+# will be necessary.
+hand_strategy = st.lists(card_strategy, unique_by=lambda c: (c.rank, c.suit),
+                         min_size=0, max_size=5).map(Hand)
 
 
 @given(rank=st.sampled_from(deck.pkr.Rank),
@@ -14,19 +24,20 @@ def test_fuzz_Card(rank, suit) -> None:
     deck.pkr.Card(rank=rank, suit=suit)
 
 
-@given(cards=st.sets(st.builds(Card)))
+@given(cards=st.sets(card_strategy, max_size=5))
 def test_fuzz_Hand(cards) -> None:
     assume(len(cards) <= 5)
-    deck.pkr.Hand(cards=cards)
+    # Convert the set of cards to a list before passing to Hand
+    deck.pkr.Hand(cards=list(cards))
 
 
-@given(hand=st.builds(random_hand))
+@given(hand=hand_strategy)
 def test_fuzz_discard_cards(hand: Hand) -> None:
     assume(len(hand) <= 5)
     hand.discard()
 
 
-@given(hand=st.builds(random_hand))
+@given(hand=hand_strategy)
 def test_fuzz_score_hand(hand) -> None:
     assume(len(hand) <= 5)
     hand.score()
