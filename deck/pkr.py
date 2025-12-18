@@ -547,7 +547,6 @@ class Player:
         else:
             self.stash = stash
         if name:
-            logging.warning(f"passing {name=}")
             self.name = name
         self.score = 0
         self.minbet = 10
@@ -574,7 +573,9 @@ class Player:
             return self.score
 
     def discard(self) -> List[Card]:
-        self.hand, discard = self.hand.discard()
+        # self.hand.discard() returns (cards_to_keep, cards_to_discard)
+        new_hand_cards, discard = self.hand.discard()
+        self.hand = Hand(new_hand_cards) # Reassign with a new Hand object
         return discard
 
     def bet(self, bet=None) -> float:
@@ -675,11 +676,11 @@ class Player:
 
     def add_card(self, card: Card | list[Card]) -> None:
         self.hand.add_card(card)
-        return None
+
 
 
 class Round:
-    def __init__(self, ante, players: Dict[str, Player]) -> None:
+    def __init__(self, ante, players: List[Player]) -> None:
         self.pot = 0
         self.position = 0
         self.ante = ante
@@ -768,32 +769,32 @@ class Round:
         end_state = [Action("END", 0)]
         if position == 0:
             return no_bet_state
-        logging.debug("actions are {a}".format(a=self.get_actions()))
+        logger.debug("actions are {a}".format(a=self.get_actions()))
 
         kind_count = actions.kind_count
-        logging.debug(f"kind_count is {kind_count}")
+        logger.debug(f"kind_count is {kind_count}")
         if kind_count['FOLD'] == (self.num_players - 1):
             losers = [a.name for a in
                       self.get_actions() if a.get_action == 'FOLD']
             winner = [name for name in self.player_names
                       if name not in losers].pop()
-            logging.debug(f"winner is {winner}")
+            logger.debug(f"winner is {winner}")
 
             end_state = [Action(kind="END", amount=0, name=winner)]
-            logging.debug(f"end state is {end_state}")
+            logger.debug(f"end state is {end_state}")
             return end_state
 
         if kind_count['BET'] > 0 and kind_count['RAISE'] > 0:
             return match_fold_state
 
         if kind_count['BET'] > 0:
-            logging.debug(f"some bet state is {some_bet_state}")
+            logger.debug(f"some bet state is {some_bet_state}")
             return some_bet_state
 
         if kind_count['CHECK'] + kind_count['FOLD'] == position:
-            logging.debug(f"no bet state is {no_bet_state}")
+            logger.debug(f"no bet state is {no_bet_state}")
             return no_bet_state
-        logging.debug(f"player num is {self.num_players}")
+        logger.debug(f"player num is {self.num_players}")
 
     def update_state(self) -> Dict[str, Any]:
         potval = self.get_pot_value()
@@ -830,7 +831,7 @@ class Dealer:
         self.player_names = ["Liam", "Emma", "Noah", "Olivia", "William",
                              "Ava", "James", "Isabella", "Oliver", "Sophia",
                              ]
-        logging.info(f"{self.player_names=}")
+        logger.info(f"{self.player_names=}")
         # self.player_namer = PlayerNamer()
         # self.player_names: list[str] = []
 
@@ -845,21 +846,19 @@ class Dealer:
         player_dict = {}
         self.round_count = 0
         for x in range(0, n_players):
-            logging.info(f"{x=}")
             name = self.get_player_name()
             player = Player(name=name)
-            logging.warning(f"{player=}")
             player_dict[player.name] = player
             players.append(player)
-            logging.debug(f"player_dict is {player_dict}")
-            logging.debug(f"player_list is {players}")
+            # logger.debug(f"player_dict is {player_dict}")
+            # logger.debug(f"player_list is {players}")
         return players
 
     def __repr__(self) -> str:
         return f"""Game({self.name}, ante={self.ante},
         maxdrop={self.maxdrop})"""
 
-    def deals(self, players: Dict[str, Player]) -> Dict[str, Player]:
+    def deals(self, players: List[Player]) -> Dict[str, Player]:
         """Takes a list of players (normally empty lists)
         and deals each of them five cards,
         returning the updated lists"""
@@ -900,7 +899,7 @@ class Dealer:
         state = self.update_state(self.round)
         if not action:
             state = self.update_state(self.round)
-            logging.debug(f"take_action state is {state}")
+            logger.debug(f"take_action state is {state}")
             action = player.send_action(state)
             amount = action.amount
             self.round.add_to_pot(amount)
