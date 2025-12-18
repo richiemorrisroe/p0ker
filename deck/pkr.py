@@ -381,7 +381,7 @@ def random_hand() -> Hand:
     Returns a list of Card objects"""
     deck = Deck()
     hand: list[Card] = deck.deal(num_cards=5)
-    logging.warning(f"{hand=}")
+    logger.warning(f"{hand=}")
     return Hand(hand)
 
 
@@ -446,6 +446,7 @@ class Action:
         return self.name
 
     def set_name(self, name):
+        logger.debug(f"set_name action:{self}")
         if not self.name:
             self.name = name
         else:
@@ -516,7 +517,7 @@ class Actions:
             return sum_bets
         if self.kind_count["BET"] > 0:
             bets = self.get_bets()
-            logging.debug(f"bets are {bets}")
+            logger.debug(f"bets are {bets}")
             for bet in bets:
                 sum_bets += bet.amount
         return sum_bets
@@ -529,7 +530,7 @@ class Actions:
                 kind_count[kind] += 1
             except KeyError:
                 kind_count[kind] = 1
-        logging.debug(f"kind_count is {kind_count}")
+        logger.debug(f"kind_count is {kind_count}")
         self.kind_count = kind_count
         return kind_count
 
@@ -630,26 +631,26 @@ class Player:
             return False
 
     def decide_action(self, state: Dict[str, Any]) -> Action:
-        logging.debug(f"state is {state} for {self.name}")
+        logger.debug(f"state is {state} for {self.name}")
         valid_actions = state["valid_actions"]
-        logging.debug(
+        logger.debug(
             f"{valid_actions=}")
         if not valid_actions:
             raise ValueError("there should always be valid actions")
         if len(valid_actions) >= 2:
             action = deepcopy(sample(valid_actions, 1))
             action_pop = action.pop()
-            logging.debug(f"selected action for {self.name} is {action_pop}")
+            logger.debug(f"selected action for {self.name} is {action_pop}")
             actual_action = action_pop.get_action()
             amount = action_pop.amount
         else:
             action_obj = deepcopy(valid_actions[0])
             actual_action = action_obj.get_action()
             amount = action_obj.amount
-            logging.debug(f"action_object is {action_obj}")
-        logging.debug(f"{self.name} stash is {self.stash}")
+            logger.debug(f"action_object is {action_obj}")
+        logger.debug(f"{self.name} stash is {self.stash}")
         action = actual_action
-        logging.debug(f"{self.name} action is {action}")
+        logger.debug(f"{self.name} action is {action}")
         if action == "BET":
             amount = random.randint(state["min_bet"], state["min_bet"] + 100)
         if action == "RAISE":
@@ -661,6 +662,7 @@ class Player:
     def send_action(self, state: Dict | None = None, action: Action | None = None):
         if not action:
             action = self.decide_action(state)
+            logger.info(f"Action:{action}")
         player_name = self.name
         action.set_name(player_name)
         self.stash -= action.amount
