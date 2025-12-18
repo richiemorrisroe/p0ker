@@ -144,7 +144,7 @@ def test_dealer_stores_completed_rounds():
     dealer.take_action(p2, Action("FOLD", 0))
     state = dealer.update_state(r)
     logging.info(f"{players=}")
-    dealer.end_round(r, [p1, p2, p3])
+    dealer.end_round(r, [p1, p2, p3], p3)
     assert len(dealer.old_rounds) == 1
 
 
@@ -161,13 +161,30 @@ def test_dealer_can_validate_action() -> None:
 def test_play_round_completes_and_declares_winner():
     dealer = Dealer()
     players = dealer.start_game(3)
+    total_stash = sum([p.stash for p in players])
     initial_stashes = {p.name: p.stash for p in players}
-
+    
     # This method doesn't exist yet, so this will fail
-    winner = dealer.play_round()
-
+    winner = dealer.play_round(players)
+    final_stash = sum([p.stash for p in players])
     assert winner is not None
     assert len(dealer.old_rounds) == 1
+    
     # Check that the winner's stash has increased by the pot
     # (which is the sum of antes in this simple case)
     assert winner.stash > initial_stashes[winner.name]
+    assert total_stash == final_stash
+
+
+def test_play_round_can_handle_calls_and_checks():
+    dealer = Dealer()
+    players = dealer.start_game(3)
+    pass
+
+
+def test_round_is_not_immediately_over():
+    dealer = Dealer()
+    players = dealer.start_game(3)
+    round = dealer.start_round(players)
+    assert not round.is_betting_over()
+    

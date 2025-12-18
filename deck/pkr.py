@@ -689,8 +689,9 @@ class Round:
         self.actions: Actions = Actions(actions=[])
         self.turn = 0
         self.player_names: List[str] = [p.name for p in players]
-        self.active_players = players
+        self.active_players = players[:] # Create a copy to modify
         self.bets = {p.name: 0 for p in players}
+        self.last_raiser: Optional[str] = None
 
     def __repr__(self):
         repr_string = f"""Round(
@@ -711,6 +712,10 @@ class Round:
     def zero_pot(self):
         self.pot = 0
 
+    def reset_bets(self):
+        self.bets = {p.name: 0 for p in self.active_players}
+        self.last_raiser = None
+
     def get_position(self):
         return self.position
 
@@ -724,6 +729,8 @@ class Round:
     def set_action(self, action) -> None:
         self.set_position(self.get_position() + 1)
         self.actions.update(action)
+        if action.kind in ["BET", "RAISE"]:
+            self.last_raiser = action.name
         self.update_state()
 
     def get_blinds(self, players: Dict[str, Player]) -> List[Player]:
@@ -747,10 +754,45 @@ class Round:
         return self.actions.max_bet()
 
     def is_betting_over(self) -> bool:
-        # Placeholder for now, will implement actual logic later
+        # If only one player is active, the round is effectively over (by folds)
+        if len(self.active_players) <= 1:
+            return True
+
+        # If no actions have been taken yet, the betting round is not over.
+        if len(self.actions.action_list) == 0:
+            return False
+
+        current_max_bet = self.get_maximum_bet()
+        # Check if all active players have matched the max bet
+        # If any active player has bet less than the max bet, betting is not over
+        for player in self.active_players:
+            player_bet_in_this_round = self.bets.get(player.name, 0)
+            if player_bet_in_this_round < current_max_bet:
+                return False
+
+        # If all active players have matched the max bet,
+        # we need to check if the action has come full circle.
+        # This means the current player whose turn it is would be the last raiser
+        # or the first player if no one has raised yet.
+        # This check needs context from the play_round loop, so for now, we'll
+        # assume that if all bets match, and the play_round loop correctly cycles,
+        # the betting is effectively over.
+        # The play_round loop will manage whose turn it is.
+        # The key is that once `current_max_bet` is established, and everyone matches it,
+        # the round can end.
+
+        # If last_raiser is None, it means no one has bet/raised yet, only checks or folds.
+        # In this case, if all active players have matched current_max_bet (which would be 0),
+        # the betting round is over.
+        if self.last_raiser is None:
+            return True # All checks or folds
+
+        # If a raiser exists, and everyone has matched their bet, the round is over.
+        # This assumes the play_round loop correctly ensures everyone has had a chance to act.
+        # A more robust solution might track turns more explicitly within Round.
         return True
 
-    def calculate_valid_actions(self):
+    def calculate_valid_actions(self) -> List[Action]:
         position = self.get_position()
         actions = self.get_actions()
         no_bet_state = [Action("CHECK", 0), Action("BET", self.ante),
@@ -879,16 +921,21 @@ class Dealer:
         self.deck = deck
         return player
 
-    def update_round(self, players: Dict[str, Player],
-                     round: Round):
-        logging.debug(f"players is {players}")
+    def update_round(self, players: List[Player], round: Round) -> List[Player]:
+        logger.debug(f"players is {players}")
         state = round.update_state()
         valid_actions = state['valid_actions']
         print(f"va in update_round is {valid_actions}")
         if len(valid_actions) == 1 and valid_actions[0].kind == 'END':
-            logging.warning(f"{valid_actions=}")
-            winner = valid_actions[0].name
-            players = self.end_round(round=self.round, players=players)
+            logger.warning(f"{valid_actions=}")
+            winner_name = valid_actions[0].name
+            # Find the actual Player object
+            winning_player = next((p for p in players if p.name == winner_name), None)
+            if winning_player:
+                players = self.end_round(round=self.round, players=players, winner=winning_player)
+            else:
+                # This case should ideally not happen if valid_actions[0].name is always valid
+                raise ValueError(f"Winner player '{winner_name}' not found in current players.")
         position = round.get_position()
         if position == round.num_players:
             pass
@@ -920,45 +967,153 @@ class Dealer:
         for player in players:
             score, sname = player.hand.score()
             scores[player.name] = score
-        logging.debug(scores)
+        logger.debug(scores)
         # maxscore = max(scores.items())
         return scores
 
-    def start_round(self, players: Dict[str, Player]) -> Round:
-        logging.debug(f"players passed to start_round={players}")
+    def _showdown(self, active_players: List[Player]) -> Player:
+        if not active_players:
+            raise ValueError("Showdown called with no active players.")
+
+        highest_score = -1
+        winner: Optional[Player] = None
+
+        for player in active_players:
+            player_score = player.scores() # This also updates player.score
+            if player_score > highest_score:
+                highest_score = player_score
+                winner = player
+            # For tie-breaking, we can add more complex logic here later.
+            # For now, the first player encountered with the max score wins.
+
+        if winner is None:
+            # This should ideally not happen if active_players is not empty
+            raise ValueError("Could not determine a winner in showdown.")
+
+        return winner
+
+    def start_round(self, players: List[Player]) -> Round:
+        logger.debug(f"players passed to start_round={players}")
         r = Round(self.ante, players)
         self.round = r
         players = self.round.get_blinds(players)
         players = self.deals(players)
+        for p in players:
+            p.hand.score()
         names = [p.name for p in players]
         self.player_names = names
+        self.active_players = names
+        logger.debug(f"{players=}, {self.active_players}")
         return r
 
-    def end_round(self, round: Round, players: Dict[str, Player]) -> Dict[str, Player]:
-        # if not round:
-        #     round = self.round
-        # if len(valid_actions)==1 and valid_actions[0].kind == 'END':
-        valid_actions = round.update_state()['valid_actions']
-        winner = valid_actions[0].name
-        names = self.player_names
+    def end_round(self, round: Round, players: List[Player], winner: Player) -> List[Player]:
         pot_value = round.get_pot_value()
-        actions = round.get_actions()
-        amount_to_pay = -1*pot_value
-        logging.warning(f"{players=}")
-        logging.debug(f"amout to pay is {amount_to_pay}")
-        logging.debug("winning player is {p}"
-                      .format(p=winner))
-        winning_player = [p for p in players if p.name == winner][0]
-        other_players = [p for p in players if p.name != winner]
-        winning_player.pay(amount_to_pay)
-        other_players.append(winning_player)
+        amount_to_pay = -1 * pot_value # pot value is positive, player pays negative
+
+        logger.debug(f"amout to pay is {amount_to_pay}")
+        logger.debug("winning player is {p}".format(p=winner.name))
+
+        # Find the actual winner object from the original list of players
+        # The winner passed here should already be the correct Player object
+        # winning_player = [p for p in players if p.name == winner.name][0]
+
+        winner.pay(amount_to_pay)
+
+        # For now, all players are returned. Later, we might filter out
+        # players who have run out of money.
         self.round_count += 1
         self.round.zero_pot()
-        self.old_rounds.append(self.round)
-        return other_players
+        self.old_rounds.append(round) # Append the round object, not self.round
+        return players # Return the full list of players for now
 
-    def play_round(self):
-        pass
+    def play_round(self, players: List[Player]) -> Player:
+        round = self.start_round(players)
+
+        # Betting Phase 1
+        player_turn_index = 0
+        logger.warning(f"{round.active_players=}")
+        logger.info(f"{players=}, {self.round.pot=}")
+        while not round.is_betting_over():
+            current_active_players = list(round.active_players) # Get current active884 players
+            if not current_active_players: # All folded
+                break
+
+            # Ensure player_turn_index is valid for the current list of active players
+            player_turn_index %= len(current_active_players)
+            current_player = current_active_players[player_turn_index]
+
+            state = self.update_state(round)
+            action = current_player.send_action(state)
+            self.take_action(current_player, action)
+
+            # Update round's active players and bets
+            if action.kind == "FOLD":
+                # Remove player from active_players list in the round object
+                round.active_players = [p for p in round.active_players if p.name != current_player.name]
+            else:
+                round.bets[current_player.name] += action.amount
+
+            # If only one player left, they win
+            if len(round.active_players) == 1:
+                winner = round.active_players[0]
+                self.end_round(round, players, winner)
+                return winner
+
+            # Move to next player, cycling through remaining active players
+            # Only increment if there are still active players to avoid IndexError
+            if len(round.active_players) > 0:
+                player_turn_index = (player_turn_index + 1) % len(current_active_players)
+
+        # After Betting Phase 1, reset bets for next phase
+        round.reset_bets()
+        round.last_raiser = None # Reset last raiser for the new betting phase
+
+        # Discard and Draw Phase (only for remaining active players)
+        for player in list(round.active_players): # Iterate over a copy as list might change
+            if player.name in [p.name for p in round.active_players]: # Ensure player is still active
+                discarded_cards = player.discard()
+                self.take_discards(discarded_cards)
+                self.update_cards(player)
+
+        # Betting Phase 2
+        player_turn_index = 0
+        # Reset last_raiser for the new betting phase
+        round.last_raiser = None
+        while not round.is_betting_over():
+            current_active_players = list(round.active_players)
+            if not current_active_players:
+                break
+
+            player_turn_index %= len(current_active_players)
+            current_player = current_active_players[player_turn_index]
+
+            state = self.update_state(round)
+            action = current_player.send_action(state)
+            self.take_action(current_player, action)
+
+            if action.kind == "FOLD":
+                round.active_players = [p for p in round.active_players if p.name != current_player.name]
+            else:
+                round.bets[current_player.name] += action.amount
+
+            if len(round.active_players) == 1:
+                winner = round.active_players[0]
+                self.end_round(round, players, winner)
+                return winner
+
+            if len(round.active_players) > 0:
+                player_turn_index = (player_turn_index + 1) % len(round.active_players)
+
+        # Determine winner after all betting phases (if not already determined by folds)
+        if len(round.active_players) == 1:
+            winner = round.active_players[0]
+        elif len(round.active_players) > 1:
+            winner = self._showdown(list(round.active_players)) # Call showdown for multiple remaining players
+        else: # No active players (everyone folded) - should not happen if previous check is correct
+            raise ValueError("No active players left but round not ended by fold")
+
+        self.end_round(round, players, winner)
+        return winner
 
     def take_discards(self, cards: List[Card]) -> None:
         for card in cards:
@@ -966,7 +1121,7 @@ class Dealer:
 
     def update_state(self, round: Round):
         state = round.update_state()
-        logging.debug(f"state in update_state is {state}")
+        logger.debug(f"state in update_state is {state}")
         return state
 
     def get_state(self, Round: Round):
