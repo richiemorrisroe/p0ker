@@ -1,5 +1,6 @@
 from copy import deepcopy
 from enum import Enum, IntEnum
+import datetime as dt
 import logging
 import math
 from pprint import pprint
@@ -7,12 +8,17 @@ from random import shuffle, sample
 import random
 
 from typing import Union, List, Dict, Tuple, Optional, Any, Collection, Sequence
+now = dt.datetime.now().isoformat()
+logging.basicConfig(filename=f"pkr_{now}.log",
+                    # level=logging.INFO,
+                    format='%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s')
 
-logging.basicConfig(filename="test.log", level=logging.INFO)
-# root = logging.getLogger()
-# handler = logging.StreamHandler(sys.stdout)
-# handler.setLevel(logging.INFO)
-# root.addHandler(handler)
+
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+
 
 
 class Suit(Enum):
