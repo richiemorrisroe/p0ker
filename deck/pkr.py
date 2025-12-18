@@ -11,7 +11,8 @@ from typing import Union, List, Dict, Tuple, Optional, Any, Collection, Sequence
 now = dt.datetime.now().isoformat()
 logging.basicConfig(filename=f"pkr_{now}.log",
                     # level=logging.INFO,
-                    format='%(asctime)s,%(msecs)03d %(name)s %(levelname)s %(message)s')
+                    
+                    format='%(asctime)s,%(msecs)03d %(name)s - %(levelname)s - %(funcName)s() %(message)s')
 
 
 
@@ -446,9 +447,12 @@ class Action:
         return self.name
 
     def set_name(self, name):
+        
         logger.debug(f"set_name action:{self}")
         if not self.name:
             self.name = name
+        elif self.name == name:
+            pass
         else:
             raise ValueError("cannot overwrite name")
 
@@ -640,6 +644,7 @@ class Player:
             raise ValueError("there should always be valid actions")
         if len(valid_actions) >= 2:
             action = deepcopy(sample(valid_actions, 1))
+            logger.debug(f"{action=}")
             action_pop = action.pop()
             logger.debug(f"selected action for {self.name} is {action_pop}")
             actual_action = action_pop.get_action()
@@ -658,7 +663,7 @@ class Player:
             pass
         if action == "FOLD" or action == "CHECK":
             amount = 0
-        return Action(kind=action, amount=amount)
+        return Action(kind=action, amount=amount, name=None)
 
     def send_action(self, state: Dict | None = None, action: Action | None = None):
         if not action:
