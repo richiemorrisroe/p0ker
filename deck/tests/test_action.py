@@ -243,7 +243,7 @@ def test_actions_has_add_action():
 
 def test_actions_has_action_count():
     actions = Actions(actions=[Action("BET", 100, name="richie")])
-    assert actions.kind_count == {"CHECK": 0, "BET": 1,
+    assert actions.kind_count == {"CHECK": 0, "BET": 1, "MATCH": 0,
                                   "FOLD": 0, "RAISE": 0, "END": 0}
 
 

@@ -447,8 +447,6 @@ class Action:
         return self.name
 
     def set_name(self, name):
-        
-        logger.debug(f"set_name action:{self}")
         if not self.name:
             self.name = name
         elif self.name == name:
@@ -477,14 +475,17 @@ class Action:
 
 
 class Actions:
-    def __init__(self, actions):
+    def __init__(self, actions=None):
+        if not actions:
+            actions = []
         self.action_list = list()
         for action in actions:
             self.action_list.append(action)
-        self.update_actions()
-        if not self.kind_count:
+        if not actions:
             self.kind_count = {"CHECK": 0, "BET": 0, "FOLD": 0, "RAISE": 0,
                                "MATCH": 0,  "END": 0}
+        self.update_actions()
+
 
     def __len__(self):
         return len(self.action_list)
@@ -527,15 +528,19 @@ class Actions:
         return sum_bets
 
     def update_actions(self):
+        kind_count = {"CHECK": 0, "BET": 0, "FOLD": 0, "RAISE": 0,
+                           "MATCH": 0,  "END": 0}
+        logger.debug(f"entering kind_count is {kind_count}")
+        logger.debug(f"start action_list is {self.action_list}")
         kinds = [a.kind for a in self.action_list]
-        kind_count = {"CHECK": 0, "BET": 0, "FOLD": 0, "RAISE": 0, "END": 0}
         for kind in kinds:
             try:
                 kind_count[kind] += 1
             except KeyError:
                 kind_count[kind] = 1
-        logger.debug(f"kind_count is {kind_count}")
         self.kind_count = kind_count
+        logger.debug(f"exiting self.kind_count is {self.kind_count}")
+        logger.debug(f"end action_list is {self.action_list}")
         return kind_count
 
 
@@ -734,11 +739,12 @@ class Round:
     def set_action(self, action) -> None:
         self.set_position(self.get_position() + 1)
         self.actions.update(action)
+        logger.debug(f"{self.actions=}")
         if action.kind in ["BET", "RAISE"]:
             self.last_raiser = action.name
         self.update_state()
 
-    def get_blinds(self, players: Dict[str, Player]) -> List[Player]:
+    def get_blinds(self, players: list[Player]) -> List[Player]:
         for player in players:
             self.add_to_pot(player.pay(self.ante))
         return players
@@ -816,10 +822,11 @@ class Round:
         end_state = [Action("END", 0)]
         if position == 0:
             return no_bet_state
-        logger.debug("actions are {a}".format(a=self.get_actions()))
+        # logger.debug("actions are {a}".format(a=self.get_actions()))
 
         kind_count = actions.kind_count
-        logger.debug(f"kind_count is {kind_count}")
+        logger.debug(f"{kind_count=}")
+        ## somehow we're calling this too late
         if kind_count['FOLD'] == (self.num_players - 1):
             losers = [a.name for a in
                       self.get_actions() if a.get_action == 'FOLD']
@@ -850,8 +857,11 @@ class Round:
         sum_bets = self.get_sum_bets()
         max_bet = self.get_maximum_bet()
         actions = self.get_actions()
+        # logger.debug(f"update state actions:{actions}")
         valid_actions: List[Action] = self.calculate_valid_actions()
-        return deepcopy(
+        kind_count = self.actions.kind_count
+
+        state = deepcopy(
             {
                 "pot_value": potval,
                 "position": position,
@@ -860,8 +870,11 @@ class Round:
                 "max_bet": max_bet,
                 "actions": actions,
                 "valid_actions": valid_actions,
+                "kind_count" : kind_count
             }
         )
+        # logger.debug(f"update_state state={state}")
+        return state
 
 
 class Dealer:
@@ -878,9 +891,7 @@ class Dealer:
         self.player_names = ["Liam", "Emma", "Noah", "Olivia", "William",
                              "Ava", "James", "Isabella", "Oliver", "Sophia",
                              ]
-        logger.info(f"{self.player_names=}")
-        # self.player_namer = PlayerNamer()
-        # self.player_names: list[str] = []
+
 
     def get_player_name(self) -> str:
         names = self.player_names
@@ -888,7 +899,7 @@ class Dealer:
         name = names.pop(rand_choice)
         return name
 
-    def start_game(self, n_players: int) -> Dict[str, Player]:
+    def start_game(self, n_players: int) -> list[Player]:
         players = []
         player_dict = {}
         self.round_count = 0
@@ -927,8 +938,9 @@ class Dealer:
         return player
 
     def update_round(self, players: List[Player], round: Round) -> List[Player]:
-        logger.debug(f"players is {players}")
-        state = round.update_state()
+        logger.debug(f"players is {players}, round is {round!r}")
+        state = self.round.update_state()
+        logger.debug(f'{state=}')
         valid_actions = state['valid_actions']
         print(f"va in update_round is {valid_actions}")
         if len(valid_actions) == 1 and valid_actions[0].kind == 'END':
@@ -965,7 +977,10 @@ class Dealer:
             raise ValueError("action is not valid")
 
     def accept_action(self, action) -> None:
+        logger.debug(f"action is {action!r}")
         self.round.set_action(action)
+        state = self.round.update_state()
+        # logger.debug(f"accept action state:{state}")
 
     def compare(self, players):
         scores = {}
@@ -1048,6 +1063,7 @@ class Dealer:
             current_player = current_active_players[player_turn_index]
 
             state = self.update_state(round)
+            logger.debug(f"play_round {state=}")
             action = current_player.send_action(state)
             self.take_action(current_player, action)
 
@@ -1126,7 +1142,7 @@ class Dealer:
 
     def update_state(self, round: Round):
         state = round.update_state()
-        logger.debug(f"state in update_state is {state}")
+        # logger.debug(f"state in update_state is {state}")
         return state
 
     def get_state(self, Round: Round):
