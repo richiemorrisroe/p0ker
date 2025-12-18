@@ -10,6 +10,7 @@ dependencies = []
 dev = [
     "hypothesis>=6.148.7",
     "pytest>=9.0.2",
+    "ty>=0.0.3",
 ]
 
 [tool.pytest.ini_options]
