@@ -411,6 +411,7 @@ class Deck:
         if num_cards < 1:
             raise ValueError("cannot be dealt less than 1 card")
         if num_cards == 1:
+            logger.debug(f"{len(self._cards)=}")
             cards = self._cards[0]
             self._cards = self._cards[num_cards:]
         else:
@@ -530,8 +531,6 @@ class Actions:
     def update_actions(self):
         kind_count = {"CHECK": 0, "BET": 0, "FOLD": 0, "RAISE": 0,
                            "MATCH": 0,  "END": 0}
-        logger.debug(f"entering kind_count is {kind_count}")
-        logger.debug(f"start action_list is {self.action_list}")
         kinds = [a.kind for a in self.action_list]
         for kind in kinds:
             try:
@@ -539,8 +538,6 @@ class Actions:
             except KeyError:
                 kind_count[kind] = 1
         self.kind_count = kind_count
-        logger.debug(f"exiting self.kind_count is {self.kind_count}")
-        logger.debug(f"end action_list is {self.action_list}")
         return kind_count
 
 
@@ -664,6 +661,7 @@ class Player:
         logger.debug(f"{self.name} action is {action}")
         if action == "BET":
             amount = random.randint(state["min_bet"], state["min_bet"] + 100)
+            logger.debug(f"amount is {amount}")
         if action == "RAISE":
             pass
         if action == "FOLD" or action == "CHECK":
