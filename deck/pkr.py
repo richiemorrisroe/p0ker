@@ -824,7 +824,6 @@ class Round:
 
         kind_count = actions.kind_count
         logger.debug(f"{kind_count=}")
-        ## somehow we're calling this too late
         if kind_count['FOLD'] == (self.num_players - 1):
             losers = [a.name for a in
                       self.get_actions() if a.get_action == 'FOLD']
@@ -1044,6 +1043,32 @@ class Dealer:
         self.old_rounds.append(round) # Append the round object, not self.round
         return players # Return the full list of players for now
 
+
+    def play_one_loop(self, round: Round, players: List[Player]) -> tuple[Round, List[Player]]:
+        current_active_players = players # Get current active884 players
+            # if not current_active_players: # All folded
+            #     break
+
+            # Ensure player_turn_index is valid for the current list of active players
+            # player_turn_index %= len(current_active_players)
+            # current_player = current_active_players[player_turn_index]
+        for current_player in current_active_players:
+
+            state = self.update_state(round)
+            logger.debug(f"play_round {state=}")
+            action = current_player.send_action(state)
+            self.take_action(current_player, action)
+            
+            # Update round's active players and bets
+            if action.kind == "FOLD":
+                # Remove player from active_players list in the round object
+                round.active_players = [p for p in round.active_players if p.name != current_player.name]
+            else:
+                round.bets[current_player.name] += action.amount
+        return round, current_active_players
+
+    
+
     def play_round(self, players: List[Player]) -> Player:
         round = self.start_round(players)
 
@@ -1052,39 +1077,15 @@ class Dealer:
         logger.warning(f"{round.active_players=}")
         logger.info(f"{players=}, {self.round.pot=}")
         while not round.is_betting_over():
-            current_active_players = list(round.active_players) # Get current active884 players
-            if not current_active_players: # All folded
-                break
-
-            # Ensure player_turn_index is valid for the current list of active players
-            # player_turn_index %= len(current_active_players)
-            # current_player = current_active_players[player_turn_index]
-            for current_player in current_active_players:
-
-                state = self.update_state(round)
-                logger.debug(f"play_round {state=}")
-                action = current_player.send_action(state)
-                self.take_action(current_player, action)
-
-            # Update round's active players and bets
-                if action.kind == "FOLD":
-                # Remove player from active_players list in the round object
-                    round.active_players = [p for p in round.active_players if p.name != current_player.name]
-                else:
-                    round.bets[current_player.name] += action.amount
+            round, current_active_players = self.play_one_loop(round, players)
 
             # If only one player left, they win
-                if len(round.active_players) == 1:
-                    winner = round.active_players[0]
-                    self.end_round(round, players, winner)
-                    return winner
+            if len(round.active_players) == 1:
+                winner = round.active_players[0]
+                self.end_round(round, players, winner)
+                return winner
+            logger.debug(f'{round.bets=}')
 
-            # Move to next player, cycling through remaining active players
-            # Only increment if there are still active players to avoid IndexError
-            # if len(round.active_players) > 0:
-            #     player_turn_index = (player_turn_index + 1) % len(current_active_players)
-
-        # After Betting Phase 1, reset bets for next phase
         round.reset_bets()
         round.last_raiser = None # Reset last raiser for the new betting phase
 
