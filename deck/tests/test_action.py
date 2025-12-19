@@ -136,16 +136,26 @@ def test_pot_is_reduced_to_zero_after_round_ends(dealer_3_players):
 
 
 def test_valid_actions_are_some_bet_state_after_bet(dealer_3_players):
+    BET_AMOUNT = 150
     dealer, players, round = dealer_3_players
     p1, _, _ = players
-    dealer.take_action(p1, Action("BET", 150))
+    dealer.take_action(p1, Action("BET", BET_AMOUNT))
     state = dealer.update_state(round)
     va = state['valid_actions']
     print(f"valid_actions are {va}")
     kinds = [x.kind for x in va]
     amounts = [x.amount for x in va]
-    assert ['BET',  'FOLD', 'RAISE'] == sorted(kinds)
-    assert [0, 200, 400] == sorted(amounts)
+    assert ['FOLD', 'MATCH', 'RAISE'] == sorted(kinds)
+    assert [0, BET_AMOUNT, BET_AMOUNT * 2] == sorted(amounts)
+
+def test_valid_actions_handles_match_correctly(dealer_3_players):
+    BET_AMOUNT = 150
+    dealer, players, round = dealer_3_players
+    p1, p2, _ = players
+    dealer.take_action(p1, Action("BET", BET_AMOUNT))
+    state = dealer.update_state(round)
+    valid_actions = state['valid_actions']
+    assert [a for a in valid_actions if a == Action('MATCH', BET_AMOUNT)]
 
 
 def test_dealer_can_provide_list_of_valid_actions(dealer_3_players):

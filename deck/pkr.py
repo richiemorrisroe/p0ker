@@ -807,9 +807,9 @@ class Round:
         no_bet_state = [Action("CHECK", 0), Action("BET", self.ante),
                         Action("FOLD", 0)]
         some_bet_state = [
-            Action("BET", self.ante + self.min_bet),
+            Action("MATCH", self.get_maximum_bet()),
             Action("FOLD", 0),
-            Action("RAISE", (self.ante + self.min_bet) * 2),
+            Action("RAISE", (self.get_maximum_bet()) * 2),
         ]
 
         match_fold_state = [
