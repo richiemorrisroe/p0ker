@@ -1057,31 +1057,32 @@ class Dealer:
                 break
 
             # Ensure player_turn_index is valid for the current list of active players
-            player_turn_index %= len(current_active_players)
-            current_player = current_active_players[player_turn_index]
+            # player_turn_index %= len(current_active_players)
+            # current_player = current_active_players[player_turn_index]
+            for current_player in current_active_players:
 
-            state = self.update_state(round)
-            logger.debug(f"play_round {state=}")
-            action = current_player.send_action(state)
-            self.take_action(current_player, action)
+                state = self.update_state(round)
+                logger.debug(f"play_round {state=}")
+                action = current_player.send_action(state)
+                self.take_action(current_player, action)
 
             # Update round's active players and bets
-            if action.kind == "FOLD":
+                if action.kind == "FOLD":
                 # Remove player from active_players list in the round object
-                round.active_players = [p for p in round.active_players if p.name != current_player.name]
-            else:
-                round.bets[current_player.name] += action.amount
+                    round.active_players = [p for p in round.active_players if p.name != current_player.name]
+                else:
+                    round.bets[current_player.name] += action.amount
 
             # If only one player left, they win
-            if len(round.active_players) == 1:
-                winner = round.active_players[0]
-                self.end_round(round, players, winner)
-                return winner
+                if len(round.active_players) == 1:
+                    winner = round.active_players[0]
+                    self.end_round(round, players, winner)
+                    return winner
 
             # Move to next player, cycling through remaining active players
             # Only increment if there are still active players to avoid IndexError
-            if len(round.active_players) > 0:
-                player_turn_index = (player_turn_index + 1) % len(current_active_players)
+            # if len(round.active_players) > 0:
+            #     player_turn_index = (player_turn_index + 1) % len(current_active_players)
 
         # After Betting Phase 1, reset bets for next phase
         round.reset_bets()
