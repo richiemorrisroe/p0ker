@@ -463,7 +463,7 @@ class Action:
             return False
         if self.kind == "FOLD" and self.amount > 0:
             return False
-        if self.kind == "CALL" and self.amount == 0:
+        if self.kind == "MATCH" and self.amount == 0:
             return False
         else:
             return True
