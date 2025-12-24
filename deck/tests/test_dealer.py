@@ -158,22 +158,22 @@ def test_dealer_can_validate_action() -> None:
     print(action)
     assert dealer.is_valid_action(action) is True
 
-# def test_play_round_completes_and_declares_winner():
-#     dealer = Dealer()
-#     players = dealer.start_game(3)
-#     total_stash = sum([p.stash for p in players])
-#     initial_stashes = {p.name: p.stash for p in players}
+def test_play_round_completes_and_declares_winner():
+    dealer = Dealer()
+    players = dealer.start_game(3)
+    total_stash = sum([p.stash for p in players])
+    initial_stashes = {p.name: p.stash for p in players}
     
-#     # This method doesn't exist yet, so this will fail
-#     winner = dealer.play_round(players)
-#     final_stash = sum([p.stash for p in players])
-#     assert winner is not None
-#     assert len(dealer.old_rounds) == 1
+    # This method doesn't exist yet, so this will fail
+    winner = dealer.play_round(players)
+    final_stash = sum([p.stash for p in players])
+    assert winner is not None
+    assert len(dealer.old_rounds) == 1
     
-#     # Check that the winner's stash has increased by the pot
-#     # (which is the sum of antes in this simple case)
-#     assert winner.stash > initial_stashes[winner.name]
-#     assert total_stash == final_stash
+    # Check that the winner's stash has increased by the pot
+    # (which is the sum of antes in this simple case)
+    assert winner.stash > initial_stashes[winner.name]
+    assert total_stash == final_stash
 
 
 def test_play_round_can_handle_calls_and_checks():
