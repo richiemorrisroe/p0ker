@@ -813,9 +813,9 @@ class Round:
         ]
 
         match_fold_state = [
-            Action("MATCH", 100),
+            Action("MATCH", self.get_maximum_bet()),
             Action("FOLD", 0),
-            Action("RAISE", 200)]
+            Action("RAISE", self.get_maximum_bet() * 2)]
 
         end_state = [Action("END", 0)]
         if position == 0:

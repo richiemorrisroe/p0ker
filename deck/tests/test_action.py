@@ -1,3 +1,4 @@
+import pprint
 import pytest
 
 from deck.pkr import Action, Actions, Dealer, Player, random_hand
@@ -74,7 +75,7 @@ def test_bet_must_have_an_amount_greater_than_zero():
 
 def test_call_cannot_have_amount_of_zero():
     dealer = Dealer()
-    wrong_call = Action(kind="CALL", amount=0)
+    wrong_call = Action(kind="MATCH", amount=0)
     wrong_call.set_name("Eveline")
     assert not dealer.is_valid_action(wrong_call)
 
@@ -111,6 +112,33 @@ def test_check_action_keeps_no_bet_state(dealer_3_players):
     players = dealer.update_round(dp, round)
     actions = [action.get_action() for action in valid_actions]
     assert actions == ['CHECK', 'BET', 'FOLD']
+
+def test_bet_raise_has_match_fold_state(dealer_3_players):
+    dealer, players, round = dealer_3_players
+    p1, p2, p3 = players
+    pnames = [p.name for p in players]
+    dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
+    dealer.take_action(p1, Action("BET", 100))
+    dealer.take_action(p2, Action("RAISE", 200))
+    state = dealer.update_state(round)
+    valid_actions = state['valid_actions']
+    assert valid_actions == [Action(kind='MATCH', amount=200, name=None), Action(kind='FOLD', amount=0, name=None),
+                             Action(kind='RAISE', amount=400, name=None)]
+
+
+def test_bet_raise_match_has_match_raise_state(dealer_3_players):
+    dealer, players, round = dealer_3_players
+    p1, p2, p3 = players
+    pnames = [p.name for p in players]
+    dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
+    dealer.take_action(p1, Action("BET", 100))
+    dealer.take_action(p2, Action("RAISE", 200))
+    dealer.take_action(p3, Action("MATCH", 200))
+    state = dealer.update_state(round)
+    valid_actions = state['valid_actions']
+    pprint.pprint(valid_actions)
+    assert valid_actions == [Action(kind='MATCH', amount=200, name=None), Action(kind='FOLD', amount=0, name=None),
+                            ]    
 
 
 def test_all_but_one_player_folding_ends_round_and_updates_player_stashes(dealer_3_players):
