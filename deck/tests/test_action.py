@@ -324,12 +324,13 @@ def test_match_action_exists():
 
 
 def test_greater_bet_or_raise_creates_match_or_fold_state(dealer_3_players):
-    match_fold_state = [Action("MATCH", 100),
+    match_fold_state = [Action("MATCH", 200),
                         Action("FOLD", 0),
-                        Action("RAISE", 200)]
+                        Action("RAISE", 400)]
     dealer, players, round = dealer_3_players
     p1, p2, _ = players
     dealer.take_action(p1, Action("BET", 100))
     dealer.take_action(p2, Action("RAISE", 200))
     valid_actions = dealer.update_state(round)['valid_actions']
+    pprint.pprint(valid_actions)
     assert valid_actions == match_fold_state

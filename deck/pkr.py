@@ -1067,7 +1067,18 @@ class Dealer:
                 round.bets[current_player.name] += action.amount
         return round, current_active_players
 
-    
+
+    # def is_round_over(self, players: List[Player]) -> Tuple[bool, List[Player]]:
+    #     if len(round.active_players) == 1:
+    #             winner = round.active_players[0]
+    #             self.end_round(round, players, winner)
+    #             return winner
+
+    def is_round_over(self, round: Round) -> bool:
+        if len(round.active_players) == 1:
+            return True
+        else:
+            return False
 
     def play_round(self, players: List[Player]) -> Player:
         round = self.start_round(players)
@@ -1080,7 +1091,7 @@ class Dealer:
             round, current_active_players = self.play_one_loop(round, players)
 
             # If only one player left, they win
-            if len(round.active_players) == 1:
+            if self.is_round_over(round):
                 winner = round.active_players[0]
                 self.end_round(round, players, winner)
                 return winner
