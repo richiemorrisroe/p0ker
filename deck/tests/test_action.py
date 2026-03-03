@@ -138,7 +138,7 @@ def test_bet_raise_match_has_match_raise_state(dealer_3_players):
     valid_actions = state['valid_actions']
     pprint.pprint(valid_actions)
     assert valid_actions == [Action(kind='MATCH', amount=200, name=None), Action(kind='FOLD', amount=0, name=None),
-                            ]    
+                             Action(kind='RAISE', amount=400, name=None)]    
 
 
 def test_all_but_one_player_folding_ends_round_and_updates_player_stashes(dealer_3_players):
