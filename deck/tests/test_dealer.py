@@ -206,8 +206,16 @@ def test_play_one_loop_keeps_consistent_stashes():
     round = dealer.start_round(players)
     round, players = dealer.play_one_loop(round, players)
     state = dealer.update_state(round)
-    
-    assert dealer.get_state(round)['pot_value'] + sum([p.stash for p in players]) == 5000 * N_PLAYERS
+    if dealer.is_round_over(round):
+        winner = round.active_players[0]
+        dealer.end_round(round, players, winner)
+        assert sum([p.stash for p in players]) == 5000 * N_PLAYERS
+    else:
+        breakpoint()
+        assert dealer.get_state(round)['pot_value'] + sum([p.stash for p in players]) == 5000 * N_PLAYERS
+
+
+
 
 
 def test_play_one_loop_round_has_correct_active_players():
