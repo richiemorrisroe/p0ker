@@ -1,3 +1,4 @@
+import pprint
 import pytest
 
 from deck.pkr import Action, Actions, Dealer, Player, random_hand
@@ -74,7 +75,7 @@ def test_bet_must_have_an_amount_greater_than_zero():
 
 def test_call_cannot_have_amount_of_zero():
     dealer = Dealer()
-    wrong_call = Action(kind="CALL", amount=0)
+    wrong_call = Action(kind="MATCH", amount=0)
     wrong_call.set_name("Eveline")
     assert not dealer.is_valid_action(wrong_call)
 
@@ -112,6 +113,33 @@ def test_check_action_keeps_no_bet_state(dealer_3_players):
     actions = [action.get_action() for action in valid_actions]
     assert actions == ['CHECK', 'BET', 'FOLD']
 
+def test_bet_raise_has_match_fold_state(dealer_3_players):
+    dealer, players, round = dealer_3_players
+    p1, p2, p3 = players
+    pnames = [p.name for p in players]
+    dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
+    dealer.take_action(p1, Action("BET", 100))
+    dealer.take_action(p2, Action("RAISE", 200))
+    state = dealer.update_state(round)
+    valid_actions = state['valid_actions']
+    assert valid_actions == [Action(kind='MATCH', amount=200, name=None), Action(kind='FOLD', amount=0, name=None),
+                             Action(kind='RAISE', amount=400, name=None)]
+
+
+def test_bet_raise_match_has_match_raise_state(dealer_3_players):
+    dealer, players, round = dealer_3_players
+    p1, p2, p3 = players
+    pnames = [p.name for p in players]
+    dp = {name: player for name, player in zip(pnames, [p1, p2, p3])}
+    dealer.take_action(p1, Action("BET", 100))
+    dealer.take_action(p2, Action("RAISE", 200))
+    dealer.take_action(p3, Action("MATCH", 200))
+    state = dealer.update_state(round)
+    valid_actions = state['valid_actions']
+    pprint.pprint(valid_actions)
+    assert valid_actions == [Action(kind='MATCH', amount=200, name=None), Action(kind='FOLD', amount=0, name=None),
+                             Action(kind='RAISE', amount=400, name=None)]    
+
 
 def test_all_but_one_player_folding_ends_round_and_updates_player_stashes(dealer_3_players):
     dealer, players, round = dealer_3_players
@@ -136,16 +164,26 @@ def test_pot_is_reduced_to_zero_after_round_ends(dealer_3_players):
 
 
 def test_valid_actions_are_some_bet_state_after_bet(dealer_3_players):
+    BET_AMOUNT = 150
     dealer, players, round = dealer_3_players
     p1, _, _ = players
-    dealer.take_action(p1, Action("BET", 150))
+    dealer.take_action(p1, Action("BET", BET_AMOUNT))
     state = dealer.update_state(round)
     va = state['valid_actions']
     print(f"valid_actions are {va}")
     kinds = [x.kind for x in va]
     amounts = [x.amount for x in va]
-    assert ['BET',  'FOLD', 'RAISE'] == sorted(kinds)
-    assert [0, 200, 400] == sorted(amounts)
+    assert ['FOLD', 'MATCH', 'RAISE'] == sorted(kinds)
+    assert [0, BET_AMOUNT, BET_AMOUNT * 2] == sorted(amounts)
+
+def test_valid_actions_handles_match_correctly(dealer_3_players):
+    BET_AMOUNT = 150
+    dealer, players, round = dealer_3_players
+    p1, p2, _ = players
+    dealer.take_action(p1, Action("BET", BET_AMOUNT))
+    state = dealer.update_state(round)
+    valid_actions = state['valid_actions']
+    assert [a for a in valid_actions if a == Action('MATCH', BET_AMOUNT)]
 
 
 def test_dealer_can_provide_list_of_valid_actions(dealer_3_players):
@@ -243,7 +281,7 @@ def test_actions_has_add_action():
 
 def test_actions_has_action_count():
     actions = Actions(actions=[Action("BET", 100, name="richie")])
-    assert actions.kind_count == {"CHECK": 0, "BET": 1,
+    assert actions.kind_count == {"CHECK": 0, "BET": 1, "MATCH": 0,
                                   "FOLD": 0, "RAISE": 0, "END": 0}
 
 
@@ -286,12 +324,13 @@ def test_match_action_exists():
 
 
 def test_greater_bet_or_raise_creates_match_or_fold_state(dealer_3_players):
-    match_fold_state = [Action("MATCH", 100),
+    match_fold_state = [Action("MATCH", 200),
                         Action("FOLD", 0),
-                        Action("RAISE", 200)]
+                        Action("RAISE", 400)]
     dealer, players, round = dealer_3_players
     p1, p2, _ = players
     dealer.take_action(p1, Action("BET", 100))
     dealer.take_action(p2, Action("RAISE", 200))
     valid_actions = dealer.update_state(round)['valid_actions']
+    pprint.pprint(valid_actions)
     assert valid_actions == match_fold_state
